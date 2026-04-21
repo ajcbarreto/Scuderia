@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { resolvePostLoginPath } from "@/lib/post-login-redirect";
 import type { UserRole } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Lock, Mail } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export function LoginForm() {
   const router = useRouter();
@@ -55,46 +56,78 @@ export function LoginForm() {
     }
   }
 
+  const fieldClass =
+    "h-12 border-0 bg-[#1f1f1f] pl-11 text-[15px] shadow-inner shadow-black/20 ring-1 ring-white/[0.06] transition-shadow placeholder:text-white/25 focus-visible:bg-[#232323] focus-visible:ring-2 focus-visible:ring-[#e80f16]/35";
+
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
+    <form onSubmit={onSubmit} className="space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border-white/10 bg-[#262626]"
-        />
+        <Label
+          htmlFor="email"
+          className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+        >
+          Email
+        </Label>
+        <div className="relative">
+          <Mail
+            className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground/70"
+            aria-hidden
+          />
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            required
+            placeholder="nome@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={cn(
+              fieldClass,
+              "rounded-xl",
+            )}
+          />
+        </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="password">Palavra-passe</Label>
-        <Input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="border-white/10 bg-[#262626]"
-        />
+        <Label
+          htmlFor="password"
+          className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+        >
+          Palavra-passe
+        </Label>
+        <div className="relative">
+          <Lock
+            className="pointer-events-none absolute left-3.5 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground/70"
+            aria-hidden
+          />
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={cn(fieldClass, "rounded-xl")}
+          />
+        </div>
       </div>
       {error ? (
-        <p className="text-sm text-destructive" role="alert">
+        <p
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
-      <Button type="submit" className="w-full font-heading" disabled={loading}>
+      <Button
+        type="submit"
+        size="lg"
+        className="h-12 w-full rounded-xl font-heading text-base font-semibold shadow-lg shadow-[#e80f16]/15 transition-[transform,box-shadow] hover:shadow-xl hover:shadow-[#e80f16]/20 active:scale-[0.99]"
+        disabled={loading}
+      >
         {loading ? "A entrar…" : "Entrar"}
       </Button>
-      <p className="text-center text-sm text-muted-foreground">
-        Sem conta?{" "}
-        <Link href="/register" className="text-primary underline-offset-4 hover:underline">
-          Criar registo
-        </Link>
-      </p>
     </form>
   );
 }
