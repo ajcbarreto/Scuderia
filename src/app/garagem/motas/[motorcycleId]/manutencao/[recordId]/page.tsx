@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
@@ -23,33 +22,15 @@ export default async function ManutencaoDetailPage({ params }: Props) {
   const currentTasks = ctx.tasksByRecord.get(recordId) ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="print:hidden">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/garagem" className="hover:text-foreground">
-            Garagem
-          </Link>{" "}
-          /{" "}
-          <Link
-            href={`/garagem/motas/${motorcycleId}`}
-            className="hover:text-foreground"
-          >
-            {ctx.motorcycle.brand} {ctx.motorcycle.model}
-          </Link>{" "}
-          / Serviço
-        </p>
-      </div>
-
-      <MaintenanceBulletin
-        variant="detail"
-        motorcycle={ctx.motorcycle}
-        motorcycleId={motorcycleId}
-        ownerName={profile?.full_name ?? null}
-        currentRecord={r}
-        currentTasks={currentTasks}
-        historyRows={ctx.historyRows}
-        allInvoiceHrefs={ctx.allInvoiceHrefs}
-      />
-    </div>
+    <MaintenanceBulletin
+      variant="detail"
+      motorcycle={ctx.motorcycle}
+      motorcycleId={motorcycleId}
+      ownerName={profile?.full_name ?? null}
+      currentRecord={r}
+      currentTasks={currentTasks}
+      historyRows={ctx.historyRows}
+      allInvoiceHrefs={ctx.allInvoiceHrefs}
+    />
   );
 }

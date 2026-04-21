@@ -16,6 +16,7 @@ import type { BoletimHistoryRow } from "@/types/boletim";
 import { BoletimFooterActions } from "@/components/garagem/boletim-footer-actions";
 import { BoletimPassportPrint } from "@/components/garagem/boletim-passport-print";
 import { BoletimServiceHistoryTable } from "@/components/garagem/boletim-service-history-table";
+import { Progress } from "@/components/ui/progress";
 
 export type { BoletimHistoryRow as HistoryRow } from "@/types/boletim";
 
@@ -200,6 +201,19 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
       ? `${formatBulletinId(r.id, r.opened_at)} · Estado: ${estado.text}`
       : "Próxima revisão a planear com a oficina Scuderia itTECH";
 
+  const currentHistoryRow =
+    isDetail && r
+      ? historyRows.find((h) => h.record.id === r.id)
+      : undefined;
+  const servicePhotoHrefs = currentHistoryRow?.photoHrefs ?? [];
+  const serviceNotesBlocks =
+    isDetail && r
+      ? (r.shop_notes
+          ?.split(/\n\s*\n/)
+          .map((b) => b.trim())
+          .filter(Boolean) ?? [])
+      : [];
+
   return (
     <>
     <div
@@ -325,6 +339,117 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
         </div>
       </div>
 
+      {isDetail && r ? (
+        <section
+          className="mb-10 rounded-xl border border-primary/25 bg-gradient-to-b from-[#161616] to-[#0a0a0a] p-6 md:p-8 print:mb-6"
+          aria-labelledby="intervencao-heading"
+        >
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            Este serviço
+          </p>
+          <h2
+            id="intervencao-heading"
+            className="mt-2 font-heading text-2xl font-bold md:text-3xl"
+          >
+            {r.title ?? "Manutenção"}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {formatBulletinId(r.id, r.opened_at)} ·{" "}
+            {formatPtDate((r.closed_at ?? r.opened_at) as string)}
+          </p>
+
+          <div className="mt-6 max-w-md border-t border-white/10 pt-6">
+            <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Progresso na oficina
+            </p>
+            <div className="mt-2">
+              <Progress value={r.progress_percent} className="h-2" />
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {r.progress_percent}% concluído
+            </p>
+          </div>
+
+          {serviceNotesBlocks.length > 0 ? (
+            <div className="mt-8">
+              <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                Notas deste serviço
+              </p>
+              <div className="space-y-2">
+                {serviceNotesBlocks.map((block, idx) => (
+                  <p
+                    key={idx}
+                    className="whitespace-pre-wrap rounded-lg border border-white/10 bg-black/35 px-4 py-3 text-sm text-muted-foreground"
+                  >
+                    {block}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          <div className="mt-8">
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Checklist
+            </p>
+            {currentTasks.length > 0 ? (
+              <ul className="space-y-2">
+                {currentTasks.map((t) => (
+                  <li key={t.id} className="flex gap-3 text-sm">
+                    <CheckCircle2
+                      className={
+                        t.completed
+                          ? "mt-0.5 size-4 shrink-0 text-[#90e98b]"
+                          : "mt-0.5 size-4 shrink-0 text-muted-foreground"
+                      }
+                    />
+                    <span
+                      className={
+                        t.completed ? "text-muted-foreground line-through" : ""
+                      }
+                    >
+                      {t.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Sem tarefas listadas para este registo.
+              </p>
+            )}
+          </div>
+
+          {servicePhotoHrefs.length > 0 ? (
+            <div className="mt-8">
+              <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                Fotos
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {servicePhotoHrefs.map((src, pi) => (
+                  <a
+                    key={pi}
+                    href={src}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative h-28 w-40 overflow-hidden rounded-xl border border-white/10"
+                  >
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="160px"
+                      unoptimized
+                    />
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
       <section className="mb-10 print:mb-6">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-grow items-center gap-4">
@@ -333,9 +458,9 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             </h3>
             <div className="h-px flex-1 bg-white/10" />
           </div>
-          <p className="text-xs text-muted-foreground sm:max-w-xs sm:text-right">
-            Clica numa linha para expandir o detalhe desse serviço (notas, checklist,
-            fotos). As notas importantes da última revisão ficam na caixa ao lado.
+          <p className="text-xs text-muted-foreground sm:max-w-md sm:text-right">
+            Toca ou clica numa linha para abrir o detalhe completo noutro ecrã — ideal
+            no telemóvel. As notas gerais da última revisão ficam na secção abaixo.
           </p>
         </div>
         <BoletimServiceHistoryTable
@@ -356,7 +481,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
           </div>
           <p className="mb-6 text-sm text-muted-foreground">
             Informação prioritária que a oficina destaca sobre a intervenção mais
-            recente. O detalhe de cada serviço no histórico abre ao clicar na linha.
+            recente. O detalhe de cada serviço no histórico abre num ecrã próprio.
           </p>
           {lastRevisionNotesBlocks.length > 0 ? (
             <ul className="space-y-4">
