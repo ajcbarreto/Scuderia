@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   CircleDot,
   Download,
+  FileText,
   Info,
   ShieldCheck,
   Wrench,
@@ -134,6 +135,8 @@ export type MaintenanceBulletinProps =
       variant: "detail";
       currentRecord: ServiceRecord;
       currentTasks: ServiceTask[];
+      /** Página só do serviço: sem hero nem título grande do boletim */
+      detailPresentation?: "boletim" | "standalone";
     });
 
 export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
@@ -142,6 +145,10 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
   const isDetail = props.variant === "detail";
   const r = isDetail ? props.currentRecord : null;
   const currentTasks = isDetail ? props.currentTasks : [];
+  const standalone =
+    props.variant === "detail" &&
+    "detailPresentation" in props &&
+    props.detailPresentation === "standalone";
 
   const generatedLabel = formatPtDate(new Date().toISOString());
   const vehicleTitle = `${m.brand} ${m.model}`.trim();
@@ -220,124 +227,138 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
       id="maintenance-bulletin-print"
       className="carbon-texture text-foreground print:hidden"
     >
-      <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end print:mb-6">
-        <div>
-          <h1 className="font-heading text-4xl font-bold uppercase tracking-tighter md:text-6xl">
-            Boletim de manutenção
-          </h1>
-          <p className="mt-2 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            {isDetail
-              ? "Detalhe da intervenção"
-              : "Relatório de controlo e manutenção"}
-          </p>
-        </div>
-        <div className="text-left md:text-right">
-          <p className="font-heading text-lg font-bold text-primary">{headerRef}</p>
-          <p className="text-sm text-muted-foreground">Gerado em: {generatedLabel}</p>
-        </div>
-      </div>
-
-      <div className="mb-10 grid grid-cols-1 gap-8 lg:grid-cols-3 print:mb-6">
-        <div className="relative overflow-hidden rounded-xl border border-white/10 bg-card lg:col-span-2">
-          <div className="absolute inset-0 z-0">
-            <Image
-              src={ENGINE_IMAGE}
-              alt=""
-              fill
-              className="object-cover opacity-30 grayscale transition-all duration-700 hover:grayscale-0"
-              sizes="(max-width: 1024px) 100vw, 66vw"
-              priority
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
-          </div>
-          <div className="relative z-10 flex min-h-[360px] flex-col justify-between p-8">
+      {!standalone ? (
+        <>
+          <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end print:mb-6">
             <div>
-              <span className="mb-4 inline-block bg-primary px-3 py-1 text-xs font-black uppercase tracking-widest text-primary-foreground">
-                Unidade ativa
-              </span>
-              <h2 className="font-heading text-3xl font-bold md:text-4xl">
-                {vehicleTitle}
-              </h2>
-              <p className="mt-1 font-medium tracking-wide text-muted-foreground">
-                Placa: {m.plate ?? "—"} | VIN: {m.vin ?? "—"}
+              <h1 className="font-heading text-4xl font-bold uppercase tracking-tighter md:text-6xl">
+                Boletim de manutenção
+              </h1>
+              <p className="mt-2 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                {isDetail
+                  ? "Detalhe da intervenção"
+                  : "Relatório de controlo e manutenção"}
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-6 border-t border-white/10 pt-8 md:grid-cols-4">
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                  Proprietário
-                </p>
-                <p className="text-lg font-bold">{ownerName ?? "—"}</p>
-              </div>
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                  Quilometragem
-                </p>
-                <p className="text-lg font-bold text-muted-foreground">—</p>
-              </div>
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                  Última revisão
-                </p>
-                <p className="text-lg font-bold">{lastServiceLabel}</p>
-              </div>
-              <div>
-                <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                  Estado geral
-                </p>
-                <p
-                  className={
-                    estado.variant === "ok"
-                      ? "flex items-center gap-1 text-lg font-bold text-[#90e98b]"
-                      : "flex items-center gap-1 text-lg font-bold text-amber-200"
-                  }
-                >
-                  {estado.variant === "ok" ? (
-                    <CheckCircle2 className="size-4 shrink-0" aria-hidden />
-                  ) : estado.variant === "warn" ? (
-                    <Info className="size-4 shrink-0" aria-hidden />
-                  ) : (
-                    <CircleDot className="size-4 shrink-0" aria-hidden />
-                  )}
-                  {estado.text}
-                </p>
-              </div>
+            <div className="text-left md:text-right">
+              <p className="font-heading text-lg font-bold text-primary">{headerRef}</p>
+              <p className="text-sm text-muted-foreground">Gerado em: {generatedLabel}</p>
             </div>
           </div>
-        </div>
 
-        <div className="boletim-glow-card flex flex-col gap-6 rounded-xl border border-primary/20 bg-[#121212] p-8 shadow-[0_0_40px_rgba(220,38,38,0.12)]">
-          <p className="flex items-center gap-3 font-heading text-[10px] font-black uppercase tracking-[0.35em] text-primary">
-            <span className="h-px w-8 bg-primary/30" />
-            Próxima revisão
-          </p>
-          <div>
-            <p className="font-heading text-5xl font-bold leading-none tracking-tighter md:text-6xl">
-              Agendar
-            </p>
-            <p className="mt-2 text-xl font-bold uppercase tracking-[0.2em] text-primary/90">
-              com a oficina
-            </p>
+          <div className="mb-10 grid grid-cols-1 gap-8 lg:grid-cols-3 print:mb-6">
+            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-card lg:col-span-2">
+              <div className="absolute inset-0 z-0">
+                <Image
+                  src={ENGINE_IMAGE}
+                  alt=""
+                  fill
+                  className="object-cover opacity-30 grayscale transition-all duration-700 hover:grayscale-0"
+                  sizes="(max-width: 1024px) 100vw, 66vw"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+              </div>
+              <div className="relative z-10 flex min-h-[360px] flex-col justify-between p-8">
+                <div>
+                  <span className="mb-4 inline-block bg-primary px-3 py-1 text-xs font-black uppercase tracking-widest text-primary-foreground">
+                    Unidade ativa
+                  </span>
+                  <h2 className="font-heading text-3xl font-bold md:text-4xl">
+                    {vehicleTitle}
+                  </h2>
+                  <p className="mt-1 font-medium tracking-wide text-muted-foreground">
+                    Placa: {m.plate ?? "—"} | VIN: {m.vin ?? "—"}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-6 border-t border-white/10 pt-8 md:grid-cols-4">
+                  <div>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                      Proprietário
+                    </p>
+                    <p className="text-lg font-bold">{ownerName ?? "—"}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                      Quilometragem
+                    </p>
+                    <p className="text-lg font-bold text-muted-foreground">—</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                      Última revisão
+                    </p>
+                    <p className="text-lg font-bold">{lastServiceLabel}</p>
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                      Estado geral
+                    </p>
+                    <p
+                      className={
+                        estado.variant === "ok"
+                          ? "flex items-center gap-1 text-lg font-bold text-[#90e98b]"
+                          : "flex items-center gap-1 text-lg font-bold text-amber-200"
+                      }
+                    >
+                      {estado.variant === "ok" ? (
+                        <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+                      ) : estado.variant === "warn" ? (
+                        <Info className="size-4 shrink-0" aria-hidden />
+                      ) : (
+                        <CircleDot className="size-4 shrink-0" aria-hidden />
+                      )}
+                      {estado.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="boletim-glow-card flex flex-col gap-6 rounded-xl border border-primary/20 bg-[#121212] p-8 shadow-[0_0_40px_rgba(220,38,38,0.12)]">
+              <p className="flex items-center gap-3 font-heading text-[10px] font-black uppercase tracking-[0.35em] text-primary">
+                <span className="h-px w-8 bg-primary/30" />
+                Próxima revisão
+              </p>
+              <div>
+                <p className="font-heading text-5xl font-bold leading-none tracking-tighter md:text-6xl">
+                  Agendar
+                </p>
+                <p className="mt-2 text-xl font-bold uppercase tracking-[0.2em] text-primary/90">
+                  com a oficina
+                </p>
+              </div>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Planeie a manutenção preventiva e desempenho contínuo da sua unidade.
+                A equipa Scuderia itTECH acompanha cada detalhe.
+              </p>
+              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5">
+                <AlertTriangle className="size-3.5 shrink-0 text-primary" aria-hidden />
+                <span className="text-[10px] font-black uppercase tracking-widest text-primary">
+                  Revisões desmo conforme programa Ducati
+                </span>
+              </div>
+              <Link
+                href="/agendamento"
+                className="group flex w-full items-center justify-center gap-3 rounded-xl bg-[#348017] py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl transition-all hover:brightness-110"
+              >
+                Agendar agora
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Planeie a manutenção preventiva e desempenho contínuo da sua unidade.
-            A equipa Scuderia itTECH acompanha cada detalhe.
+        </>
+      ) : isDetail && r ? (
+        <div className="mb-8 border-b border-white/10 pb-6 print:hidden">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Scuderia itTECH · serviço
           </p>
-          <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5">
-            <AlertTriangle className="size-3.5 shrink-0 text-primary" aria-hidden />
-            <span className="text-[10px] font-black uppercase tracking-widest text-primary">
-              Revisões desmo conforme programa Ducati
-            </span>
-          </div>
-          <Link
-            href="/agendamento"
-            className="group flex w-full items-center justify-center gap-3 rounded-xl bg-[#348017] py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl transition-all hover:brightness-110"
-          >
-            Agendar agora
-            <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          <p className="mt-2 font-heading text-xl font-bold">{vehicleTitle}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {m.plate ?? "—"} · {headerRef} · Gerado em {generatedLabel}
+          </p>
         </div>
-      </div>
+      ) : null}
 
       {isDetail && r ? (
         <section
@@ -447,9 +468,32 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
               </div>
             </div>
           ) : null}
+
+          <div className="mt-8 border-t border-white/10 pt-8">
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Fatura
+            </p>
+            {currentHistoryRow?.invoiceHref ? (
+              <a
+                href={currentHistoryRow.invoiceHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex min-h-12 w-full max-w-md items-center justify-center gap-3 rounded-xl border border-primary/40 bg-primary/10 px-6 py-4 text-center text-sm font-semibold text-primary transition-colors hover:bg-primary/20"
+              >
+                <FileText className="size-5 shrink-0" aria-hidden />
+                Abrir fatura desta revisão (PDF)
+              </a>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Ainda não há fatura anexada a esta revisão.
+              </p>
+            )}
+          </div>
         </section>
       ) : null}
 
+      {!standalone ? (
+        <>
       <section className="mb-10 print:mb-6">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-grow items-center gap-4">
@@ -585,8 +629,11 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
           </div>
         </div>
       </footer>
+        </>
+      ) : null}
     </div>
 
+    {!standalone ? (
     <BoletimPassportPrint
       vehicleTitle={vehicleTitle}
       plate={m.plate ?? ""}
@@ -602,6 +649,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
       antesSrc={antesSrc}
       depoisSrc={depoisSrc}
     />
+    ) : null}
     </>
   );
 }

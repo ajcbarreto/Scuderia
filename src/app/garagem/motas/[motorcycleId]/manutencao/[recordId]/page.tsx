@@ -24,6 +24,7 @@ export default async function ManutencaoDetailPage({ params }: Props) {
   return (
     <MaintenanceBulletin
       variant="detail"
+      detailPresentation="standalone"
       motorcycle={ctx.motorcycle}
       motorcycleId={motorcycleId}
       ownerName={profile?.full_name ?? null}
