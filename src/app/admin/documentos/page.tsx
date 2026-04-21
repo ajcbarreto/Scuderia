@@ -24,8 +24,11 @@ export default async function AdminDocumentosPage() {
           Faturas e documentos
         </h1>
         <p className="mt-2 text-muted-foreground">
-          Metadados dos uploads (Storage Supabase). O upload via UI pode ser
-          ligado a cada boletim.
+          Metadados dos uploads no bucket privado{" "}
+          <code className="text-xs">service-files</code>. A leitura por URL
+          assinada segue as regras em{" "}
+          <code className="text-xs">service_attachments</code> (não é obrigatório
+          o path começar pela pasta do utilizador).
         </p>
       </div>
 

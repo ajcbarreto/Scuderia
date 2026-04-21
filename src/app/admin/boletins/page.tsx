@@ -11,10 +11,19 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
-import type { Motorcycle, ServiceRecord } from "@/types/database";
+import type { Motorcycle, ServiceRecordStatus } from "@/types/database";
 
-type Row = ServiceRecord & {
-  motorcycles: Pick<Motorcycle, "brand" | "model" | "plate"> | null;
+type Row = {
+  id: string;
+  title: string | null;
+  status: ServiceRecordStatus;
+  progress_percent: number;
+  opened_at: string;
+  motorcycle_id: string;
+  motorcycles:
+    | Pick<Motorcycle, "brand" | "model" | "plate">
+    | Pick<Motorcycle, "brand" | "model" | "plate">[]
+    | null;
 };
 
 type PageProps = {
@@ -36,7 +45,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
     .select("id, brand, model, plate")
     .order("brand", { ascending: true });
 
-  const list = (records ?? []) as Row[];
+  const list = (records ?? []) as unknown as Row[];
   const motaList = (motas ?? []) as Pick<
     Motorcycle,
     "id" | "brand" | "model" | "plate"
@@ -107,7 +116,8 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
               </TableRow>
             ) : (
               list.map((r) => {
-                const m = r.motorcycles;
+                const raw = r.motorcycles;
+                const m = Array.isArray(raw) ? raw[0] ?? null : raw;
                 return (
                   <TableRow key={r.id} className="border-white/5">
                     <TableCell className="font-medium">

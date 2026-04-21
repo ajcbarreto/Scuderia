@@ -10,7 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { ServiceRecord, ServiceTask } from "@/types/database";
+import type {
+  ServiceAttachment,
+  ServiceRecord,
+  ServiceTask,
+} from "@/types/database";
 
 type Props = {
   params: Promise<{ motorcycleId: string; recordId: string }>;
@@ -30,13 +34,32 @@ export default async function ManutencaoDetailPage({ params }: Props) {
   if (!record) notFound();
   const r = record as ServiceRecord;
 
-  const { data: tasks } = await supabase
-    .from("service_tasks")
-    .select("*")
-    .eq("service_record_id", recordId)
-    .order("sort_order", { ascending: true });
+  const [{ data: tasks }, { data: attachmentRows }] = await Promise.all([
+    supabase
+      .from("service_tasks")
+      .select("*")
+      .eq("service_record_id", recordId)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("service_attachments")
+      .select("*")
+      .eq("service_record_id", recordId)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const tlist = (tasks ?? []) as ServiceTask[];
+  const attachments = (attachmentRows ?? []) as ServiceAttachment[];
+
+  const withUrls: { attachment: ServiceAttachment; href: string | null }[] = [];
+  for (const a of attachments) {
+    const { data: signedData, error } = await supabase.storage
+      .from(a.storage_bucket)
+      .createSignedUrl(a.storage_path, 3600);
+    withUrls.push({
+      attachment: a,
+      href: error ? null : signedData?.signedUrl ?? null,
+    });
+  }
 
   return (
     <div className="space-y-8">
@@ -105,6 +128,48 @@ export default async function ManutencaoDetailPage({ params }: Props) {
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">
               {r.shop_notes}
             </p>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {withUrls.length > 0 ? (
+        <Card className="border-white/10 bg-[#131313]">
+          <CardHeader>
+            <CardTitle className="font-heading text-lg">Anexos</CardTitle>
+            <CardDescription>
+              Ligações temporárias (1 h). Faturas só aparecem se estiverem
+              marcadas para o teu perfil.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {withUrls.map(({ attachment: a, href }) => {
+              const label =
+                a.kind === "invoice"
+                  ? "Fatura"
+                  : a.kind === "photo"
+                    ? "Foto"
+                    : "Documento";
+              return (
+                <div
+                  key={a.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2 text-sm"
+                >
+                  <span className="text-muted-foreground">{label}</span>
+                  {href ? (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-primary underline-offset-4 hover:underline"
+                    >
+                      Abrir ficheiro
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">Indisponível</span>
+                  )}
+                </div>
+              );
+            })}
           </CardContent>
         </Card>
       ) : null}
