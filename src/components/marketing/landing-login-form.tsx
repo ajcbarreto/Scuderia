@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { resolvePostLoginPath } from "@/lib/post-login-redirect";
+import type { UserRole } from "@/types/database";
 import { Input } from "@/components/ui/input";
 import { Settings } from "lucide-react";
 
@@ -28,7 +30,20 @@ export function LandingLoginForm() {
         setError(err.message);
         return;
       }
-      router.push("/garagem");
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setError("Sessão inválida após o login.");
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      const dest = resolvePostLoginPath(profile?.role as UserRole | undefined, null);
+      router.push(dest);
       router.refresh();
     } catch {
       setError("Não foi possível iniciar sessão.");

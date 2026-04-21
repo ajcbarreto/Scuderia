@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { resolvePostLoginPath } from "@/lib/post-login-redirect";
+import type { UserRole } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +43,13 @@ export function RegisterForm() {
           .from("profiles")
           .update({ full_name: fullName })
           .eq("id", data.user.id);
-        router.push("/garagem");
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        const dest = resolvePostLoginPath(profile?.role as UserRole | undefined, "/garagem");
+        router.push(dest);
         router.refresh();
         return;
       }

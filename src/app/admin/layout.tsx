@@ -38,6 +38,12 @@ export default async function AdminLayout({
               Clientes & frota
             </Link>
             <Link
+              href="/admin/boletins"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
+              Boletins
+            </Link>
+            <Link
               href="/admin/documentos"
               className={buttonVariants({ variant: "ghost", size: "sm" })}
             >

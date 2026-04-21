@@ -73,6 +73,15 @@ export default async function AdminDashboardPage() {
             Gestão de clientes e frota
           </Link>
           <Link
+            href="/admin/boletins"
+            className={buttonVariants({
+              variant: "outline",
+              className: "border-white/15",
+            })}
+          >
+            Boletins de intervenção
+          </Link>
+          <Link
             href="/admin/documentos"
             className={buttonVariants({
               variant: "outline",

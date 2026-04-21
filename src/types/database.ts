@@ -48,3 +48,26 @@ export type ServiceTask = {
   completed: boolean;
   completed_at: string | null;
 };
+
+export type AttachmentKind = "invoice" | "photo" | "other";
+
+export type ServiceAttachment = {
+  id: string;
+  service_record_id: string;
+  kind: AttachmentKind;
+  storage_bucket: string;
+  storage_path: string;
+  mime_type: string | null;
+  visible_to_owner_id: string | null;
+  created_by: string | null;
+  created_at: string;
+};
+
+export type MotorcycleOwnershipPeriod = {
+  id: string;
+  motorcycle_id: string;
+  owner_id: string;
+  started_at: string;
+  ended_at: string | null;
+  transfer_note: string | null;
+};

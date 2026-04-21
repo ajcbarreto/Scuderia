@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { resolvePostLoginPath } from "@/lib/post-login-redirect";
+import type { UserRole } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +33,20 @@ export function LoginForm() {
         setError(signError.message);
         return;
       }
-      router.push(next);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setError("Sessão inválida após o login.");
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      const dest = resolvePostLoginPath(profile?.role as UserRole | undefined, next);
+      router.push(dest);
       router.refresh();
     } catch {
       setError("Não foi possível iniciar sessão.");
