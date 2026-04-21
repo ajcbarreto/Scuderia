@@ -13,6 +13,7 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask } from "@/types/database";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -81,8 +82,12 @@ export function BoletimEditor({
             </span>
           </>
         }
-        title="Editor de boletim"
-        description={`${mota.plate ? `Matrícula ${mota.plate} · ` : "Sem matrícula · "}Progresso ${record.progress_percent}%`}
+        title="Intervenção na oficina"
+        description={
+          mota.plate
+            ? `Matrícula ${mota.plate} — regista o trabalho em tarefas; o progresso segue a checklist.`
+            : "Regista o trabalho em tarefas; o progresso segue a checklist."
+        }
         actions={
           <Link
             href="/admin/boletins"
@@ -92,10 +97,28 @@ export function BoletimEditor({
             )}
           >
             <ArrowLeft className="size-4" aria-hidden />
-            Voltar à lista
+            Lista de boletins
           </Link>
         }
       />
+
+      <section className={cn(adminSurface, "p-6 sm:p-8")}>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-heading text-lg font-semibold">Progresso do serviço</h2>
+            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+              Cada tarefa concluída aumenta a percentagem. O cliente vê o mesmo valor na garagem,
+              nesta intervenção.
+            </p>
+          </div>
+          <p className="font-heading text-4xl font-semibold tabular-nums text-primary sm:text-right">
+            {record.progress_percent}%
+          </p>
+        </div>
+        <Progress value={record.progress_percent} className="mt-5">
+          <span className="sr-only">{record.progress_percent}% concluído</span>
+        </Progress>
+      </section>
 
       <section className={cn(adminSurface, "p-6 sm:p-8")}>
         <h2 className="font-heading text-lg font-semibold">Dados do boletim</h2>
@@ -146,7 +169,12 @@ export function BoletimEditor({
       </section>
 
       <section className={cn(adminSurface, "p-6 sm:p-8")}>
-        <h2 className="font-heading text-lg font-semibold">Tarefas</h2>
+        <div>
+          <h2 className="font-heading text-lg font-semibold">Trabalho realizado</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Lista o que foi feito e marca como concluído — o progresso atualiza em cima.
+          </p>
+        </div>
         <ul className="mt-4 space-y-2">
           {tasks.length === 0 ? (
             <li className="text-sm text-muted-foreground">Sem tarefas.</li>

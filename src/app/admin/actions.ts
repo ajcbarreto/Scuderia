@@ -32,6 +32,23 @@ async function requireAdmin() {
   return { supabase, userId: user.id };
 }
 
+type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
+
+async function revalidateMotaForServiceRecord(
+  supabase: SupabaseServer,
+  serviceRecordId: string,
+) {
+  const { data } = await supabase
+    .from("service_records")
+    .select("motorcycle_id")
+    .eq("id", serviceRecordId)
+    .maybeSingle();
+  revalidatePath("/admin/motas");
+  if (data?.motorcycle_id) {
+    revalidatePath(`/admin/motas/${data.motorcycle_id}`);
+  }
+}
+
 const MIN_CLIENT_PASSWORD_LEN = 6;
 
 export async function createClientUser(
@@ -169,6 +186,8 @@ export async function createMotorcycle(
 
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
+  revalidatePath("/admin/motas");
+  revalidatePath(`/admin/motas/${mota.id}`);
   return { ok: true };
 }
 
@@ -255,6 +274,8 @@ export async function transferMotorcycle(
 
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
+  revalidatePath("/admin/motas");
+  revalidatePath(`/admin/motas/${motorcycleId}`);
   revalidatePath("/garagem");
   return { ok: true };
 }
@@ -301,6 +322,9 @@ export async function createServiceRecordFromMotaForm(formData: FormData) {
   }
 
   revalidatePath("/admin/boletins");
+  revalidatePath("/admin/servico");
+  revalidatePath("/admin/motas");
+  revalidatePath(`/admin/motas/${motorcycleId}`);
   redirect(`/admin/boletins/${rec.id}`);
 }
 
@@ -335,6 +359,8 @@ export async function updateServiceRecord(
 
   revalidatePath(`/admin/boletins/${recordId}`);
   revalidatePath("/admin/boletins");
+  revalidatePath("/admin/servico");
+  await revalidateMotaForServiceRecord(supabase, recordId);
   revalidatePath("/garagem");
   return { ok: true };
 }
@@ -367,6 +393,9 @@ export async function addServiceTask(recordId: string, label: string) {
     return { error: error.message };
   }
   revalidatePath(`/admin/boletins/${recordId}`);
+  revalidatePath("/admin/boletins");
+  revalidatePath("/admin/servico");
+  await revalidateMotaForServiceRecord(supabase, recordId);
   revalidatePath("/garagem");
   return { ok: true };
 }
@@ -398,6 +427,9 @@ export async function setServiceTaskCompleted(
     return { error: error.message };
   }
   revalidatePath(`/admin/boletins/${recordId}`);
+  revalidatePath("/admin/boletins");
+  revalidatePath("/admin/servico");
+  await revalidateMotaForServiceRecord(supabase, recordId);
   revalidatePath("/garagem");
   return { ok: true };
 }
@@ -409,6 +441,9 @@ export async function deleteServiceTask(taskId: string, recordId: string) {
     return { error: error.message };
   }
   revalidatePath(`/admin/boletins/${recordId}`);
+  revalidatePath("/admin/boletins");
+  revalidatePath("/admin/servico");
+  await revalidateMotaForServiceRecord(supabase, recordId);
   revalidatePath("/garagem");
   return { ok: true };
 }
@@ -479,6 +514,7 @@ export async function uploadServiceAttachment(
 
   revalidatePath(`/admin/boletins/${recordId}`);
   revalidatePath("/admin/documentos");
+  await revalidateMotaForServiceRecord(supabase, recordId);
   revalidatePath("/garagem");
   return { ok: true };
 }
@@ -502,6 +538,7 @@ export async function deleteServiceAttachment(
 
   revalidatePath(`/admin/boletins/${recordId}`);
   revalidatePath("/admin/documentos");
+  await revalidateMotaForServiceRecord(supabase, recordId);
   revalidatePath("/garagem");
   return { ok: true };
 }

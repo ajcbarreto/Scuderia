@@ -51,15 +51,21 @@ export default async function AdminDashboardPage() {
 
   const quick = [
     {
-      title: "Clientes e frota",
-      desc: "Contas, motas e transferências de propriedade.",
-      href: "/admin/clientes",
+      title: "Boletins",
+      desc: "Serviços em curso, nova intervenção e histórico completo.",
+      href: "/admin/boletins",
       primary: true,
     },
     {
-      title: "Boletins",
-      desc: "Intervenções, tarefas e progresso por mota.",
-      href: "/admin/boletins",
+      title: "Clientes",
+      desc: "Contas na garagem e motas associadas a cada pessoa.",
+      href: "/admin/clientes",
+      primary: false,
+    },
+    {
+      title: "Motas",
+      desc: "Frota, transferências e ficha com revisões e manutenções.",
+      href: "/admin/motas",
       primary: false,
     },
     {
@@ -109,7 +115,7 @@ export default async function AdminDashboardPage() {
             Acesso direto às áreas mais usadas do backoffice.
           </p>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {quick.map(({ title, desc, href, primary }) => (
             <Link key={href} href={href} className="group block h-full">
               <Card
