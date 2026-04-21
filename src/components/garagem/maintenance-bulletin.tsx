@@ -157,13 +157,11 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
     ? formatBulletinId(r.id, r.opened_at)
     : formatMotoRefId(m.id, m.updated_at);
 
-  const notesBlocks =
-    isDetail && r
-      ? (r.shop_notes
-          ?.split(/\n\s*\n/)
-          .map((b) => b.trim())
-          .filter(Boolean) ?? [])
-      : [];
+  const lastRevisionNotesBlocks =
+    lastService?.shop_notes
+      ?.split(/\n\s*\n/)
+      .map((b) => b.trim())
+      .filter(Boolean) ?? [];
 
   const whatsappHref =
     process.env.NEXT_PUBLIC_WHATSAPP_URL ??
@@ -183,19 +181,19 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
   );
 
   const passportNotes =
-    isDetail && r
-      ? notesBlocks.length > 0
-        ? notesBlocks.flatMap((block) =>
-            block
-              .split("\n")
-              .map((l) => l.trim())
-              .filter(Boolean),
-          )
-        : currentTasks.map((t) => t.label).filter(Boolean)
-      : [
-          "Histórico digital disponível na garagem Scuderia.",
-          "Recomendamos calendarizar a próxima revisão com a equipa.",
-        ];
+    lastRevisionNotesBlocks.length > 0
+      ? lastRevisionNotesBlocks.flatMap((block) =>
+          block
+            .split("\n")
+            .map((l) => l.trim())
+            .filter(Boolean),
+        )
+      : isDetail && r && currentTasks.length > 0
+        ? currentTasks.map((t) => t.label).filter(Boolean)
+        : [
+            "Histórico digital disponível na garagem Scuderia.",
+            "Recomendamos calendarizar a próxima revisão com a equipa.",
+          ];
 
   const nextServiceHeadline =
     isDetail && r
@@ -335,11 +333,10 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             </h3>
             <div className="h-px flex-1 bg-white/10" />
           </div>
-          {!isDetail ? (
-            <p className="text-xs text-muted-foreground sm:max-w-xs sm:text-right">
-              Clica numa linha para ver notas, checklist e anexos dessa intervenção.
-            </p>
-          ) : null}
+          <p className="text-xs text-muted-foreground sm:max-w-xs sm:text-right">
+            Clica numa linha para expandir o detalhe desse serviço (notas, checklist,
+            fotos). As notas importantes da última revisão ficam na caixa ao lado.
+          </p>
         </div>
         <BoletimServiceHistoryTable
           motorcycleId={motorcycleId}
@@ -351,80 +348,51 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
 
       <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-2 print:mb-6">
         <section className="rounded-xl border border-white/10 bg-card p-8">
-          <div className="mb-6 flex items-center gap-3">
+          <div className="mb-2 flex items-center gap-3">
             <Wrench className="size-6 text-primary" aria-hidden />
             <h3 className="font-heading text-lg font-bold uppercase tracking-tight">
-              {isDetail ? "Notas técnicas da oficina" : "Detalhe por serviço"}
+              Notas técnicas — última revisão
             </h3>
           </div>
-          {isDetail ? (
-            notesBlocks.length > 0 ? (
-              <ul className="space-y-4">
-                {notesBlocks.map((block, idx) => (
-                  <li
-                    key={idx}
+          <p className="mb-6 text-sm text-muted-foreground">
+            Informação prioritária que a oficina destaca sobre a intervenção mais
+            recente. O detalhe de cada serviço no histórico abre ao clicar na linha.
+          </p>
+          {lastRevisionNotesBlocks.length > 0 ? (
+            <ul className="space-y-4">
+              {lastRevisionNotesBlocks.map((block, idx) => (
+                <li
+                  key={idx}
+                  className={
+                    idx < lastRevisionNotesBlocks.length - 1
+                      ? "flex gap-4 border-b border-white/10 pb-4"
+                      : "flex gap-4"
+                  }
+                >
+                  <span
                     className={
-                      idx < notesBlocks.length - 1
-                        ? "flex gap-4 border-b border-white/10 pb-4"
-                        : "flex gap-4"
+                      idx === 0
+                        ? "rounded bg-red-950/40 p-1 text-red-400"
+                        : "rounded bg-emerald-950/40 p-1 text-[#90e98b]"
                     }
                   >
-                    <span
-                      className={
-                        idx === 0
-                          ? "rounded bg-red-950/40 p-1 text-red-400"
-                          : "rounded bg-emerald-950/40 p-1 text-[#90e98b]"
-                      }
-                    >
-                      {idx === 0 ? (
-                        <AlertTriangle className="size-4" aria-hidden />
-                      ) : (
-                        <CheckCircle2 className="size-4" aria-hidden />
-                      )}
-                    </span>
-                    <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                      {block}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-            ) : currentTasks.length > 0 ? (
-              <ul className="space-y-3">
-                {currentTasks.map((t) => (
-                  <li key={t.id} className="flex gap-3 text-sm">
-                    <CheckCircle2
-                      className={
-                        t.completed
-                          ? "mt-0.5 size-4 shrink-0 text-[#90e98b]"
-                          : "mt-0.5 size-4 shrink-0 text-muted-foreground"
-                      }
-                    />
-                    <span
-                      className={
-                        t.completed ? "text-muted-foreground line-through" : ""
-                      }
-                    >
-                      {t.label}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Sem notas adicionais para esta intervenção.
-              </p>
-            )
+                    {idx === 0 ? (
+                      <AlertTriangle className="size-4" aria-hidden />
+                    ) : (
+                      <CheckCircle2 className="size-4" aria-hidden />
+                    )}
+                  </span>
+                  <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                    {block}
+                  </p>
+                </li>
+              ))}
+            </ul>
           ) : (
-            <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
-              <p>
-                O histórico acima reúne todas as intervenções desta mota. Para ver
-                notas do mecânico, checklist e documentos, abre o serviço pretendido.
-              </p>
-              <p className="flex items-center gap-2 font-medium text-foreground">
-                <ArrowRight className="size-4 text-primary" aria-hidden />
-                Clica numa linha na tabela.
-              </p>
-            </div>
+            <p className="text-sm text-muted-foreground">
+              Ainda não há notas destacadas sobre a última revisão. Quando a
+              oficina as registar, aparecem aqui em destaque.
+            </p>
           )}
         </section>
 
