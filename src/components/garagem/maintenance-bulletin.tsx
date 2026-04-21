@@ -5,14 +5,19 @@ import {
   ArrowRight,
   Bike,
   CheckCircle2,
+  CircleDot,
   Download,
-  FileText,
   Info,
   ShieldCheck,
   Wrench,
 } from "lucide-react";
 import type { Motorcycle, ServiceRecord, ServiceTask } from "@/types/database";
+import type { BoletimHistoryRow } from "@/types/boletim";
 import { BoletimFooterActions } from "@/components/garagem/boletim-footer-actions";
+import { BoletimPassportPrint } from "@/components/garagem/boletim-passport-print";
+import { BoletimServiceHistoryTable } from "@/components/garagem/boletim-service-history-table";
+
+export type { BoletimHistoryRow as HistoryRow } from "@/types/boletim";
 
 const ENGINE_IMAGE =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCSDKQVpb9MjJndC53F3QIcjh1SJKCZ03HKBbbTpRgtMVCeuzV6v4mzwlVOQx85KKQ7j4LjXiNjzCYjr4gxjrXo9M0wpRdkT-JUjBA5UgDkvwne0_DbygXUoygfalM0mS1VOI8SPmUK_pPJ0XZdRu7IN32nXYw5pIWnnn7Jv7Mu0wgQeM5ROEmjRdRfjMLpycugWo1y9pcUPTTFJ4QhHvofPs5oeNpq2_JJA89QIalBClcH86vxImSN7feTLeHSQmcKQvBCInqVRa4";
@@ -23,18 +28,16 @@ function formatBulletinId(recordId: string, openedAt: string) {
   return `#SLT-${compact}-${y}`;
 }
 
+function formatMotoRefId(motorcycleId: string, updatedAt: string) {
+  const y = new Date(updatedAt).getFullYear();
+  const compact = motorcycleId.replace(/-/g, "").slice(0, 4).toUpperCase();
+  return `#MOT-${compact}-${y}`;
+}
+
 function formatPtDate(iso: string) {
   return new Intl.DateTimeFormat("pt-PT", {
     day: "numeric",
     month: "short",
-    year: "numeric",
-  }).format(new Date(iso));
-}
-
-function formatPtDateTime(iso: string) {
-  return new Intl.DateTimeFormat("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
     year: "numeric",
   }).format(new Date(iso));
 }
@@ -57,30 +60,88 @@ function statusLabel(status: ServiceRecord["status"]): {
   }
 }
 
-export type HistoryRow = {
-  record: ServiceRecord;
-  tasks: ServiceTask[];
-  invoiceHref: string | null;
-};
+function mapHistoryToPassportRows(rows: BoletimHistoryRow[]) {
+  return rows.map(({ record, tasks }) => {
+    const when = record.closed_at ?? record.opened_at;
+    const dateStr = new Intl.DateTimeFormat("pt-PT", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    }).format(new Date(when));
+    const parts = tasks.map((t) => t.label).join(", ") || "—";
+    return {
+      date: dateStr,
+      km: "—",
+      service: record.title ?? "Manutenção",
+      parts,
+      technician: "Scuderia itTECH",
+    };
+  });
+}
 
-export type MaintenanceBulletinProps = {
+function pickAntesDepoisPhotos(
+  variant: "overview" | "detail",
+  historyRows: BoletimHistoryRow[],
+  currentRecordId: string | null,
+  placeholderSrc: string,
+): { antesSrc: string; depoisSrc: string } {
+  if (variant === "detail" && currentRecordId) {
+    const row = historyRows.find((h) => h.record.id === currentRecordId);
+    const ph = row?.photoHrefs ?? [];
+    return {
+      antesSrc: ph[0] ?? placeholderSrc,
+      depoisSrc: ph[1] ?? ph[0] ?? placeholderSrc,
+    };
+  }
+  for (const hr of historyRows) {
+    if (hr.photoHrefs.length >= 2) {
+      return { antesSrc: hr.photoHrefs[0], depoisSrc: hr.photoHrefs[1] };
+    }
+    if (hr.photoHrefs.length === 1) {
+      return { antesSrc: hr.photoHrefs[0], depoisSrc: placeholderSrc };
+    }
+  }
+  return { antesSrc: placeholderSrc, depoisSrc: placeholderSrc };
+}
+
+function aggregateFleetStatus(rows: BoletimHistoryRow[]): {
+  text: string;
+  variant: "ok" | "warn" | "muted";
+} {
+  const inProg = rows.find((x) => x.record.status === "in_progress");
+  if (inProg) {
+    return { text: "Intervenção em curso", variant: "warn" };
+  }
+  const latest = rows[0]?.record;
+  if (!latest) {
+    return { text: "Sem intervenções registadas", variant: "muted" };
+  }
+  return statusLabel(latest.status);
+}
+
+type Common = {
   motorcycle: Motorcycle;
   ownerName: string | null;
-  currentRecord: ServiceRecord;
-  currentTasks: ServiceTask[];
-  historyRows: HistoryRow[];
+  historyRows: BoletimHistoryRow[];
   allInvoiceHrefs: { label: string; href: string }[];
+  motorcycleId: string;
 };
 
-export function MaintenanceBulletin({
-  motorcycle: m,
-  ownerName,
-  currentRecord: r,
-  currentTasks,
-  historyRows,
-  allInvoiceHrefs,
-}: MaintenanceBulletinProps) {
-  const bulletinId = formatBulletinId(r.id, r.opened_at);
+export type MaintenanceBulletinProps =
+  | (Common & { variant: "overview" })
+  | (Common & {
+      variant: "detail";
+      currentRecord: ServiceRecord;
+      currentTasks: ServiceTask[];
+    });
+
+export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
+  const { motorcycle: m, ownerName, historyRows, allInvoiceHrefs, motorcycleId } =
+    props;
+  const isDetail = props.variant === "detail";
+  const r = isDetail ? props.currentRecord : null;
+  const currentTasks = isDetail ? props.currentTasks : [];
+
   const generatedLabel = formatPtDate(new Date().toISOString());
   const vehicleTitle = `${m.brand} ${m.model}`.trim();
   const lastService = historyRows[0]?.record;
@@ -88,23 +149,64 @@ export function MaintenanceBulletin({
     ? formatPtDate((lastService.closed_at ?? lastService.opened_at) as string)
     : "—";
 
+  const fleetStatus = aggregateFleetStatus(historyRows);
+  const detailStatus = r ? statusLabel(r.status) : fleetStatus;
+  const estado = isDetail ? detailStatus : fleetStatus;
+
+  const headerRef = isDetail && r
+    ? formatBulletinId(r.id, r.opened_at)
+    : formatMotoRefId(m.id, m.updated_at);
+
   const notesBlocks =
-    r.shop_notes
-      ?.split(/\n\s*\n/)
-      .map((b) => b.trim())
-      .filter(Boolean) ?? [];
+    isDetail && r
+      ? (r.shop_notes
+          ?.split(/\n\s*\n/)
+          .map((b) => b.trim())
+          .filter(Boolean) ?? [])
+      : [];
 
   const whatsappHref =
     process.env.NEXT_PUBLIC_WHATSAPP_URL ??
     "https://wa.me/?text=" +
       encodeURIComponent(
-        `Olá Scuderia itTECH — boletim ${bulletinId} (${vehicleTitle}).`,
+        isDetail && r
+          ? `Olá Scuderia itTECH — boletim ${formatBulletinId(r.id, r.opened_at)} (${vehicleTitle}).`
+          : `Olá Scuderia itTECH — garagem: ${vehicleTitle} (${m.plate ?? "sem matrícula"}).`,
       );
 
+  const passportRows = mapHistoryToPassportRows(historyRows);
+  const { antesSrc, depoisSrc } = pickAntesDepoisPhotos(
+    isDetail ? "detail" : "overview",
+    historyRows,
+    isDetail && r ? r.id : null,
+    ENGINE_IMAGE,
+  );
+
+  const passportNotes =
+    isDetail && r
+      ? notesBlocks.length > 0
+        ? notesBlocks.flatMap((block) =>
+            block
+              .split("\n")
+              .map((l) => l.trim())
+              .filter(Boolean),
+          )
+        : currentTasks.map((t) => t.label).filter(Boolean)
+      : [
+          "Histórico digital disponível na garagem Scuderia.",
+          "Recomendamos calendarizar a próxima revisão com a equipa.",
+        ];
+
+  const nextServiceHeadline =
+    isDetail && r
+      ? `${formatBulletinId(r.id, r.opened_at)} · Estado: ${estado.text}`
+      : "Próxima revisão a planear com a oficina Scuderia itTECH";
+
   return (
+    <>
     <div
       id="maintenance-bulletin-print"
-      className="carbon-texture text-foreground"
+      className="carbon-texture text-foreground print:hidden"
     >
       <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end print:mb-6">
         <div>
@@ -112,11 +214,13 @@ export function MaintenanceBulletin({
             Boletim de manutenção
           </h1>
           <p className="mt-2 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-            Relatório de controlo e manutenção
+            {isDetail
+              ? "Detalhe da intervenção"
+              : "Relatório de controlo e manutenção"}
           </p>
         </div>
         <div className="text-left md:text-right">
-          <p className="font-heading text-lg font-bold text-primary">{bulletinId}</p>
+          <p className="font-heading text-lg font-bold text-primary">{headerRef}</p>
           <p className="text-sm text-muted-foreground">Gerado em: {generatedLabel}</p>
         </div>
       </div>
@@ -171,17 +275,19 @@ export function MaintenanceBulletin({
                 </p>
                 <p
                   className={
-                    statusLabel(r.status).variant === "ok"
+                    estado.variant === "ok"
                       ? "flex items-center gap-1 text-lg font-bold text-[#90e98b]"
                       : "flex items-center gap-1 text-lg font-bold text-amber-200"
                   }
                 >
-                  {statusLabel(r.status).variant === "ok" ? (
+                  {estado.variant === "ok" ? (
                     <CheckCircle2 className="size-4 shrink-0" aria-hidden />
-                  ) : (
+                  ) : estado.variant === "warn" ? (
                     <Info className="size-4 shrink-0" aria-hidden />
+                  ) : (
+                    <CircleDot className="size-4 shrink-0" aria-hidden />
                   )}
-                  {statusLabel(r.status).text}
+                  {estado.text}
                 </p>
               </div>
             </div>
@@ -222,78 +328,25 @@ export function MaintenanceBulletin({
       </div>
 
       <section className="mb-10 print:mb-6">
-        <div className="mb-6 flex items-center gap-4">
-          <h3 className="font-heading text-xl font-bold uppercase md:text-2xl">
-            Histórico de serviços
-          </h3>
-          <div className="h-px flex-1 bg-white/10" />
+        <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-grow items-center gap-4">
+            <h3 className="font-heading text-xl font-bold uppercase md:text-2xl">
+              Histórico de serviços
+            </h3>
+            <div className="h-px flex-1 bg-white/10" />
+          </div>
+          {!isDetail ? (
+            <p className="text-xs text-muted-foreground sm:max-w-xs sm:text-right">
+              Clica numa linha para ver notas, checklist e anexos dessa intervenção.
+            </p>
+          ) : null}
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-white/10 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                <th className="px-4 py-3">Data</th>
-                <th className="px-4 py-3">KM</th>
-                <th className="px-4 py-3">Serviço realizado</th>
-                <th className="hidden px-4 py-3 md:table-cell">Peças / tarefas</th>
-                <th className="px-4 py-3 text-right">Oficina</th>
-                <th className="px-4 py-3 text-right">Fatura</th>
-              </tr>
-            </thead>
-            <tbody>
-              {historyRows.map(({ record: row, tasks, invoiceHref }, i) => {
-                const isCurrent = row.id === r.id;
-                const when = row.closed_at ?? row.opened_at;
-                const parts = tasks.map((t) => t.label).join(", ") || "—";
-                return (
-                  <tr
-                    key={row.id}
-                    className={
-                      i % 2 === 0
-                        ? "border-b border-white/5 bg-[#1a1a1a]/80"
-                        : "border-b border-white/5 bg-[#141414]/80"
-                    }
-                  >
-                    <td
-                      className={
-                        isCurrent
-                          ? "border-l-2 border-l-primary px-4 py-4 font-medium"
-                          : "px-4 py-4 font-medium"
-                      }
-                    >
-                      {formatPtDateTime(when)}
-                    </td>
-                    <td className="px-4 py-4 text-muted-foreground">—</td>
-                    <td className="px-4 py-4 font-semibold">
-                      {row.title ?? "Manutenção"}
-                    </td>
-                    <td className="hidden max-w-[220px] px-4 py-4 text-xs italic text-muted-foreground md:table-cell">
-                      {parts}
-                    </td>
-                    <td className="px-4 py-4 text-right font-heading text-sm font-bold text-primary">
-                      Scuderia itTECH
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      {invoiceHref ? (
-                        <a
-                          href={invoiceHref}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex rounded-lg p-2 text-muted-foreground transition-colors hover:text-primary"
-                          title="Abrir fatura"
-                        >
-                          <FileText className="size-5" />
-                        </a>
-                      ) : (
-                        <span className="text-muted-foreground/50">—</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <BoletimServiceHistoryTable
+          motorcycleId={motorcycleId}
+          historyRows={historyRows}
+          highlightRecordId={isDetail && r ? r.id : null}
+          interactive
+        />
       </section>
 
       <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-2 print:mb-6">
@@ -301,64 +354,77 @@ export function MaintenanceBulletin({
           <div className="mb-6 flex items-center gap-3">
             <Wrench className="size-6 text-primary" aria-hidden />
             <h3 className="font-heading text-lg font-bold uppercase tracking-tight">
-              Notas técnicas da oficina
+              {isDetail ? "Notas técnicas da oficina" : "Detalhe por serviço"}
             </h3>
           </div>
-          {notesBlocks.length > 0 ? (
-            <ul className="space-y-4">
-              {notesBlocks.map((block, idx) => (
-                <li
-                  key={idx}
-                  className={
-                    idx < notesBlocks.length - 1
-                      ? "flex gap-4 border-b border-white/10 pb-4"
-                      : "flex gap-4"
-                  }
-                >
-                  <span
+          {isDetail ? (
+            notesBlocks.length > 0 ? (
+              <ul className="space-y-4">
+                {notesBlocks.map((block, idx) => (
+                  <li
+                    key={idx}
                     className={
-                      idx === 0
-                        ? "rounded bg-red-950/40 p-1 text-red-400"
-                        : "rounded bg-emerald-950/40 p-1 text-[#90e98b]"
+                      idx < notesBlocks.length - 1
+                        ? "flex gap-4 border-b border-white/10 pb-4"
+                        : "flex gap-4"
                     }
                   >
-                    {idx === 0 ? (
-                      <AlertTriangle className="size-4" aria-hidden />
-                    ) : (
-                      <CheckCircle2 className="size-4" aria-hidden />
-                    )}
-                  </span>
-                  <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                    {block}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : currentTasks.length > 0 ? (
-            <ul className="space-y-3">
-              {currentTasks.map((t) => (
-                <li key={t.id} className="flex gap-3 text-sm">
-                  <CheckCircle2
-                    className={
-                      t.completed
-                        ? "mt-0.5 size-4 shrink-0 text-[#90e98b]"
-                        : "mt-0.5 size-4 shrink-0 text-muted-foreground"
-                    }
-                  />
-                  <span
-                    className={
-                      t.completed ? "text-muted-foreground line-through" : ""
-                    }
-                  >
-                    {t.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                    <span
+                      className={
+                        idx === 0
+                          ? "rounded bg-red-950/40 p-1 text-red-400"
+                          : "rounded bg-emerald-950/40 p-1 text-[#90e98b]"
+                      }
+                    >
+                      {idx === 0 ? (
+                        <AlertTriangle className="size-4" aria-hidden />
+                      ) : (
+                        <CheckCircle2 className="size-4" aria-hidden />
+                      )}
+                    </span>
+                    <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                      {block}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : currentTasks.length > 0 ? (
+              <ul className="space-y-3">
+                {currentTasks.map((t) => (
+                  <li key={t.id} className="flex gap-3 text-sm">
+                    <CheckCircle2
+                      className={
+                        t.completed
+                          ? "mt-0.5 size-4 shrink-0 text-[#90e98b]"
+                          : "mt-0.5 size-4 shrink-0 text-muted-foreground"
+                      }
+                    />
+                    <span
+                      className={
+                        t.completed ? "text-muted-foreground line-through" : ""
+                      }
+                    >
+                      {t.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Sem notas adicionais para esta intervenção.
+              </p>
+            )
           ) : (
-            <p className="text-sm text-muted-foreground">
-              Sem notas adicionais para esta intervenção.
-            </p>
+            <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
+              <p>
+                O histórico acima reúne todas as intervenções desta mota. Para ver
+                notas do mecânico, checklist e documentos, abre o serviço pretendido.
+              </p>
+              <p className="flex items-center gap-2 font-medium text-foreground">
+                <ArrowRight className="size-4 text-primary" aria-hidden />
+                Clica numa linha na tabela.
+              </p>
+            </div>
           )}
         </section>
 
@@ -427,5 +493,22 @@ export function MaintenanceBulletin({
         </div>
       </footer>
     </div>
+
+    <BoletimPassportPrint
+      vehicleTitle={vehicleTitle}
+      plate={m.plate ?? ""}
+      vin={m.vin ?? ""}
+      ownerName={ownerName ?? ""}
+      bulletinRef={headerRef}
+      generatedLabel={generatedLabel}
+      tableRows={passportRows}
+      totalRecords={historyRows.length}
+      notesLines={passportNotes}
+      nextServiceHeadline={nextServiceHeadline}
+      recommendedLabel="Desmo & revisão geral"
+      antesSrc={antesSrc}
+      depoisSrc={depoisSrc}
+    />
+    </>
   );
 }

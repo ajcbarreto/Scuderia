@@ -1,6 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -8,8 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import type { Motorcycle } from "@/types/database";
+
+const CARD_IMAGE =
+  "https://lh3.googleusercontent.com/aida-public/AB6AXuCSDKQVpb9MjJndC53F3QIcjh1SJKCZ03HKBbbTpRgtMVCeuzV6v4mzwlVOQx85KKQ7j4LjXiNjzCYjr4gxjrXo9M0wpRdkT-JUjBA5UgDkvwne0_DbygXUoygfalM0mS1VOI8SPmUK_pPJ0XZdRu7IN32nXYw5pIWnnn7Jv7Mu0wgQeM5ROEmjRdRfjMLpycugWo1y9pcUPTTFJ4QhHvofPs5oeNpq2_JJA89QIalBClcH86vxImSN7feTLeHSQmcKQvBCInqVRa4";
 
 export default async function GaragemPage() {
   const supabase = await createClient();
@@ -21,14 +26,31 @@ export default async function GaragemPage() {
   const list = (motas ?? []) as Motorcycle[];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
-          As tuas motas
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Consulta o estado na oficina e o histórico de revisões.
-        </p>
+    <div className="space-y-10">
+      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#141414]">
+        <div className="absolute inset-0">
+          <Image
+            src={CARD_IMAGE}
+            alt=""
+            fill
+            className="object-cover opacity-25"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/40" />
+        </div>
+        <div className="relative px-6 py-10 md:px-10 md:py-14">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+            Garagem digital
+          </p>
+          <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight md:text-5xl">
+            As tuas motas
+          </h1>
+          <p className="mt-4 max-w-xl text-lg text-muted-foreground">
+            Abre cada unidade para ver o boletim de manutenção, o histórico de
+            serviços na oficina e o detalhe de cada intervenção.
+          </p>
+        </div>
       </div>
 
       {error ? (
@@ -59,25 +81,50 @@ export default async function GaragemPage() {
           </CardContent>
         </Card>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2">
+        <ul className="grid gap-6 sm:grid-cols-2">
           {list.map((m) => (
             <li key={m.id}>
-              <Link href={`/garagem/motas/${m.id}`}>
-                <Card className="h-full border-white/10 bg-[#131313] transition-colors hover:bg-[#1a1a1a]">
-                  <CardHeader className="space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="font-heading text-lg">
-                        {m.brand} {m.model}
-                      </CardTitle>
-                      <Badge variant="secondary" className="shrink-0">
-                        {m.year ?? "—"}
+              <Link
+                href={`/garagem/motas/${m.id}`}
+                className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <article className="relative flex h-full min-h-[240px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#131313] transition-all duration-300 hover:border-primary/35 hover:shadow-[0_0_40px_rgba(220,38,38,0.12)]">
+                  <div className="absolute inset-0">
+                    <Image
+                      src={CARD_IMAGE}
+                      alt=""
+                      fill
+                      className="object-cover opacity-20 transition-opacity duration-500 group-hover:opacity-35"
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/85 to-transparent" />
+                  </div>
+                  <div className="relative mt-auto flex flex-1 flex-col justify-end p-6 md:p-8">
+                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="border border-white/10 bg-black/40 font-medium backdrop-blur-sm"
+                      >
+                        {m.year ?? "Ano —"}
                       </Badge>
+                      {m.plate ? (
+                        <Badge
+                          variant="outline"
+                          className="border-white/20 bg-black/30 font-mono text-xs backdrop-blur-sm"
+                        >
+                          {m.plate}
+                        </Badge>
+                      ) : null}
                     </div>
-                    <CardDescription>
-                      Matrícula: {m.plate ?? "—"}
-                    </CardDescription>
-                  </CardHeader>
-                </Card>
+                    <h2 className="font-heading text-2xl font-bold tracking-tight md:text-3xl">
+                      {m.brand} {m.model}
+                    </h2>
+                    <p className="mt-2 flex items-center gap-1 text-sm font-medium text-primary">
+                      Ver boletim de manutenção
+                      <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </p>
+                  </div>
+                </article>
               </Link>
             </li>
           ))}

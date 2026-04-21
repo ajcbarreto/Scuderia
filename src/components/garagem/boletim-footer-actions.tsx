@@ -21,9 +21,10 @@ export function BoletimFooterActions({ whatsappHref }: Props) {
         type="button"
         onClick={() => window.print()}
         className="flex min-w-[140px] flex-1 items-center justify-center gap-2 rounded-full bg-[#348017] px-5 py-4 text-xs font-bold uppercase tracking-widest text-white shadow-lg transition-all hover:brightness-110"
+        title="Abre a impressão: escolhe Guardar como PDF para obter o passaporte A4"
       >
         <FileText className="size-4 shrink-0" aria-hidden />
-        Download PDF
+        Passaporte PDF
       </button>
       <a
         href={whatsappHref}

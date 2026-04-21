@@ -15,7 +15,7 @@ export default async function GaragemLayout({
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-garagem-shell>
       <header className="print:hidden sticky top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <Link href="/garagem" className="font-heading text-base font-semibold">

@@ -1,105 +1,66 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { FileDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { Badge } from "@/components/ui/badge";
+import { getProfile } from "@/lib/auth";
+import { loadBoletimDataForMotorcycle } from "@/lib/garagem/boletim-data";
+import { MaintenanceBulletin } from "@/components/garagem/maintenance-bulletin";
 import { buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import type { Motorcycle, ServiceRecord } from "@/types/database";
 
 type Props = { params: Promise<{ motorcycleId: string }> };
 
 export default async function MotorcycleDetailPage({ params }: Props) {
   const { motorcycleId } = await params;
   const supabase = await createClient();
+  const profile = await getProfile();
 
-  const { data: mota } = await supabase
-    .from("motorcycles")
-    .select("*")
-    .eq("id", motorcycleId)
-    .maybeSingle();
+  const ctx = await loadBoletimDataForMotorcycle(supabase, motorcycleId);
+  if (!ctx) notFound();
 
-  if (!mota) notFound();
-  const m = mota as Motorcycle;
-
-  const { data: records } = await supabase
-    .from("service_records")
-    .select("*")
-    .eq("motorcycle_id", motorcycleId)
-    .order("opened_at", { ascending: false });
-
-  const recs = (records ?? []) as ServiceRecord[];
+  const m = ctx.motorcycle;
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground">
-            <Link href="/garagem" className="hover:text-foreground">
-              Garagem
-            </Link>{" "}
-            / {m.brand} {m.model}
-          </p>
-          <h1 className="mt-2 font-heading text-3xl font-semibold">
-            {m.brand} {m.model}
-          </h1>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Badge variant="secondary">{m.year ?? "Ano —"}</Badge>
-            <Badge variant="outline" className="border-white/15">
-              {m.plate ?? "Matrícula —"}
-            </Badge>
+      <div className="print:hidden">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">
+              <Link href="/garagem" className="hover:text-foreground">
+                Garagem
+              </Link>{" "}
+              / Boletim
+            </p>
+            <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
+              {m.brand} {m.model}
+            </h1>
+            <p className="mt-2 max-w-xl text-muted-foreground">
+              Estado da frota, histórico de serviços na oficina e acesso ao detalhe
+              de cada intervenção.
+            </p>
           </div>
+          <Link
+            href={`/api/garagem/motas/${m.id}/livro`}
+            prefetch={false}
+            className={buttonVariants({
+              variant: "outline",
+              className:
+                "shrink-0 border-white/15 bg-[#1a1a1a] hover:bg-[#222]",
+            })}
+          >
+            <FileDown className="size-4" aria-hidden />
+            Livro (PDF)
+          </Link>
         </div>
-        <Link
-          href={`/api/garagem/motas/${m.id}/livro`}
-          prefetch={false}
-          className={buttonVariants({
-            variant: "outline",
-            className: "border-white/15",
-          })}
-        >
-          Descarregar livro (PDF)
-        </Link>
       </div>
 
-      <Card className="border-white/10 bg-[#131313]">
-        <CardHeader>
-          <CardTitle className="font-heading text-lg">Intervenções</CardTitle>
-          <CardDescription>
-            Boletins de manutenção e progresso na oficina.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {recs.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Sem registos ainda — quando existir uma intervenção, aparece aqui.
-            </p>
-          ) : (
-            <ul className="space-y-2">
-              {recs.map((r) => (
-                <li key={r.id}>
-                  <Link
-                    href={`/garagem/motas/${m.id}/manutencao/${r.id}`}
-                    className="flex items-center justify-between rounded-lg bg-[#1a1a1a] px-4 py-3 transition-colors hover:bg-[#202020]"
-                  >
-                    <span className="font-medium">
-                      {r.title ?? "Manutenção"}
-                    </span>
-                    <span className="text-sm text-primary">
-                      {r.progress_percent}% · {r.status}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <MaintenanceBulletin
+        variant="overview"
+        motorcycle={m}
+        motorcycleId={motorcycleId}
+        ownerName={profile?.full_name ?? null}
+        historyRows={ctx.historyRows}
+        allInvoiceHrefs={ctx.allInvoiceHrefs}
+      />
     </div>
   );
 }
