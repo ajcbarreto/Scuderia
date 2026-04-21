@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import {
   addServiceTaskFromForm,
   deleteServiceAttachmentForm,
@@ -9,11 +10,14 @@ import {
   uploadServiceAttachment,
   type ActionState,
 } from "@/app/admin/actions";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask } from "@/types/database";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { adminSurface } from "@/components/admin/admin-styles";
+import { cn } from "@/lib/utils";
 import { TaskRow } from "./task-row";
 
 type Props = {
@@ -65,24 +69,36 @@ export function BoletimEditor({
 
   return (
     <div className="space-y-10">
-      <div>
-        <p className="text-sm text-muted-foreground">
-          <Link href="/admin/boletins" className="hover:text-foreground">
-            Boletins
-          </Link>{" "}
-          / {mota.brand} {mota.model}
-        </p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold">
-          Editor de boletim
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          {mota.plate ? `Matrícula ${mota.plate}` : "Sem matrícula"} · Progresso{" "}
-          {record.progress_percent}%
-        </p>
-      </div>
+      <AdminPageHeader
+        eyebrow={
+          <>
+            <Link href="/admin/boletins" className="text-primary hover:underline">
+              Boletins
+            </Link>
+            <span className="text-muted-foreground"> · </span>
+            <span>
+              {mota.brand} {mota.model}
+            </span>
+          </>
+        }
+        title="Editor de boletim"
+        description={`${mota.plate ? `Matrícula ${mota.plate} · ` : "Sem matrícula · "}Progresso ${record.progress_percent}%`}
+        actions={
+          <Link
+            href="/admin/boletins"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "gap-1.5 border-white/15",
+            )}
+          >
+            <ArrowLeft className="size-4" aria-hidden />
+            Voltar à lista
+          </Link>
+        }
+      />
 
-      <section className="rounded-xl border border-white/10 bg-[#131313] p-6">
-        <h2 className="font-heading text-lg">Dados do boletim</h2>
+      <section className={cn(adminSurface, "p-6 sm:p-8")}>
+        <h2 className="font-heading text-lg font-semibold">Dados do boletim</h2>
         <form action={metaAction} className="mt-4 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="title">Título</Label>
@@ -129,8 +145,8 @@ export function BoletimEditor({
         </form>
       </section>
 
-      <section className="rounded-xl border border-white/10 bg-[#131313] p-6">
-        <h2 className="font-heading text-lg">Tarefas</h2>
+      <section className={cn(adminSurface, "p-6 sm:p-8")}>
+        <h2 className="font-heading text-lg font-semibold">Tarefas</h2>
         <ul className="mt-4 space-y-2">
           {tasks.length === 0 ? (
             <li className="text-sm text-muted-foreground">Sem tarefas.</li>
@@ -158,8 +174,8 @@ export function BoletimEditor({
         ) : null}
       </section>
 
-      <section className="rounded-xl border border-white/10 bg-[#131313] p-6">
-        <h2 className="font-heading text-lg">Anexos (Storage)</h2>
+      <section className={cn(adminSurface, "p-6 sm:p-8")}>
+        <h2 className="font-heading text-lg font-semibold">Anexos (Storage)</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Faturas: escolhe o cliente que pode ver o ficheiro (
           <code className="text-xs">visible_to_owner_id</code>). Fotos e outros

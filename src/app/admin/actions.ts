@@ -3,9 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import type { AttachmentKind } from "@/types/database";
 
-export type ActionState = { error?: string; ok?: boolean };
+export type ActionState = {
+  error?: string;
+  ok?: boolean;
+  /** Email da conta criada (para confirmar ao operador). */
+  createdEmail?: string;
+};
 
 async function requireAdmin() {
   const supabase = await createClient();
@@ -24,6 +30,82 @@ async function requireAdmin() {
     redirect("/garagem");
   }
   return { supabase, userId: user.id };
+}
+
+const MIN_CLIENT_PASSWORD_LEN = 6;
+
+export async function createClientUser(
+  _prev: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  await requireAdmin();
+
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const phone = String(formData.get("phone") ?? "").trim() || null;
+  const password = String(formData.get("password") ?? "");
+  const passwordConfirm = String(formData.get("password_confirm") ?? "");
+
+  if (!fullName) {
+    return { error: "O nome é obrigatório." };
+  }
+  if (!email || !email.includes("@")) {
+    return { error: "Indica um email válido." };
+  }
+  if (password.length < MIN_CLIENT_PASSWORD_LEN) {
+    return {
+      error: `A palavra-passe deve ter pelo menos ${MIN_CLIENT_PASSWORD_LEN} caracteres.`,
+    };
+  }
+  if (password !== passwordConfirm) {
+    return { error: "As palavras-passe não coincidem." };
+  }
+
+  let admin;
+  try {
+    admin = createServiceRoleClient();
+  } catch (e) {
+    const msg =
+      e instanceof Error
+        ? e.message
+        : "Define SUPABASE_SERVICE_ROLE_KEY no servidor (Supabase → Settings → API).";
+    return { error: msg };
+  }
+
+  const { data: created, error: authError } =
+    await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name: fullName },
+    });
+
+  if (authError || !created.user) {
+    return {
+      error: authError?.message ?? "Não foi possível criar o utilizador.",
+    };
+  }
+
+  const userId = created.user.id;
+
+  const { error: profileError } = await admin
+    .from("profiles")
+    .update({
+      full_name: fullName,
+      phone,
+    })
+    .eq("id", userId);
+
+  if (profileError) {
+    await admin.auth.admin.deleteUser(userId);
+    return {
+      error: `Conta criada mas falhou ao atualizar o perfil: ${profileError.message}`,
+    };
+  }
+
+  revalidatePath("/admin/clientes");
+  revalidatePath("/admin");
+  return { ok: true, createdEmail: email };
 }
 
 function sanitizeFilename(name: string) {

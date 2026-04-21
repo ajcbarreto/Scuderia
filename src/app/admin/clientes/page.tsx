@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { adminCardClass, adminTableWrap } from "@/components/admin/admin-styles";
 import {
   Card,
   CardContent,
@@ -17,8 +19,10 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { Motorcycle, Profile } from "@/types/database";
 import { NovaMotaForm } from "./nova-mota-form";
+import { NovoClienteForm } from "./novo-cliente-form";
 import { TransferenciaForm } from "./transferencia-form";
 
 export default async function AdminClientesPage() {
@@ -55,15 +59,26 @@ export default async function AdminClientesPage() {
 
   return (
     <div className="space-y-10">
-      <div>
-        <h1 className="font-heading text-3xl font-semibold">Clientes e frota</h1>
-        <p className="mt-2 text-muted-foreground">
-          Registo de novas motas, transferências de propriedade e vista da frota.
-        </p>
-      </div>
+      <AdminPageHeader
+        title="Clientes e frota"
+        description="Cria contas de acesso, regista motas, gere transferências e consulta a frota num só sítio."
+      />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="border-white/10 bg-[#131313]">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className={cn(adminCardClass)}>
+          <CardHeader>
+            <CardTitle className="font-heading">Novo cliente</CardTitle>
+            <CardDescription>
+              Cria o utilizador e depois entrega email e palavra-passe ao cliente para ver as motas
+              na garagem.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <NovoClienteForm />
+          </CardContent>
+        </Card>
+
+        <Card className={cn(adminCardClass)}>
           <CardHeader>
             <CardTitle className="font-heading">Nova mota</CardTitle>
             <CardDescription>
@@ -75,7 +90,7 @@ export default async function AdminClientesPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/10 bg-[#131313]">
+        <Card className={cn(adminCardClass)}>
           <CardHeader>
             <CardTitle className="font-heading">Transferência</CardTitle>
             <CardDescription>
@@ -97,7 +112,14 @@ export default async function AdminClientesPage() {
         </Card>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-white/10 bg-[#131313]">
+      <section className="space-y-3">
+        <div>
+          <h2 className="font-heading text-lg font-semibold">Frota</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Todas as motas e atalho para os boletins de cada uma.
+          </p>
+        </div>
+        <div className={adminTableWrap}>
         <Table>
           <TableHeader>
             <TableRow className="border-white/10 hover:bg-transparent">
@@ -149,7 +171,8 @@ export default async function AdminClientesPage() {
             )}
           </TableBody>
         </Table>
-      </div>
+        </div>
+      </section>
     </div>
   );
 }
