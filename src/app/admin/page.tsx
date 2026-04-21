@@ -51,10 +51,16 @@ export default async function AdminDashboardPage() {
 
   const quick = [
     {
+      title: "Oficina",
+      desc: "Entrada em serviço e progresso das intervenções.",
+      href: "/admin/servico",
+      primary: true,
+    },
+    {
       title: "Boletins",
       desc: "Serviços em curso, nova intervenção e histórico completo.",
       href: "/admin/boletins",
-      primary: true,
+      primary: false,
     },
     {
       title: "Clientes",
@@ -115,7 +121,7 @@ export default async function AdminDashboardPage() {
             Acesso direto às áreas mais usadas do backoffice.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {quick.map(({ title, desc, href, primary }) => (
             <Link key={href} href={href} className="group block h-full">
               <Card

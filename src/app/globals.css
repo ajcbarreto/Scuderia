@@ -162,3 +162,32 @@
   backdrop-filter: blur(12px);
   background: rgba(38, 38, 38, 0.8);
 }
+
+/* Boletim de manutenção (cliente) — textura + destaque */
+.carbon-texture {
+  background-image: radial-gradient(
+    circle at 2px 2px,
+    rgba(72, 72, 71, 0.05) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+}
+
+.boletim-glow-card {
+  position: relative;
+}
+
+.boletim-glow-card::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    45deg,
+    oklch(0.62 0.2 25),
+    transparent,
+    oklch(0.62 0.2 25)
+  );
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0.25;
+}

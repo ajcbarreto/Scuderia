@@ -16,8 +16,8 @@ export default async function GaragemLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
-        <div className="container mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+      <header className="print:hidden sticky top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
+        <div className="container mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <Link href="/garagem" className="font-heading text-base font-semibold">
             Minha <span className="text-primary">Garagem</span>
           </Link>
@@ -36,7 +36,7 @@ export default async function GaragemLayout({
           </nav>
         </div>
       </header>
-      <div className="container mx-auto max-w-5xl px-4 py-8">{children}</div>
+      <div className="container mx-auto max-w-7xl px-4 py-8">{children}</div>
     </div>
   );
 }

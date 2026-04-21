@@ -10,9 +10,11 @@ import type { Profile } from "@/types/database";
 
 type Props = {
   clients: Pick<Profile, "id" | "full_name" | "phone">[];
+  /** Pré-seleciona o dono (ex.: ?cliente= da página Motas). */
+  defaultOwnerId?: string;
 };
 
-export function NovaMotaForm({ clients }: Props) {
+export function NovaMotaForm({ clients, defaultOwnerId }: Props) {
   const [state, action, pending] = useActionState<ActionState | undefined, FormData>(
     createMotorcycle,
     undefined,
@@ -68,6 +70,7 @@ export function NovaMotaForm({ clients }: Props) {
             id="owner_id"
             name="owner_id"
             required
+            defaultValue={defaultOwnerId ?? ""}
             className="flex h-9 w-full rounded-md border border-white/15 bg-[#1a1a1a] px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <option value="">— Escolher —</option>

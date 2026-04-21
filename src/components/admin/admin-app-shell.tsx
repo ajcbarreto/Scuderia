@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Bike,
   ClipboardList,
   ExternalLink,
   FolderOpen,
   LayoutDashboard,
   Menu,
   Users,
+  Wrench,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
@@ -25,7 +27,9 @@ import { signOut } from "@/app/garagem/actions";
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/clientes", label: "Clientes e frota", icon: Users, exact: false },
+  { href: "/admin/clientes", label: "Clientes", icon: Users, exact: true },
+  { href: "/admin/motas", label: "Motas", icon: Bike, exact: false },
+  { href: "/admin/servico", label: "Oficina", icon: Wrench, exact: true },
   { href: "/admin/boletins", label: "Boletins", icon: ClipboardList, exact: false },
   { href: "/admin/documentos", label: "Documentos", icon: FolderOpen, exact: false },
 ] as const;
