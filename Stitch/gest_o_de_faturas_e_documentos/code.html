@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Invoices &amp; Documents - Scuderia itTech</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#fcf9f8",
+                        "on-primary-container": "#4f0002",
+                        "primary": "#ff8e80",
+                        "on-tertiary-fixed": "#4f5051",
+                        "inverse-on-surface": "#565555",
+                        "on-primary-fixed": "#000000",
+                        "surface": "#0e0e0e",
+                        "on-surface": "#ffffff",
+                        "inverse-primary": "#c1000d",
+                        "tertiary": "#f9f9f9",
+                        "secondary-fixed": "#9df898",
+                        "on-tertiary-fixed-variant": "#6c6d6e",
+                        "surface-container-lowest": "#000000",
+                        "on-primary": "#650003",
+                        "surface-variant": "#262626",
+                        "on-surface-variant": "#adaaaa",
+                        "secondary-dim": "#90e98b",
+                        "primary-dim": "#e80f16",
+                        "surface-tint": "#ff8e80",
+                        "on-secondary-fixed-variant": "#0a6a1d",
+                        "on-background": "#ffffff",
+                        "secondary-container": "#0b6b1d",
+                        "surface-container-highest": "#262626",
+                        "surface-dim": "#0e0e0e",
+                        "primary-fixed": "#ff7668",
+                        "on-primary-fixed-variant": "#610003",
+                        "secondary": "#9df898",
+                        "surface-container": "#1a1a1a",
+                        "on-tertiary": "#5e5f60",
+                        "on-secondary": "#006016",
+                        "primary-fixed-dim": "#ff5b4c",
+                        "primary-container": "#ff7668",
+                        "tertiary-fixed": "#ffffff",
+                        "error-container": "#a70138",
+                        "error": "#ff6e84",
+                        "surface-container-high": "#20201f",
+                        "tertiary-dim": "#ebebeb",
+                        "on-secondary-fixed": "#004b0f",
+                        "tertiary-fixed-dim": "#f0f1f1",
+                        "on-error": "#490013",
+                        "outline": "#767575",
+                        "on-tertiary-container": "#555757",
+                        "outline-variant": "#484847",
+                        "error-dim": "#d73357",
+                        "background": "#0e0e0e",
+                        "on-error-container": "#ffb2b9",
+                        "surface-container-low": "#131313",
+                        "secondary-fixed-dim": "#90e98b",
+                        "tertiary-container": "#ebebeb",
+                        "surface-bright": "#2c2c2c",
+                        "on-secondary-container": "#d4ffcc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background-color: #0e0e0e;
+            color: #ffffff;
+        }
+        .space-grotesk { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-[0_4px_20px_rgba(232,15,22,0.05)] h-16 flex justify-between items-center px-6">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-widest text-white uppercase font-['Space_Grotesk']">Scuderia itTech</span>
+<div class="hidden md:flex gap-6">
+<a class="text-[#adaaaa] hover:text-white transition-colors duration-300 font-['Space_Grotesk'] tracking-tight" href="#">Dashboard</a>
+<a class="text-[#adaaaa] hover:text-white transition-colors duration-300 font-['Space_Grotesk'] tracking-tight" href="#">Clients</a>
+<a class="text-[#e80f16] border-b-2 border-[#e80f16] font-['Space_Grotesk'] tracking-tight" href="#">Invoices</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center bg-surface-container-highest px-3 py-1.5 rounded-lg border border-outline-variant/20">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface w-48 font-label" placeholder="Search by Client, Plate..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-[#adaaaa] hover:text-white cursor-pointer">notifications</span>
+<span class="material-symbols-outlined text-[#adaaaa] hover:text-white cursor-pointer">settings</span>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-primary-dim/30">
+<img class="w-full h-full object-cover" data-alt="Headshot of a professional technician in a clean dark workshop setting with soft red lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtaheh1Hso4cx5riozVie1aCfdt2OfxZm9p2wPYZhyRK9jCwwOvYWFiwoW89_XkGf98_cf8R3zEA3_0OEAYhpAQudG_ygLWN-QfDuapV5CVFH0omnQ8kqoyUJP1dun4jXOLCjpTQ1mcqkpGOo4K44Ukr1KnuI1H59uul4Mq-vzXi0Cs_BJbGKVMCwYzsblFf9gfTGd5N6xt5xW0fjcDuc9cG77Ca9YZUrXrJlEm_rtJrjPh5T7-7qnkDa57YLYplxpDzPAUpFK9I0"/>
+</div>
+</div>
+</nav>
+<!-- SideNavBar (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-[#0e0e0e] border-r border-[#484847]/20 py-8 pt-24 z-40">
+<div class="px-6 mb-10">
+<h2 class="text-[#e80f16] font-black font-['Space_Grotesk'] tracking-widest">ENGINEERING OPS</h2>
+<p class="text-[#adaaaa] text-[10px] tracking-[0.2em] uppercase">v2.04 Precision</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-6 py-3 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-['Space_Grotesk'] font-medium uppercase tracking-wider text-xs">Dashboard</span>
+</a>
+<a class="flex items-center px-6 py-3 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-['Space_Grotesk'] font-medium uppercase tracking-wider text-xs">Clients</span>
+</a>
+<a class="flex items-center px-6 py-3 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined mr-3">motorcycle</span>
+<span class="font-['Space_Grotesk'] font-medium uppercase tracking-wider text-xs">Garage</span>
+</a>
+<a class="flex items-center px-6 py-3 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all group" href="#">
+<span class="material-symbols-outlined mr-3">construction</span>
+<span class="font-['Space_Grotesk'] font-medium uppercase tracking-wider text-xs">Service Logs</span>
+</a>
+<a class="flex items-center px-6 py-3 text-white border-r-4 border-[#e80f16] bg-[#1a1a1a] transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-[#e80f16]">receipt_long</span>
+<span class="font-['Space_Grotesk'] font-medium uppercase tracking-wider text-xs">Invoices</span>
+</a>
+</nav>
+<div class="px-6 mt-auto space-y-4">
+<button class="w-full bg-primary-dim text-on-primary-fixed py-2 rounded-md font-bold text-xs uppercase tracking-widest active:scale-95 transition-transform">
+                Quick Service
+            </button>
+<div class="pt-4 border-t border-outline-variant/20">
+<a class="flex items-center py-2 text-[#adaaaa] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-sm mr-3">help</span>
+<span class="text-[10px] uppercase font-bold tracking-widest">Support</span>
+</a>
+<a class="flex items-center py-2 text-[#adaaaa] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined text-sm mr-3">logout</span>
+<span class="text-[10px] uppercase font-bold tracking-widest">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="md:pl-64 pt-20 pb-12 min-h-screen bg-surface">
+<div class="max-w-7xl mx-auto px-6">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
+<div>
+<h1 class="text-4xl md:text-5xl font-black font-headline tracking-tighter mb-2">INVOICE <span class="text-primary-dim">LEDGER</span></h1>
+<p class="text-on-surface-variant max-w-md font-body text-sm">Review, audit, and manage client financial documents with engineering precision.</p>
+</div>
+<div class="flex gap-4">
+<div class="flex bg-surface-container-low p-1 rounded-lg border border-outline-variant/10">
+<button class="px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded bg-primary-dim text-on-primary-fixed">All</button>
+<button class="px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded text-on-surface-variant hover:text-white transition-colors">Unpaid</button>
+<button class="px-4 py-1.5 text-xs font-bold uppercase tracking-widest rounded text-on-surface-variant hover:text-white transition-colors">Paid</button>
+</div>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Bulk Upload Zone -->
+<div class="lg:col-span-4 h-full">
+<div class="bg-surface-container-low rounded-xl p-6 border-2 border-dashed border-outline-variant/30 hover:border-primary-dim/50 transition-all group flex flex-col items-center justify-center text-center h-full min-h-[300px]">
+<div class="w-16 h-16 rounded-full bg-surface-container-highest flex items-center justify-center mb-4 group-hover:bg-primary-dim transition-colors duration-300">
+<span class="material-symbols-outlined text-3xl text-primary-dim group-hover:text-white">upload_file</span>
+</div>
+<h3 class="font-headline font-bold text-xl mb-2">BULK UPLOAD</h3>
+<p class="text-on-surface-variant text-sm mb-6 px-4">Drag and drop invoice PDFs or technical reports to auto-process client accounts.</p>
+<button class="px-8 py-3 bg-surface-container-highest border border-outline-variant/30 rounded-md font-bold text-xs uppercase tracking-widest hover:bg-white hover:text-surface transition-all">
+                            Browse Files
+                        </button>
+</div>
+</div>
+<!-- Metrics / Fast Stats -->
+<div class="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">account_balance_wallet</span>
+</div>
+<p class="text-on-surface-variant text-[10px] font-black uppercase tracking-widest mb-1">Outstanding Balance</p>
+<h4 class="text-3xl font-headline font-bold text-white mb-4">€12,450.00</h4>
+<div class="flex items-center text-error text-xs font-bold">
+<span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+<span>+12% from last month</span>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">task_alt</span>
+</div>
+<p class="text-on-surface-variant text-[10px] font-black uppercase tracking-widest mb-1">Settled this week</p>
+<h4 class="text-3xl font-headline font-bold text-white mb-4">€8,120.00</h4>
+<div class="flex items-center text-secondary text-xs font-bold">
+<span class="material-symbols-outlined text-sm mr-1">check_circle</span>
+<span>42 Invoices cleared</span>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl p-6 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+<span class="material-symbols-outlined text-6xl">pending_actions</span>
+</div>
+<p class="text-on-surface-variant text-[10px] font-black uppercase tracking-widest mb-1">Average Turnaround</p>
+<h4 class="text-3xl font-headline font-bold text-white mb-4">4.2 Days</h4>
+<div class="flex items-center text-on-surface-variant text-xs font-bold">
+<span class="material-symbols-outlined text-sm mr-1">timer</span>
+<span>High Efficiency</span>
+</div>
+</div>
+</div>
+<!-- Main Ledger Table -->
+<div class="lg:col-span-12">
+<div class="bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/10 shadow-2xl">
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-low/50">
+<h3 class="font-headline font-bold text-lg tracking-tight">DOCUMENT REGISTRY</h3>
+<div class="flex gap-2">
+<button class="p-2 bg-surface-container-highest rounded hover:bg-primary-dim/20 transition-colors">
+<span class="material-symbols-outlined text-lg">filter_list</span>
+</button>
+<button class="p-2 bg-surface-container-highest rounded hover:bg-primary-dim/20 transition-colors">
+<span class="material-symbols-outlined text-lg">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant uppercase text-[10px] font-black tracking-widest">
+<th class="px-6 py-4">Preview</th>
+<th class="px-6 py-4">Client / Plate</th>
+<th class="px-6 py-4">Invoice ID</th>
+<th class="px-6 py-4">Issue Date</th>
+<th class="px-6 py-4">Amount</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-highest/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="w-12 h-16 bg-surface-container-highest rounded border border-outline-variant/20 relative overflow-hidden flex items-center justify-center cursor-zoom-in">
+<img class="opacity-40 group-hover:opacity-80 transition-opacity object-cover h-full w-full" data-alt="Technical PDF invoice preview with mechanical diagrams and data tables on white paper" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBsozAETxlkK6ojZbUQNYxexOlQ4WSeb9CaYswCR194XaxKseUH3FRh6PGoLJ1_85rgBQC2kM29YELcyFM6JRLw7U1AiA6DeS-VmL_OEdOmdMaZ0MeIgoVlkkek7zOrTJn-04P_dyTPdl93ZtS_h-8bVhwNeGUbI1GzRejBbN9jNRf2A6thHVakmHsvMAmCPkoEddHJnNo0Xy7Wx281RjBEzzmUUVfeH8RAP-sAaBRrrxTAZPbnogNwU7Dd5TwoVcfB_qxdhbxruNY"/>
+<span class="material-symbols-outlined absolute text-primary-dim opacity-0 group-hover:opacity-100 transition-opacity">visibility</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-sm">Marco Rossi</span>
+<span class="text-on-surface-variant text-[10px] uppercase font-black tracking-tighter">DUCATI PANIGALE V4 - DX22RST</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-on-surface-variant">#INV-2023-0941</td>
+<td class="px-6 py-4 text-sm">Oct 24, 2023</td>
+<td class="px-6 py-4 font-headline font-bold">€1,240.50</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-secondary-container/20 text-secondary text-[10px] font-black uppercase tracking-widest rounded-full border border-secondary/20">Paid</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">print</span></button>
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">share</span></button>
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-highest/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="w-12 h-16 bg-surface-container-highest rounded border border-outline-variant/20 relative overflow-hidden flex items-center justify-center cursor-zoom-in">
+<img class="opacity-40 group-hover:opacity-80 transition-opacity object-cover h-full w-full" data-alt="Technical business report preview with charts and graphs in a minimalist style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu_lS0EGxzaZQMXOwlnbgwxLi0SaBiBZdrC917XxO52b5vYA5Qsu2Fpyr7xVrCg6YeM_Zt48oMr-behvIloETKIsNuJTI74GxIi_2rOtCS-zA_mgehaj_zjyTAW2D0pkWYffLtMdju5bTy6m6fR9ndemjQrXCppbNaAme1_jRtiTYixnyDrEaMHA9es8Q2sj3qDnirnml1Re9keRasSLj8ZCSxOViKGqe26ZoFXYbOLn8NzHbzEiVLnX3iBsEQwAkQq8_e-pxRMwg"/>
+<span class="material-symbols-outlined absolute text-primary-dim opacity-0 group-hover:opacity-100 transition-opacity">visibility</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-sm">Elena Bianchi</span>
+<span class="text-on-surface-variant text-[10px] uppercase font-black tracking-tighter">MONSTER 937 - BJ55KLP</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-on-surface-variant">#INV-2023-0945</td>
+<td class="px-6 py-4 text-sm">Oct 26, 2023</td>
+<td class="px-6 py-4 font-headline font-bold">€450.00</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-error-container/20 text-error text-[10px] font-black uppercase tracking-widest rounded-full border border-error/20">Unpaid</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">mail</span></button>
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">download</span></button>
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-highest/50 transition-colors group">
+<td class="px-6 py-4">
+<div class="w-12 h-16 bg-surface-container-highest rounded border border-outline-variant/20 relative overflow-hidden flex items-center justify-center cursor-zoom-in">
+<img class="opacity-40 group-hover:opacity-80 transition-opacity object-cover h-full w-full" data-alt="Abstract blueprint and document layout on dark gray background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBQomsQr08FJGNgPduoH5l1LX_6ifwYoAkjTqsdKcTwTYOdFf9rFNOjs1D6FdmmZ68YsCsAmtScfQV2iP7as6ygE1JMw1Uz0kIMh4pL1-k5e-n_sL3Bs9fGa26wsFO0YVK84yTo6_C5fMdhVfNgLRj6hAvAn4zSyS8rj6WaQwv7FlckB2lbM-ahi3GhKUHSJPDlaTkh7Q3HbGglKfYTyQ7EOD5Bw193nBULCvKD4CYFgi20JvzbdCeEtCQ90vp63S5TwlTi8pI5LUU"/>
+<span class="material-symbols-outlined absolute text-primary-dim opacity-0 group-hover:opacity-100 transition-opacity">visibility</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-bold text-sm">Alessandro Gallo</span>
+<span class="text-on-surface-variant text-[10px] uppercase font-black tracking-tighter">MULTISTRADA V4S - YT11MNB</span>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs text-on-surface-variant">#INV-2023-0948</td>
+<td class="px-6 py-4 text-sm">Oct 28, 2023</td>
+<td class="px-6 py-4 font-headline font-bold">€2,100.25</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-secondary-container/20 text-secondary text-[10px] font-black uppercase tracking-widest rounded-full border border-secondary/20">Paid</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">print</span></button>
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">share</span></button>
+<button class="p-1.5 hover:text-primary-dim transition-colors"><span class="material-symbols-outlined text-lg">more_vert</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-outline-variant/10 flex justify-center">
+<nav class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-on-surface-variant hover:text-white">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-primary-dim text-white font-bold">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-on-surface-variant hover:text-white">3</button>
+<span class="w-8 h-8 flex items-center justify-center text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-surface-container-highest text-on-surface-variant hover:text-white">12</button>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FAB for Quick Invoice Generation -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary-dim text-on-primary-fixed rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform active:scale-95 group z-50">
+<span class="material-symbols-outlined text-2xl group-hover:rotate-90 transition-transform duration-300">add</span>
+<div class="absolute right-full mr-4 bg-surface-container-highest px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest text-white whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity border border-outline-variant/20">
+            Generate Invoice
+        </div>
+</button>
+<!-- Mobile Navigation Bottom Bar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-[#0e0e0e]/95 backdrop-blur-xl border-t border-outline-variant/10 flex justify-around py-3 px-4 z-50">
+<a class="flex flex-col items-center text-[#adaaaa] gap-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[8px] font-black uppercase tracking-widest">Dash</span>
+</a>
+<a class="flex flex-col items-center text-[#adaaaa] gap-1" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="text-[8px] font-black uppercase tracking-widest">Clients</span>
+</a>
+<a class="flex flex-col items-center text-[#e80f16] gap-1" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[8px] font-black uppercase tracking-widest">Invoices</span>
+</a>
+<a class="flex flex-col items-center text-[#adaaaa] gap-1" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[8px] font-black uppercase tracking-widest">Config</span>
+</a>
+</nav>
+</body></html>

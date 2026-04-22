@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&amp;family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-surface": "#fcf9f8",
+                    "on-primary-container": "#4f0002",
+                    "primary": "#ff8e80",
+                    "on-tertiary-fixed": "#4f5051",
+                    "inverse-on-surface": "#565555",
+                    "on-primary-fixed": "#000000",
+                    "surface": "#0e0e0e",
+                    "on-surface": "#ffffff",
+                    "inverse-primary": "#c1000d",
+                    "tertiary": "#f9f9f9",
+                    "secondary-fixed": "#9df898",
+                    "on-tertiary-fixed-variant": "#6c6d6e",
+                    "surface-container-lowest": "#000000",
+                    "on-primary": "#650003",
+                    "surface-variant": "#262626",
+                    "on-surface-variant": "#adaaaa",
+                    "secondary-dim": "#90e98b",
+                    "primary-dim": "#e80f16",
+                    "surface-tint": "#ff8e80",
+                    "on-secondary-fixed-variant": "#0a6a1d",
+                    "on-background": "#ffffff",
+                    "secondary-container": "#0b6b1d",
+                    "surface-container-highest": "#262626",
+                    "surface-dim": "#0e0e0e",
+                    "primary-fixed": "#ff7668",
+                    "on-primary-fixed-variant": "#610003",
+                    "secondary": "#9df898",
+                    "surface-container": "#1a1a1a",
+                    "on-tertiary": "#5e5f60",
+                    "on-secondary": "#006016",
+                    "primary-fixed-dim": "#ff5b4c",
+                    "primary-container": "#ff7668",
+                    "tertiary-fixed": "#ffffff",
+                    "error-container": "#a70138",
+                    "error": "#ff6e84",
+                    "surface-container-high": "#20201f",
+                    "tertiary-dim": "#ebebeb",
+                    "on-secondary-fixed": "#004b0f",
+                    "tertiary-fixed-dim": "#f0f1f1",
+                    "on-error": "#490013",
+                    "outline": "#767575",
+                    "on-tertiary-container": "#555757",
+                    "outline-variant": "#484847",
+                    "error-dim": "#d73357",
+                    "background": "#0e0e0e",
+                    "on-error-container": "#ffb2b9",
+                    "surface-container-low": "#131313",
+                    "secondary-fixed-dim": "#90e98b",
+                    "tertiary-container": "#ebebeb",
+                    "surface-bright": "#2c2c2c",
+                    "on-secondary-container": "#d4ffcc"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Space Grotesk"],
+                    "body": ["Manrope"],
+                    "label": ["Manrope"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #0e0e0e;
+            color: #ffffff;
+            font-family: 'Manrope', sans-serif;
+        }
+        .space-grotesk { font-family: 'Space Grotesk', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-outline-variant/20 bg-surface flex flex-col py-8 z-50">
+<div class="px-6 mb-12">
+<h1 class="text-primary-dim font-black text-xl tracking-widest space-grotesk uppercase">ENGINEERING OPS</h1>
+<p class="text-[10px] text-on-surface-variant tracking-[0.2em] mt-1 uppercase font-medium">v2.04 Precision</p>
+</div>
+<nav class="flex-1 flex flex-col gap-1">
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest hover:text-white transition-all uppercase tracking-wider text-xs font-medium space-grotesk group" href="#">
+<span class="material-symbols-outlined text-lg">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-white border-r-4 border-primary-dim bg-surface-container group transition-all translate-x-1 uppercase tracking-wider text-xs font-medium space-grotesk" href="#">
+<span class="material-symbols-outlined text-lg text-primary-dim">group</span>
+<span>Clients</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest hover:text-white transition-all uppercase tracking-wider text-xs font-medium space-grotesk group" href="#">
+<span class="material-symbols-outlined text-lg">motorcycle</span>
+<span>Garage</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest hover:text-white transition-all uppercase tracking-wider text-xs font-medium space-grotesk group" href="#">
+<span class="material-symbols-outlined text-lg">construction</span>
+<span>Service Logs</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-container-highest hover:text-white transition-all uppercase tracking-wider text-xs font-medium space-grotesk group" href="#">
+<span class="material-symbols-outlined text-lg">receipt_long</span>
+<span>Invoices</span>
+</a>
+</nav>
+<div class="px-4 mt-auto">
+<button class="w-full py-3 bg-primary-dim text-on-primary-fixed rounded-md font-bold text-xs uppercase tracking-widest hover:bg-primary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">add</span>
+                Quick Service
+            </button>
+<div class="mt-8 flex flex-col gap-1 border-t border-outline-variant/10 pt-4">
+<a class="flex items-center gap-4 px-2 py-2 text-on-surface-variant hover:text-white text-xs uppercase tracking-wider font-medium space-grotesk" href="#">
+<span class="material-symbols-outlined text-lg">help</span>
+                    Support
+                </a>
+<a class="flex items-center gap-4 px-2 py-2 text-on-surface-variant hover:text-white text-xs uppercase tracking-wider font-medium space-grotesk" href="#">
+<span class="material-symbols-outlined text-lg">logout</span>
+                    Logout
+                </a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-surface/80 backdrop-blur-xl z-40 flex justify-between items-center px-8 border-b border-outline-variant/10">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-bold tracking-widest text-white uppercase space-grotesk">Scuderia itTech</h2>
+<div class="h-4 w-px bg-outline-variant/30"></div>
+<span class="text-on-surface-variant text-xs uppercase tracking-widest font-medium">Fleet Management</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="bg-surface-container-highest border-none text-[10px] tracking-widest uppercase py-2 pl-10 pr-4 rounded-full w-64 focus:ring-1 focus:ring-primary-dim text-white placeholder:text-outline" placeholder="SEARCH CLIENT OR VIN..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-primary-dim transition-colors"><span class="material-symbols-outlined">settings</span></button>
+<button class="hover:text-primary-dim transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-1.5 h-1.5 bg-primary-dim rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="Technician Profile" data-alt="Portrait of a professional motorcycle technician in a high-tech workshop environment, focused expression, cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCymX6I0Om9kWGHUcBPLuxaLi5C-nXhgC4rfAcvD6azh5D5t8d6gAlS0MbGM33CM7qZr5aZS9qPXrFxQkzAb01f0DCQO-fO4pPtT6HlMnft9JDnnk7QQ3qSw3k_8yrZs9MHOmNOACwNhf7RsfDUrttZdHXRn9iHdx0z4x8M1tw7LEB4SSEAZS648W2EhY0xiSP50BHc4BMldfoDu9UtQ438B4zdvcME9XELytPuy5rEhmDFFid1dDDhFNmaSTsfZ874JdxTZpiSGFk"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-64 mt-16 p-8 min-h-[calc(100vh-64px)]">
+<div class="max-w-[1400px] mx-auto grid grid-cols-12 gap-8">
+<!-- Left Column: Searchable Client List -->
+<section class="col-span-4 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-bold tracking-[0.2em] uppercase text-primary-dim space-grotesk">Directory</h3>
+<span class="text-[10px] text-on-surface-variant bg-surface-container px-2 py-0.5 rounded">128 ACTIVE</span>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Client Item Active -->
+<div class="bg-surface-container p-4 border-l-2 border-primary-dim relative overflow-hidden group cursor-pointer">
+<div class="absolute inset-0 bg-gradient-to-r from-primary-dim/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="flex items-center gap-4 relative z-10">
+<div class="w-12 h-12 rounded-lg bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
+<span class="material-symbols-outlined text-primary-dim" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold tracking-tight text-white uppercase">Marco Rossi</h4>
+<p class="text-[10px] text-on-surface-variant tracking-wider uppercase mt-0.5">Ducati Panigale V4 S</p>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-mono text-primary-dim">#C-9021</span>
+</div>
+</div>
+</div>
+<!-- Client Item -->
+<div class="bg-surface-container-low p-4 border-l-2 border-transparent hover:border-outline-variant/50 transition-all cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant/10">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold tracking-tight text-white/70 group-hover:text-white transition-colors uppercase">Alessandra Bianchi</h4>
+<p class="text-[10px] text-on-surface-variant tracking-wider uppercase mt-0.5">Ducati Monster SP</p>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-mono text-on-surface-variant">#C-8843</span>
+</div>
+</div>
+</div>
+<!-- Client Item -->
+<div class="bg-surface-container-low p-4 border-l-2 border-transparent hover:border-outline-variant/50 transition-all cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant/10">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold tracking-tight text-white/70 group-hover:text-white transition-colors uppercase">Giuseppe Verdi</h4>
+<p class="text-[10px] text-on-surface-variant tracking-wider uppercase mt-0.5">Multistrada V4 Pikes Peak</p>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-mono text-on-surface-variant">#C-7210</span>
+</div>
+</div>
+</div>
+<!-- Client Item -->
+<div class="bg-surface-container-low p-4 border-l-2 border-transparent hover:border-outline-variant/50 transition-all cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center border border-outline-variant/10">
+<span class="material-symbols-outlined text-on-surface-variant">person</span>
+</div>
+<div class="flex-1">
+<h4 class="text-sm font-bold tracking-tight text-white/70 group-hover:text-white transition-colors uppercase">Elena Ferrari</h4>
+<p class="text-[10px] text-on-surface-variant tracking-wider uppercase mt-0.5">Scrambler Icon</p>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-mono text-on-surface-variant">#C-9155</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Detail View & Fleet Table -->
+<section class="col-span-8 flex flex-col gap-8">
+<!-- Client Hero Detail Card -->
+<div class="bg-surface-container p-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-full opacity-10 pointer-events-none grayscale">
+<img alt="Ducati Detail" data-alt="Macro close-up of a Ducati motorcycle engine components, mechanical textures, high performance engineering aesthetic, red accents" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPFwt3ZMOyjezvsdKYKb0I2Ap4BxJhftwF5sHjwdMZitfXzkp9h48GWPAAYH-rBhzzTEOjEtJaSYi_G_mS5oxKgexJHP5L1qrt5pe9SHlxRAAy_3BQFR6IjY9j5YPyGLTD1F3yCtEfL0kz1ZEfCIfwa2Z9_7riwHvxh6JXbBtbpIgtwflrmg1iac4a06vLu0KHSdizYE5HwkQSYOPXxtM9TbWzcxZpBggveQ0Q-OE3xKabOWKtjrfbd_PAA3DiWWQkiFsBmKjRWNw"/>
+</div>
+<div class="relative z-10 flex flex-col gap-6">
+<div class="flex justify-between items-start">
+<div class="flex gap-6 items-center">
+<div class="w-20 h-20 rounded-xl bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center text-3xl font-bold text-primary-dim space-grotesk">
+                                    MR
+                                </div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<h2 class="text-2xl font-black uppercase tracking-tight space-grotesk">Marco Rossi</h2>
+<span class="bg-secondary-container/20 text-secondary-dim text-[10px] px-2 py-0.5 font-bold uppercase tracking-widest border border-secondary-container/30">Verified Fleet</span>
+</div>
+<p class="text-on-surface-variant text-sm font-medium">Premium Member since Oct 2021 • Modena, Italy</p>
+</div>
+</div>
+<button class="px-4 py-2 border border-outline-variant/20 hover:border-primary-dim hover:text-primary-dim transition-all text-[10px] font-bold uppercase tracking-widest space-grotesk flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">edit</span>
+                                Edit Profile
+                            </button>
+</div>
+<div class="grid grid-cols-3 gap-4">
+<div class="bg-surface-container-low p-4 border border-outline-variant/10">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Contact Email</p>
+<p class="text-sm font-medium">m.rossi@velocita.it</p>
+</div>
+<div class="bg-surface-container-low p-4 border border-outline-variant/10">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Mobile Phone</p>
+<p class="text-sm font-medium">+39 342 091 8844</p>
+</div>
+<div class="bg-surface-container-low p-4 border border-outline-variant/10">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest mb-1">Last Visit</p>
+<p class="text-sm font-medium">14 Days Ago (Annual Service)</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Fleet Table -->
+<div class="bg-surface-container overflow-hidden">
+<div class="p-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h3 class="text-sm font-bold tracking-[0.2em] uppercase text-white space-grotesk">Fleet Registry</h3>
+<button class="bg-primary-dim text-on-primary-fixed px-4 py-2 text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+                            Add New Machine
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-[10px] uppercase tracking-[0.15em] text-on-surface-variant border-b border-outline-variant/5">
+<th class="px-6 py-4 font-semibold">Machine Model</th>
+<th class="px-6 py-4 font-semibold">License Plate</th>
+<th class="px-6 py-4 font-semibold">VIN Registry</th>
+<th class="px-6 py-4 font-semibold">Current Mileage</th>
+<th class="px-6 py-4 font-semibold">Service Status</th>
+<th class="px-6 py-4 font-semibold"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<tr class="hover:bg-surface-container-highest/50 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center text-primary-dim">
+<span class="material-symbols-outlined text-sm">motorcycle</span>
+</div>
+<div>
+<p class="text-sm font-bold uppercase tracking-tight">Panigale V4 S</p>
+<p class="text-[9px] text-on-surface-variant uppercase">MY 2023 • Red/White</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-xs font-mono tracking-tighter uppercase text-white">DU 224 PT</td>
+<td class="px-6 py-5 text-xs font-mono text-on-surface-variant">ZDMC400AA3921...</td>
+<td class="px-6 py-5">
+<p class="text-xs font-bold text-white">4,812 KM</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-secondary-container/10 text-secondary-dim text-[9px] font-bold uppercase tracking-widest">
+<span class="w-1 h-1 rounded-full bg-secondary-dim"></span>
+                                            Operational
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/50 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center text-primary-dim">
+<span class="material-symbols-outlined text-sm">motorcycle</span>
+</div>
+<div>
+<p class="text-sm font-bold uppercase tracking-tight">Streetfighter V2</p>
+<p class="text-[9px] text-on-surface-variant uppercase">MY 2022 • Storm Green</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-xs font-mono tracking-tighter uppercase text-white">DU 918 RR</td>
+<td class="px-6 py-5 text-xs font-mono text-on-surface-variant">ZDMC100AA2218...</td>
+<td class="px-6 py-5">
+<p class="text-xs font-bold text-white">12,440 KM</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-error-container/10 text-error-dim text-[9px] font-bold uppercase tracking-widest">
+<span class="w-1 h-1 rounded-full bg-error-dim"></span>
+                                            Service Due
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-highest/50 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-surface-container-highest flex items-center justify-center text-primary-dim">
+<span class="material-symbols-outlined text-sm">motorcycle</span>
+</div>
+<div>
+<p class="text-sm font-bold uppercase tracking-tight">DesertX</p>
+<p class="text-[9px] text-on-surface-variant uppercase">MY 2024 • Star White Silk</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-xs font-mono tracking-tighter uppercase text-white">PENDING</td>
+<td class="px-6 py-5 text-xs font-mono text-on-surface-variant">ZDMC800AA4410...</td>
+<td class="px-6 py-5">
+<p class="text-xs font-bold text-white">0 KM</p>
+</td>
+<td class="px-6 py-5">
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant text-[9px] font-bold uppercase tracking-widest">
+<span class="w-1 h-1 rounded-full bg-on-surface-variant"></span>
+                                            In Prep
+                                        </span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-on-surface-variant hover:text-white transition-colors">
+<span class="material-symbols-outlined text-lg">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Recent Analytics / Telemetry Bento -->
+<div class="grid grid-cols-2 gap-8">
+<div class="bg-surface-container-low p-6 border border-outline-variant/10">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-primary-dim">history</span>
+<h4 class="text-xs font-bold uppercase tracking-widest space-grotesk">Recent Activity</h4>
+</div>
+<div class="space-y-4">
+<div class="flex items-start gap-4">
+<div class="w-1.5 h-1.5 rounded-full bg-primary-dim mt-1.5"></div>
+<div>
+<p class="text-xs font-medium text-white uppercase">Engine Mapping Update</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">Applied Velocity+ Profile to Panigale V4 S</p>
+<p class="text-[9px] font-mono text-outline mt-1 uppercase">02 May 2024 • 14:22</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-1.5 h-1.5 rounded-full bg-outline-variant mt-1.5"></div>
+<div>
+<p class="text-xs font-medium text-white uppercase">PDI Checklist Completed</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">DesertX - Ready for Delivery</p>
+<p class="text-[9px] font-mono text-outline mt-1 uppercase">29 Apr 2024 • 09:15</p>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container p-6 relative group cursor-pointer overflow-hidden border border-outline-variant/10">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-dim/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<div class="relative z-10">
+<div class="flex items-center justify-between mb-8">
+<h4 class="text-xs font-bold uppercase tracking-widest space-grotesk text-on-surface-variant">Fleet Reliability Score</h4>
+<span class="text-2xl font-black text-primary-dim space-grotesk">98%</span>
+</div>
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary-dim w-[98%]"></div>
+</div>
+<p class="text-[10px] text-on-surface-variant mt-4 uppercase tracking-wider leading-relaxed">
+                                Marco's fleet performance is tracking above workshop average. Suggested preventative maintenance for Streetfighter V2 chain in ~400km.
+                            </p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Contextual FAB - Only for Home/Dash context, but requested for Add New Machine in details -->
+<!-- Suppression rule followed, but button added in local context above -->
+</body></html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scuderia itTech | Backoffice Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-surface": "#fcf9f8",
+                        "on-primary-container": "#4f0002",
+                        "primary": "#ff8e80",
+                        "on-tertiary-fixed": "#4f5051",
+                        "inverse-on-surface": "#565555",
+                        "on-primary-fixed": "#000000",
+                        "surface": "#0e0e0e",
+                        "on-surface": "#ffffff",
+                        "inverse-primary": "#c1000d",
+                        "tertiary": "#f9f9f9",
+                        "secondary-fixed": "#9df898",
+                        "on-tertiary-fixed-variant": "#6c6d6e",
+                        "surface-container-lowest": "#000000",
+                        "on-primary": "#650003",
+                        "surface-variant": "#262626",
+                        "on-surface-variant": "#adaaaa",
+                        "secondary-dim": "#90e98b",
+                        "primary-dim": "#e80f16",
+                        "surface-tint": "#ff8e80",
+                        "on-secondary-fixed-variant": "#0a6a1d",
+                        "on-background": "#ffffff",
+                        "secondary-container": "#0b6b1d",
+                        "surface-container-highest": "#262626",
+                        "surface-dim": "#0e0e0e",
+                        "primary-fixed": "#ff7668",
+                        "on-primary-fixed-variant": "#610003",
+                        "secondary": "#9df898",
+                        "surface-container": "#1a1a1a",
+                        "on-tertiary": "#5e5f60",
+                        "on-secondary": "#006016",
+                        "primary-fixed-dim": "#ff5b4c",
+                        "primary-container": "#ff7668",
+                        "tertiary-fixed": "#ffffff",
+                        "error-container": "#a70138",
+                        "error": "#ff6e84",
+                        "surface-container-high": "#20201f",
+                        "tertiary-dim": "#ebebeb",
+                        "on-secondary-fixed": "#004b0f",
+                        "tertiary-fixed-dim": "#f0f1f1",
+                        "on-error": "#490013",
+                        "outline": "#767575",
+                        "on-tertiary-container": "#555757",
+                        "outline-variant": "#484847",
+                        "error-dim": "#d73357",
+                        "background": "#0e0e0e",
+                        "on-error-container": "#ffb2b9",
+                        "surface-container-low": "#131313",
+                        "secondary-fixed-dim": "#90e98b",
+                        "tertiary-container": "#ebebeb",
+                        "surface-bright": "#2c2c2c",
+                        "on-secondary-container": "#d4ffcc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(38, 38, 38, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        body {
+            background-color: #0e0e0e;
+            color: #ffffff;
+            font-family: 'Manrope', sans-serif;
+        }
+        .technical-grid {
+            background-image: radial-gradient(rgba(72, 72, 71, 0.1) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="technical-grid">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 border-r border-[#484847]/20 bg-[#0e0e0e] flex flex-col py-8 z-50">
+<div class="px-6 mb-10">
+<h1 class="text-[#e80f16] font-black text-xl tracking-widest font-headline">ENGINEERING OPS</h1>
+<p class="text-[#adaaaa] text-[10px] tracking-widest font-headline">v2.04 Precision</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Active: Dashboard -->
+<a class="flex items-center px-6 py-4 text-white border-r-4 border-[#e80f16] bg-[#1a1a1a] transition-all duration-200 translate-x-1" href="#">
+<span class="material-symbols-outlined mr-3 text-[#e80f16]" data-icon="dashboard">dashboard</span>
+<span class="font-headline font-medium uppercase tracking-wider text-xs">Dashboard</span>
+</a>
+<a class="flex items-center px-6 py-4 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="group">group</span>
+<span class="font-headline font-medium uppercase tracking-wider text-xs">Clients</span>
+</a>
+<a class="flex items-center px-6 py-4 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="motorcycle">motorcycle</span>
+<span class="font-headline font-medium uppercase tracking-wider text-xs">Garage</span>
+</a>
+<a class="flex items-center px-6 py-4 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="construction">construction</span>
+<span class="font-headline font-medium uppercase tracking-wider text-xs">Service Logs</span>
+</a>
+<a class="flex items-center px-6 py-4 text-[#adaaaa] hover:bg-[#262626] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="receipt_long">receipt_long</span>
+<span class="font-headline font-medium uppercase tracking-wider text-xs">Invoices</span>
+</a>
+</nav>
+<div class="mt-auto px-6 space-y-4">
+<button class="w-full bg-[#e80f16] text-black font-bold py-3 rounded-md font-headline text-xs tracking-widest uppercase hover:bg-primary transition-colors">
+                Quick Service
+            </button>
+<div class="pt-6 border-t border-outline-variant/20">
+<a class="flex items-center py-2 text-[#adaaaa] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-sm" data-icon="help">help</span>
+<span class="font-headline font-medium uppercase tracking-wider text-[10px]">Support</span>
+</a>
+<a class="flex items-center py-2 text-[#adaaaa] hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-sm" data-icon="logout">logout</span>
+<span class="font-headline font-medium uppercase tracking-wider text-[10px]">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 left-64 h-16 bg-[#0e0e0e]/80 backdrop-blur-xl z-40 px-8 flex justify-between items-center shadow-[0_4px_20px_rgba(232,15,22,0.05)]">
+<div class="flex items-center space-x-4">
+<span class="text-white font-headline font-bold text-lg tracking-tight">OPERATIONAL OVERVIEW</span>
+<span class="bg-surface-container-highest px-3 py-1 rounded text-[10px] font-headline text-primary tracking-widest uppercase">Live Telemetry</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="relative flex items-center bg-surface-container rounded-md px-4 py-1.5 border border-outline-variant/10">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-[10px] font-headline tracking-widest text-white w-48 placeholder-on-surface-variant" placeholder="SEARCH ASSETS..." type="text"/>
+</div>
+<div class="flex items-center space-x-4">
+<button class="text-[#adaaaa] hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<button class="text-[#adaaaa] hover:text-white transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-[#e80f16] rounded-full"></span>
+</button>
+<div class="w-8 h-8 rounded-full border border-primary/30 overflow-hidden">
+<img alt="Technician Profile" class="w-full h-full object-cover" data-alt="close-up portrait of a professional male mechanical engineer in a clean dark workshop setting, soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCeSAkhEQ-CMwKVdboaa6UtGZG4-gymj8-nI0f8QUGzU6Z1dvU9tQOZ8st4F4jDAP8f4naFD_QcFa0B2WNLtL58JDcWV0eIlG9v0MTQ744P9RGutnIRP6dAVRiy4GoBDLZoFe6uoFriWUPmS8NdE7R5bDIbMy486-1L_Lx3-BvIcEzeYqhqRe1SDrIWM2aAIWU71vcA29rvnKBuit49bszaKadoZYT2eFD5iCY-uGFas33nJsJuHI3mF6Hs-yBk6-AnswowNlP2Ko"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 mt-16 p-8">
+<!-- Quick Actions Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<button class="group flex items-center justify-between p-5 bg-surface-container rounded-lg border-l-4 border-primary-dim hover:bg-surface-container-highest transition-all duration-300">
+<div class="flex items-center">
+<div class="w-12 h-12 rounded bg-primary-dim/10 flex items-center justify-center mr-4 group-hover:bg-primary-dim group-hover:text-black transition-colors">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+</div>
+<div class="text-left">
+<p class="font-headline font-bold text-white text-sm tracking-widest uppercase">New Service Entry</p>
+<p class="text-on-surface-variant text-[10px] uppercase">Initialize Log</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary-dim">arrow_forward</span>
+</button>
+<button class="group flex items-center justify-between p-5 bg-surface-container rounded-lg border-l-4 border-secondary-dim hover:bg-surface-container-highest transition-all duration-300">
+<div class="flex items-center">
+<div class="w-12 h-12 rounded bg-secondary-dim/10 flex items-center justify-center mr-4 group-hover:bg-secondary-dim group-hover:text-black transition-colors">
+<span class="material-symbols-outlined" data-icon="person_add">person_add</span>
+</div>
+<div class="text-left">
+<p class="font-headline font-bold text-white text-sm tracking-widest uppercase">Register New Client</p>
+<p class="text-on-surface-variant text-[10px] uppercase">Add to CRM</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-secondary-dim">arrow_forward</span>
+</button>
+<button class="group flex items-center justify-between p-5 bg-surface-container rounded-lg border-l-4 border-white/20 hover:bg-surface-container-highest transition-all duration-300">
+<div class="flex items-center">
+<div class="w-12 h-12 rounded bg-white/5 flex items-center justify-center mr-4 group-hover:bg-white group-hover:text-black transition-colors">
+<span class="material-symbols-outlined" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<div class="text-left">
+<p class="font-headline font-bold text-white text-sm tracking-widest uppercase">Upload Invoice</p>
+<p class="text-on-surface-variant text-[10px] uppercase">Digital Ledger</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-white">arrow_forward</span>
+</button>
+</div>
+<!-- Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+<div class="p-6 bg-surface-container-low rounded-lg border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-[#adaaaa]" data-icon="motorcycle">motorcycle</span>
+<span class="text-[10px] font-headline text-primary tracking-widest">+2 Since Monday</span>
+</div>
+<p class="text-4xl font-headline font-black text-white mb-1">24</p>
+<p class="text-on-surface-variant font-headline text-[10px] tracking-widest uppercase">Total Bikes in Shop</p>
+</div>
+<div class="p-6 bg-surface-container-low rounded-lg border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-[#adaaaa]" data-icon="construction">construction</span>
+<span class="text-[10px] font-headline text-secondary-dim tracking-widest">Active Ops</span>
+</div>
+<p class="text-4xl font-headline font-black text-white mb-1">08</p>
+<p class="text-on-surface-variant font-headline text-[10px] tracking-widest uppercase">Active Service Logs</p>
+</div>
+<div class="p-6 bg-surface-container-low rounded-lg border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-[#adaaaa]" data-icon="payments">payments</span>
+<span class="text-[10px] font-headline text-error tracking-widest">Action Req</span>
+</div>
+<p class="text-4xl font-headline font-black text-white mb-1">03</p>
+<p class="text-on-surface-variant font-headline text-[10px] tracking-widest uppercase">Pending Invoices</p>
+</div>
+<div class="p-6 bg-surface-container-low rounded-lg border border-outline-variant/10">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-[#adaaaa]" data-icon="calendar_month">calendar_month</span>
+<span class="text-[10px] font-headline text-white tracking-widest">Next: 14:00</span>
+</div>
+<p class="text-4xl font-headline font-black text-white mb-1">05</p>
+<p class="text-on-surface-variant font-headline text-[10px] tracking-widest uppercase">Scheduled Today</p>
+</div>
+</div>
+<!-- Bento Layout: Activity & Maintenance Chart -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Upcoming Maintenance Chart (Visual Timeline) -->
+<div class="lg:col-span-2 bg-surface-container rounded-lg p-6 flex flex-col">
+<div class="flex justify-between items-center mb-8">
+<div>
+<h3 class="font-headline font-bold text-white tracking-widest uppercase">Fleet Maintenance Timeline</h3>
+<p class="text-on-surface-variant text-[10px] uppercase">Service Milestones &amp; Desmo Intervals</p>
+</div>
+<div class="flex space-x-2">
+<div class="flex items-center text-[10px] font-headline text-on-surface-variant mr-4">
+<span class="w-2 h-2 rounded-full bg-primary-dim mr-2"></span> DESMO
+                        </div>
+<div class="flex items-center text-[10px] font-headline text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-secondary-dim mr-2"></span> OIL/ANNUAL
+                        </div>
+</div>
+</div>
+<div class="flex-1 relative min-h-[300px]">
+<!-- Timeline Chart Placeholder with UI elements -->
+<div class="absolute inset-0 flex flex-col justify-between py-2">
+<div class="border-b border-outline-variant/10 w-full h-0"></div>
+<div class="border-b border-outline-variant/10 w-full h-0"></div>
+<div class="border-b border-outline-variant/10 w-full h-0"></div>
+<div class="border-b border-outline-variant/10 w-full h-0"></div>
+</div>
+<div class="absolute inset-0 flex items-end justify-between px-4">
+<!-- Chart Bar 1 -->
+<div class="w-16 flex flex-col items-center">
+<div class="w-8 bg-surface-container-highest rounded-t h-40 relative group">
+<div class="absolute bottom-0 w-full h-24 bg-primary-dim/40 rounded-t border-t border-primary-dim"></div>
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-white text-black text-[10px] font-bold px-2 py-1 rounded">24k KM</div>
+</div>
+<span class="text-[10px] font-headline text-on-surface-variant mt-3 uppercase">Panigale V4</span>
+</div>
+<!-- Chart Bar 2 -->
+<div class="w-16 flex flex-col items-center">
+<div class="w-8 bg-surface-container-highest rounded-t h-32 relative group">
+<div class="absolute bottom-0 w-full h-28 bg-secondary-dim/40 rounded-t border-t border-secondary-dim"></div>
+</div>
+<span class="text-[10px] font-headline text-on-surface-variant mt-3 uppercase">Monster+</span>
+</div>
+<!-- Chart Bar 3 -->
+<div class="w-16 flex flex-col items-center">
+<div class="w-8 bg-surface-container-highest rounded-t h-48 relative group">
+<div class="absolute bottom-0 w-full h-42 bg-primary-dim/40 rounded-t border-t border-primary-dim"></div>
+</div>
+<span class="text-[10px] font-headline text-on-surface-variant mt-3 uppercase">Multi V4S</span>
+</div>
+<!-- Chart Bar 4 -->
+<div class="w-16 flex flex-col items-center">
+<div class="w-8 bg-surface-container-highest rounded-t h-36 relative group">
+<div class="absolute bottom-0 w-full h-12 bg-secondary-dim/40 rounded-t border-t border-secondary-dim"></div>
+</div>
+<span class="text-[10px] font-headline text-on-surface-variant mt-3 uppercase">Streetfighter</span>
+</div>
+<!-- Chart Bar 5 -->
+<div class="w-16 flex flex-col items-center">
+<div class="w-8 bg-surface-container-highest rounded-t h-44 relative group">
+<div class="absolute bottom-0 w-full h-38 bg-primary-dim/40 rounded-t border-t border-primary-dim"></div>
+</div>
+<span class="text-[10px] font-headline text-on-surface-variant mt-3 uppercase">Scrambler</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="bg-surface-container rounded-lg p-6">
+<div class="mb-6 flex justify-between items-end">
+<div>
+<h3 class="font-headline font-bold text-white tracking-widest uppercase">Service Stream</h3>
+<p class="text-on-surface-variant text-[10px] uppercase">Real-time log updates</p>
+</div>
+<a class="text-[10px] font-headline text-primary-dim uppercase font-bold hover:underline" href="#">View All</a>
+</div>
+<div class="space-y-6">
+<!-- Activity 1 -->
+<div class="flex items-start space-x-4 border-l border-outline-variant/30 pl-4 relative">
+<div class="absolute -left-[5px] top-1 w-2 h-2 bg-primary-dim rounded-full"></div>
+<div class="flex-1">
+<div class="flex justify-between">
+<h4 class="text-[11px] font-headline font-bold text-white uppercase">Brake Fluid Flush</h4>
+<span class="text-[9px] text-on-surface-variant">14 MIN AGO</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase mt-1">Asset: Ducati Panigale V2 (#1029)</p>
+<p class="text-[9px] text-primary-dim/80 mt-1 flex items-center italic">
+<span class="material-symbols-outlined text-[10px] mr-1" data-icon="person">person</span> M. Rossi
+                            </p>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="flex items-start space-x-4 border-l border-outline-variant/30 pl-4 relative">
+<div class="absolute -left-[5px] top-1 w-2 h-2 bg-secondary-dim rounded-full"></div>
+<div class="flex-1">
+<div class="flex justify-between">
+<h4 class="text-[11px] font-headline font-bold text-white uppercase">Client Onboarding</h4>
+<span class="text-[9px] text-on-surface-variant">42 MIN AGO</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase mt-1">S. Johansson - New Profile Linked</p>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="flex items-start space-x-4 border-l border-outline-variant/30 pl-4 relative">
+<div class="absolute -left-[5px] top-1 w-2 h-2 bg-outline-variant rounded-full"></div>
+<div class="flex-1">
+<div class="flex justify-between">
+<h4 class="text-[11px] font-headline font-bold text-white uppercase">Invoice Generated</h4>
+<span class="text-[9px] text-on-surface-variant">1 HR AGO</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase mt-1">INV-2024-0081 ($1,240.00)</p>
+</div>
+</div>
+<!-- Activity 4 -->
+<div class="flex items-start space-x-4 border-l border-outline-variant/30 pl-4 relative">
+<div class="absolute -left-[5px] top-1 w-2 h-2 bg-primary-dim rounded-full"></div>
+<div class="flex-1">
+<div class="flex justify-between">
+<h4 class="text-[11px] font-headline font-bold text-white uppercase">Chain Maintenance</h4>
+<span class="text-[9px] text-on-surface-variant">2 HR AGO</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase mt-1">Asset: Diavel 1260 S (#0932)</p>
+</div>
+</div>
+<!-- Activity 5 -->
+<div class="flex items-start space-x-4 border-l border-outline-variant/30 pl-4 relative">
+<div class="absolute -left-[5px] top-1 w-2 h-2 bg-secondary-dim rounded-full"></div>
+<div class="flex-1">
+<div class="flex justify-between">
+<h4 class="text-[11px] font-headline font-bold text-white uppercase">Battery Diagnostics</h4>
+<span class="text-[9px] text-on-surface-variant">3 HR AGO</span>
+</div>
+<p class="text-[10px] text-on-surface-variant uppercase mt-1">Asset: DesertX (#1105)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Visualization Secondary Row -->
+<div class="mt-10 grid grid-cols-1 lg:grid-cols-4 gap-6">
+<div class="lg:col-span-1 glass-panel p-6 rounded-lg border border-outline-variant/5">
+<h4 class="font-headline font-bold text-white text-xs tracking-widest uppercase mb-4">Workshop Load</h4>
+<div class="relative pt-1">
+<div class="flex mb-2 items-center justify-between">
+<div>
+<span class="text-[9px] font-semibold inline-block py-1 px-2 uppercase rounded-full text-primary-dim bg-primary-dim/10">Capacity Utilization</span>
+</div>
+<div class="text-right">
+<span class="text-[10px] font-semibold inline-block text-white">85%</span>
+</div>
+</div>
+<div class="overflow-hidden h-1.5 mb-4 text-xs flex rounded bg-surface-container-highest">
+<div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-dim" style="width:85%"></div>
+</div>
+<p class="text-[9px] text-on-surface-variant uppercase leading-tight italic">3 bays active. 1 bay available for emergency desmo services.</p>
+</div>
+</div>
+<div class="lg:col-span-3 bg-surface-container rounded-lg p-6 flex flex-col justify-center">
+<div class="grid grid-cols-4 gap-4 text-center">
+<div>
+<p class="text-[9px] text-on-surface-variant uppercase font-headline tracking-widest mb-1">Average Turnaround</p>
+<p class="text-xl font-headline font-bold text-white">4.2 Days</p>
+</div>
+<div>
+<p class="text-[9px] text-on-surface-variant uppercase font-headline tracking-widest mb-1">Customer CSAT</p>
+<p class="text-xl font-headline font-bold text-white">98.4%</p>
+</div>
+<div>
+<p class="text-[9px] text-on-surface-variant uppercase font-headline tracking-widest mb-1">Parts in Stock</p>
+<p class="text-xl font-headline font-bold text-white">1,842</p>
+</div>
+<div>
+<p class="text-[9px] text-on-surface-variant uppercase font-headline tracking-widest mb-1">Tech Efficiency</p>
+<p class="text-xl font-headline font-bold text-white">112%</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

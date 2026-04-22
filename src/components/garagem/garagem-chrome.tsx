@@ -1,39 +1,60 @@
 "use client";
 
 import Link from "next/link";
+import { Bell, Settings } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { signOut } from "@/app/garagem/actions";
 
 export function GaragemChrome({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-background" data-garagem-shell>
-      <header className="print:hidden sticky top-0 z-40 border-b border-white/5 bg-background/90 backdrop-blur-xl">
-        <div className="container mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-          <Link href="/garagem" className="font-heading text-base font-semibold">
-            Minha <span className="text-primary">Garagem</span>
+    <div
+      className="min-h-screen bg-[#0e0e0e] text-foreground technical-grid"
+      data-garagem-shell
+    >
+      <header className="print:hidden fixed top-0 z-40 flex h-20 w-full items-center justify-between border-b border-[#484847]/10 bg-[#0e0e0e]/85 px-6 backdrop-blur-xl">
+        <Link href="/garagem" className="font-heading text-2xl font-bold tracking-tight">
+          <span className="text-primary">Scuderia</span>{" "}
+          <span className="text-white">itTECH</span>
+        </Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            className="rounded-full p-2 text-[#adaaaa] transition-colors hover:bg-[#262626] hover:text-white"
+            aria-label="Notificações"
+          >
+            <Bell className="size-5" />
+          </button>
+          <button
+            type="button"
+            className="hidden rounded-full p-2 text-[#adaaaa] transition-colors hover:bg-[#262626] hover:text-white sm:inline-flex"
+            aria-label="Definições"
+          >
+            <Settings className="size-5" />
+          </button>
+          <Link
+            href="/agendamento"
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "sm" }),
+              "font-heading text-xs uppercase tracking-wide",
+            )}
+          >
+            Agendar
           </Link>
-          <nav className="flex items-center gap-3">
-            <Link
-              href="/agendamento"
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
+          <form action={signOut}>
+            <Button
+              type="submit"
+              variant="outline"
+              size="sm"
+              className="border-[#484847]/30 font-heading text-xs uppercase tracking-wide"
             >
-              Agendar
-            </Link>
-            <form action={signOut}>
-              <Button
-                type="submit"
-                variant="outline"
-                size="sm"
-                className="border-white/15"
-              >
-                Sair
-              </Button>
-            </form>
-          </nav>
+              Sair
+            </Button>
+          </form>
         </div>
       </header>
 
-      <div className="container mx-auto max-w-7xl px-4 py-8">{children}</div>
+      <div className="mx-auto max-w-7xl px-6 pb-16 pt-24">{children}</div>
     </div>
   );
 }

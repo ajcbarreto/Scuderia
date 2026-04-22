@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Minha Garagem - Velocity Noir</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Manrope:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#ff8e80",
+                        "on-background": "#ffffff",
+                        "secondary-fixed-dim": "#90e98b",
+                        "secondary-fixed": "#9df898",
+                        "secondary-dim": "#90e98b",
+                        "outline-variant": "#484847",
+                        "primary": "#ff8e80",
+                        "tertiary-fixed": "#ffffff",
+                        "primary-container": "#ff7668",
+                        "background": "#0e0e0e",
+                        "tertiary-container": "#ebebeb",
+                        "primary-fixed-dim": "#ff5b4c",
+                        "tertiary-dim": "#ebebeb",
+                        "surface-bright": "#2c2c2c",
+                        "error-dim": "#d73357",
+                        "surface-dim": "#0e0e0e",
+                        "secondary": "#9df898",
+                        "on-tertiary": "#5e5f60",
+                        "inverse-on-surface": "#565555",
+                        "on-secondary-fixed-variant": "#0a6a1d",
+                        "on-secondary": "#006016",
+                        "surface-variant": "#262626",
+                        "on-primary": "#650003",
+                        "on-secondary-fixed": "#004b0f",
+                        "surface-container-highest": "#262626",
+                        "on-error-container": "#ffb2b9",
+                        "tertiary-fixed-dim": "#f0f1f1",
+                        "surface-container-lowest": "#000000",
+                        "on-tertiary-fixed-variant": "#6c6d6e",
+                        "secondary-container": "#0b6b1d",
+                        "surface": "#0e0e0e",
+                        "on-primary-fixed": "#000000",
+                        "primary-dim": "#e80f16",
+                        "on-surface": "#ffffff",
+                        "outline": "#767575",
+                        "error-container": "#a70138",
+                        "tertiary": "#f9f9f9",
+                        "error": "#ff6e84",
+                        "surface-container": "#1a1a1a",
+                        "inverse-surface": "#fcf9f8",
+                        "on-secondary-container": "#d4ffcc",
+                        "on-primary-fixed-variant": "#610003",
+                        "on-tertiary-container": "#555757",
+                        "on-primary-container": "#4f0002",
+                        "on-error": "#490013",
+                        "inverse-primary": "#c1000d",
+                        "primary-fixed": "#ff7668",
+                        "on-surface-variant": "#adaaaa",
+                        "on-tertiary-fixed": "#4f5051",
+                        "surface-container-high": "#20201f",
+                        "surface-container-low": "#131313"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Space Grotesk"],
+                        "body": ["Manrope"],
+                        "label": ["Manrope"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-shift { background-color: #131313; }
+        .glass-effect { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body selection:bg-primary-dim selection:text-white">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-[#0e0e0e]/80 backdrop-blur-xl flex justify-between items-center px-6 h-20 w-full">
+<div class="text-2xl font-bold italic text-[#e80f16] font-['Space_Grotesk'] tracking-tight">Velocity Noir</div>
+<div class="flex gap-4 items-center">
+<button class="text-[#adaaaa] hover:text-[#ffffff] transition-colors p-2 rounded-full hover:bg-[#262626]">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="text-[#adaaaa] hover:text-[#ffffff] transition-colors p-2 rounded-full hover:bg-[#262626]">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-6 min-h-screen">
+<!-- Header Section -->
+<header class="mb-8">
+<h1 class="font-headline text-3xl font-extrabold uppercase tracking-tight text-on-surface leading-none mb-2">Minha Garagem</h1>
+<p class="font-label text-xs uppercase tracking-[0.2em] text-on-surface-variant">Gestão de Frota • Scuderia itTech</p>
+</header>
+<!-- Garage List (Vertical Asymmetric Cards) -->
+<div class="space-y-6">
+<!-- Vehicle Card 1 -->
+<div class="relative group">
+<div class="bg-surface-container-low overflow-hidden rounded-lg transition-all duration-300 active:scale-[0.98]">
+<div class="aspect-[16/9] w-full relative">
+<img alt="Ducati Panigale V4 S" class="w-full h-full object-cover" data-alt="Close-up of a red Ducati Panigale V4 S motorcycle in a high-tech dark garage with red accent neon lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRSICjoVpoRTk4u1UFLXkBf_EejB6QyeXZZpALVj6aIOCNTLEb3zCgnvWd94_7UxxhD2xvin7Js4Olw698JfvvKlGB1VwVB6I3DyUE_JmpTM4fIrlQ_vY5OIQCqXmeKRzqhgcT13GttLxKkZd2i7PJ4OGfjovChXylI8rqUnb3m13-F6cWgYNWAEJ_G8jG5_JIncmS8eIrqe2wzBtOy3G8zXQYsqPftlFaGrDE8vTlykK7QpwlzV8Ysic2TvVW0IF3zEjouk9TTnI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<button class="absolute top-4 right-4 bg-surface-container-highest/60 backdrop-blur-md p-2 rounded-full text-error transition-all hover:bg-error hover:text-white">
+<span class="material-symbols-outlined text-sm" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="p-5 flex justify-between items-end">
+<div>
+<h3 class="font-headline text-xl font-bold text-white mb-1">Panigale V4 S</h3>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container-highest px-2 py-0.5 rounded text-[10px] font-bold tracking-widest text-on-surface-variant uppercase border border-outline-variant/20">22-ZX-90</span>
+<span class="text-xs text-on-surface-variant font-medium">Model 2023</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary-dim" data-icon="arrow_forward_ios">arrow_forward_ios</span>
+</div>
+</div>
+</div>
+<!-- Vehicle Card 2 -->
+<div class="relative group">
+<div class="bg-surface-container-low overflow-hidden rounded-lg transition-all duration-300 active:scale-[0.98]">
+<div class="aspect-[16/9] w-full relative">
+<img alt="Ducati Monster SP" class="w-full h-full object-cover grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500" data-alt="Sleek black Ducati Monster SP motorcycle parked on a dark asphalt surface at dusk with vibrant red tail light glow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDJxzcP9sJ7uBQq2D_xs4kZ70DVU_Quz4iSGFcqX2J01RtQ-5OoQGPu0gD3LU7FL78Zbe-VFT88OIsvMEYH798vw6o_7xuSgIcrtykcZS0WBEtuVsOf_1Uwh46zN9_R6XK57QLyeLcaliPKuB4XiPQvfUrWb_f1mI0My0zAos6GeEDW6NrXPHEu54ZaG2T4bpSJ6ffl275HPMyKhiyIatsBAwndBCyhHXhhiiFfo_fyfhKBmUBUGuoX_2Ed09E1vb1eZLuwdCrn1yw"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low via-transparent to-transparent"></div>
+<button class="absolute top-4 right-4 bg-surface-container-highest/60 backdrop-blur-md p-2 rounded-full text-error transition-all hover:bg-error hover:text-white">
+<span class="material-symbols-outlined text-sm" data-icon="delete">delete</span>
+</button>
+</div>
+<div class="p-5 flex justify-between items-end">
+<div>
+<h3 class="font-headline text-xl font-bold text-white mb-1">Monster SP</h3>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container-highest px-2 py-0.5 rounded text-[10px] font-bold tracking-widest text-on-surface-variant uppercase border border-outline-variant/20">11-RT-44</span>
+<span class="text-xs text-on-surface-variant font-medium">Model 2024</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary-dim" data-icon="arrow_forward_ios">arrow_forward_ios</span>
+</div>
+</div>
+</div>
+<!-- Empty Slot Placeholder (Asymmetry) -->
+<div class="border-2 border-dashed border-outline-variant/20 rounded-lg p-10 flex flex-col items-center justify-center text-center opacity-40">
+<span class="material-symbols-outlined text-4xl mb-4" data-icon="add_circle">add_circle</span>
+<p class="font-headline text-sm font-semibold uppercase tracking-widest">Novo Slot Disponível</p>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) -->
+<button class="fixed bottom-24 right-6 w-16 h-16 bg-primary-dim text-on-primary-fixed rounded-full shadow-[0_8px_32px_rgba(232,15,22,0.3)] flex items-center justify-center transition-transform active:scale-90 z-50">
+<span class="material-symbols-outlined text-3xl font-bold" data-icon="add">add</span>
+</button>
+<!-- Bottom Navigation Bar (Mobile Primary Shell) -->
+<nav class="fixed bottom-0 left-0 w-full bg-[#0e0e0e]/95 backdrop-blur-xl border-t border-outline-variant/10 md:hidden z-50">
+<div class="flex justify-around items-center h-20 px-4">
+<!-- Active Tab: Minha Garagem -->
+<a class="flex flex-col items-center gap-1 bg-[#1a1a1a] text-[#ffffff] px-4 py-2 rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="garage" style="font-variation-settings: 'FILL' 1;">garage</span>
+<span class="text-[10px] font-['Space_Grotesk'] uppercase font-bold tracking-tighter">Garagem</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#adaaaa] hover:text-[#ffffff] transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="text-[10px] font-['Space_Grotesk'] uppercase font-bold tracking-tighter">Histórico</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#adaaaa] hover:text-[#ffffff] transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="text-[10px] font-['Space_Grotesk'] uppercase font-bold tracking-tighter">Docs</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-[#adaaaa] hover:text-[#ffffff] transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
+<span class="text-[10px] font-['Space_Grotesk'] uppercase font-bold tracking-tighter">Suporte</span>
+</a>
+</div>
+</nav>
+</body></html>

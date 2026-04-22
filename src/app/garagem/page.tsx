@@ -27,6 +27,15 @@ export default async function GaragemPage() {
 
   return (
     <div className="space-y-10">
+      <header className="mb-2">
+        <h1 className="font-heading text-3xl font-extrabold uppercase leading-none tracking-tight text-white">
+          Minha garagem
+        </h1>
+        <p className="mt-2 font-heading text-xs uppercase tracking-[0.2em] text-[#adaaaa]">
+          Gestão de frota · Scuderia itTECH
+        </p>
+      </header>
+
       <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#141414]">
         <div className="absolute inset-0">
           <Image
@@ -43,9 +52,9 @@ export default async function GaragemPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
             Garagem digital
           </p>
-          <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight md:text-5xl">
+          <h2 className="mt-3 font-heading text-4xl font-bold tracking-tight md:text-5xl">
             As tuas motas
-          </h1>
+          </h2>
           <p className="mt-4 max-w-xl text-lg text-muted-foreground">
             Abre cada unidade para ver o boletim de manutenção, o histórico de
             serviços na oficina e o detalhe de cada intervenção.
