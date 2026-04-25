@@ -31,12 +31,12 @@ export default async function GaragemPage() {
         <h1 className="font-heading text-3xl font-extrabold uppercase leading-none tracking-tight text-white">
           Minha garagem
         </h1>
-        <p className="mt-2 font-heading text-xs uppercase tracking-[0.2em] text-[#adaaaa]">
+        <p className="mt-2 font-heading text-xs uppercase tracking-[0.2em] text-muted-foreground">
           Gestão de frota · Scuderia itTECH
         </p>
       </header>
 
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[#141414]">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card">
         <div className="absolute inset-0">
           <Image
             src={CARD_IMAGE}
@@ -70,7 +70,7 @@ export default async function GaragemPage() {
       ) : null}
 
       {list.length === 0 ? (
-        <Card className="border-white/10 bg-[#131313]">
+        <Card className="border-border bg-muted">
           <CardHeader>
             <CardTitle className="font-heading">Ainda sem motas</CardTitle>
             <CardDescription>
@@ -82,7 +82,7 @@ export default async function GaragemPage() {
               href="/agendamento"
               className={buttonVariants({
                 variant: "outline",
-                className: "border-white/15",
+                className: "border-border",
               })}
             >
               Pedir primeiro agendamento
@@ -97,7 +97,7 @@ export default async function GaragemPage() {
                 href={`/garagem/motas/${m.id}`}
                 className="group block h-full outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
               >
-                <article className="relative flex h-full min-h-[240px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#131313] transition-all duration-300 hover:border-primary/35 hover:shadow-[0_0_40px_rgba(220,38,38,0.12)]">
+                <article className="relative flex h-full min-h-[240px] flex-col overflow-hidden rounded-2xl border border-border bg-muted transition-all duration-300 hover:border-primary/35 hover:shadow-[0_0_40px_rgba(220,38,38,0.12)]">
                   <div className="absolute inset-0">
                     <Image
                       src={CARD_IMAGE}
@@ -112,14 +112,14 @@ export default async function GaragemPage() {
                     <div className="mb-3 flex flex-wrap items-center gap-2">
                       <Badge
                         variant="secondary"
-                        className="border border-white/10 bg-black/40 font-medium backdrop-blur-sm"
+                        className="border border-border bg-black/40 font-medium backdrop-blur-sm"
                       >
                         {m.year ?? "Ano —"}
                       </Badge>
                       {m.plate ? (
                         <Badge
                           variant="outline"
-                          className="border-white/20 bg-black/30 font-mono text-xs backdrop-blur-sm"
+                          className="border-border bg-black/30 font-mono text-xs backdrop-blur-sm"
                         >
                           {m.plate}
                         </Badge>

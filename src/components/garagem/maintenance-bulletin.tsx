@@ -247,7 +247,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
           </div>
 
           <div className="mb-10 grid grid-cols-1 gap-8 lg:grid-cols-3 print:mb-6">
-            <div className="relative overflow-hidden rounded-xl border border-white/10 bg-card lg:col-span-2">
+            <div className="relative overflow-hidden rounded-xl border border-border bg-card lg:col-span-2">
               <div className="absolute inset-0 z-0">
                 <Image
                   src={ENGINE_IMAGE}
@@ -271,7 +271,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                     Placa: {m.plate ?? "—"} | VIN: {m.vin ?? "—"}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-6 border-t border-white/10 pt-8 md:grid-cols-4">
+                <div className="grid grid-cols-2 gap-6 border-t border-border pt-8 md:grid-cols-4">
                   <div>
                     <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
                       Proprietário
@@ -349,7 +349,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
           </div>
         </>
       ) : isDetail && r ? (
-        <div className="mb-8 border-b border-white/10 pb-6 print:hidden">
+        <div className="mb-8 border-b border-border pb-6 print:hidden">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Scuderia itTECH · serviço
           </p>
@@ -379,7 +379,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             {formatPtDate((r.closed_at ?? r.opened_at) as string)}
           </p>
 
-          <div className="mt-6 max-w-md border-t border-white/10 pt-6">
+          <div className="mt-6 max-w-md border-t border-border pt-6">
             <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Progresso na oficina
             </p>
@@ -400,7 +400,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                 {serviceNotesBlocks.map((block, idx) => (
                   <p
                     key={idx}
-                    className="whitespace-pre-wrap rounded-lg border border-white/10 bg-black/35 px-4 py-3 text-sm text-muted-foreground"
+                    className="whitespace-pre-wrap rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground"
                   >
                     {block}
                   </p>
@@ -453,7 +453,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                     href={src}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative h-28 w-40 overflow-hidden rounded-xl border border-white/10"
+                    className="relative h-28 w-40 overflow-hidden rounded-xl border border-border"
                   >
                     <Image
                       src={src}
@@ -469,7 +469,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             </div>
           ) : null}
 
-          <div className="mt-8 border-t border-white/10 pt-8">
+          <div className="mt-8 border-t border-border pt-8">
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Fatura
             </p>
@@ -516,7 +516,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
       </section>
 
       <div className="mb-10 grid grid-cols-1 gap-8 md:grid-cols-2 print:mb-6">
-        <section className="rounded-xl border border-white/10 bg-card p-8">
+        <section className="rounded-xl border border-border bg-card p-8">
           <div className="mb-2 flex items-center gap-3">
             <Wrench className="size-6 text-primary" aria-hidden />
             <h3 className="font-heading text-lg font-bold uppercase tracking-tight">
@@ -534,7 +534,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                   key={idx}
                   className={
                     idx < lastRevisionNotesBlocks.length - 1
-                      ? "flex gap-4 border-b border-white/10 pb-4"
+                      ? "flex gap-4 border-b border-border pb-4"
                       : "flex gap-4"
                   }
                 >
@@ -566,7 +566,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
         </section>
 
         <div className="flex flex-col gap-8">
-          <div className="relative flex flex-col items-center justify-center gap-6 overflow-hidden rounded-xl border border-white/10 bg-[#262626] p-8 text-center">
+          <div className="relative flex flex-col items-center justify-center gap-6 overflow-hidden rounded-xl border border-border bg-muted p-8 text-center">
             <div className="rounded-full bg-background p-4">
               <ShieldCheck className="size-10 text-primary" aria-hidden />
             </div>
@@ -584,7 +584,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
 
           <section
             id="anexos-faturas"
-            className="scroll-mt-24 rounded-xl border border-white/10 bg-[#1a1a1a] p-6 print:hidden"
+            className="scroll-mt-24 rounded-xl border border-border bg-card p-6 print:hidden"
           >
             <div className="mb-4 flex items-center gap-2">
               <Bike className="size-5 text-primary" aria-hidden />
@@ -598,7 +598,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                       href={item.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm transition-colors hover:bg-white/5"
+                      className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-2 text-sm transition-colors hover:bg-muted"
                     >
                       <span>{item.label}</span>
                       <Download className="size-4 shrink-0 text-primary" aria-hidden />
@@ -617,7 +617,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
         </div>
       </div>
 
-      <footer className="border-t border-white/10 pt-8 print:pt-4">
+      <footer className="border-t border-border pt-8 print:pt-4">
         <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
           <p className="text-[11px] uppercase tracking-widest text-muted-foreground">
             © {new Date().getFullYear()} Scuderia itTECH. Engineering precision.

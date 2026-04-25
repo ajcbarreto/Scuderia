@@ -21,11 +21,11 @@ export function SiteHeader() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed top-0 z-[60] w-full border-b border-white/5 bg-[#0e0e0e]/80 backdrop-blur-lg">
+    <nav className="fixed top-0 z-[60] w-full border-b border-border bg-background/90 shadow-sm backdrop-blur-md backdrop-saturate-150">
       <div className="mx-auto flex max-w-full items-center justify-between px-6 py-4 md:px-8">
         <Link
           href="/"
-          className="font-heading text-2xl font-black tracking-tighter text-white"
+          className="font-heading text-2xl font-bold tracking-tight text-foreground"
         >
           SCUDERIA ITTECH
         </Link>
@@ -39,8 +39,8 @@ export function SiteHeader() {
                 className={cn(
                   "font-heading text-sm font-bold tracking-tight uppercase transition-all",
                   active
-                    ? "border-b-2 border-[#e80f16] pb-1 text-[#e80f16]"
-                    : "text-[#adaaaa] hover:text-white",
+                    ? "border-b-2 border-primary pb-1 text-primary"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {item.label}
@@ -54,13 +54,13 @@ export function SiteHeader() {
             {...(bookHref.startsWith("http")
               ? { target: "_blank", rel: "noopener noreferrer" }
               : {})}
-            className="hidden rounded-md bg-[#e80f16] px-6 py-2 font-heading text-sm font-black tracking-widest text-black transition-all hover:bg-[#ff7668] active:scale-95 sm:inline-flex"
+            className="hidden rounded-md bg-primary px-6 py-2 font-heading text-sm font-black tracking-widest text-primary-foreground transition-all hover:bg-primary/88 active:scale-95 sm:inline-flex"
           >
             MARCAR SERVIÇO
           </Link>
           <Link
             href="/login"
-            className="text-white transition-colors hover:text-[#ff8e80]"
+            className="text-foreground transition-colors hover:text-accent-warm"
             aria-label="Conta — entrar"
           >
             <CircleUserRound className="size-7" strokeWidth={1.5} />

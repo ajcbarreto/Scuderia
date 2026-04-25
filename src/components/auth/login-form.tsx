@@ -57,7 +57,7 @@ export function LoginForm() {
   }
 
   const fieldClass =
-    "h-12 border-0 bg-[#1f1f1f] pl-11 text-[15px] shadow-inner shadow-black/20 ring-1 ring-white/[0.06] transition-shadow placeholder:text-white/25 focus-visible:bg-[#232323] focus-visible:ring-2 focus-visible:ring-[#e80f16]/35";
+    "h-12 border-0 bg-muted pl-11 text-[15px] shadow-inner shadow-black/20 ring-1 ring-white/[0.06] transition-shadow placeholder:text-muted-foreground/50 focus-visible:bg-accent focus-visible:ring-2 focus-visible:ring-primary/35";
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -123,7 +123,7 @@ export function LoginForm() {
       <Button
         type="submit"
         size="lg"
-        className="h-12 w-full rounded-xl font-heading text-base font-semibold shadow-lg shadow-[#e80f16]/15 transition-[transform,box-shadow] hover:shadow-xl hover:shadow-[#e80f16]/20 active:scale-[0.99]"
+        className="h-12 w-full rounded-xl font-heading text-base font-semibold shadow-lg shadow-primary/20 transition-[transform,box-shadow] hover:shadow-xl hover:shadow-primary/28 active:scale-[0.99]"
         disabled={loading}
       >
         {loading ? "A entrar…" : "Entrar"}

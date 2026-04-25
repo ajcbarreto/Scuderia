@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Motorcycle, Profile } from "@/types/database";
+import { loadMotorcycleCatalogEntries } from "@/lib/motorcycle-catalog";
 import { NovaMotaForm } from "../clientes/nova-mota-form";
 import { TransferenciaForm } from "../clientes/transferencia-form";
 
@@ -42,6 +43,8 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
     .select("id, full_name, phone")
     .eq("role", "client")
     .order("full_name", { ascending: true });
+
+  const catalogEntries = await loadMotorcycleCatalogEntries(supabase);
 
   const list = (motas ?? []) as Motorcycle[];
   const clients = (clientProfiles ?? []) as Pick<
@@ -68,15 +71,26 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
         title="Motas"
         description="Frota completa: registo de motas, transferências de propriedade e acesso à ficha de cada uma (revisões e manutenções)."
         actions={
-          <Link
-            href="/admin/clientes"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "border-white/15",
-            )}
-          >
-            Clientes
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/catalogo-motos"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "border-border",
+              )}
+            >
+              Catálogo motas
+            </Link>
+            <Link
+              href="/admin/clientes"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "border-border",
+              )}
+            >
+              Clientes
+            </Link>
+          </div>
         }
       />
 
@@ -85,13 +99,15 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
           <CardHeader>
             <CardTitle className="font-heading">Nova mota</CardTitle>
             <CardDescription>
-              Primeiro período de posse para o cliente escolhido.
+              Escolhe uma variante do catálogo (marca, modelo, ano) ou preenche à mão. Primeiro período
+              de posse para o cliente escolhido.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <NovaMotaForm
               clients={clients}
               defaultOwnerId={preselectClienteId ?? undefined}
+              catalogEntries={catalogEntries}
             />
           </CardContent>
         </Card>
@@ -128,7 +144,7 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
         <div className={adminTableWrap}>
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
+              <TableRow className="border-border/80 hover:bg-transparent">
                 <TableHead>Mota</TableHead>
                 <TableHead>Matrícula</TableHead>
                 <TableHead>Dono atual</TableHead>
@@ -146,12 +162,12 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
                 list.map((row) => {
                   const o = byId[row.current_owner_id];
                   return (
-                    <TableRow key={row.id} className="border-white/5">
+                    <TableRow key={row.id} className="border-border/60">
                       <TableCell className="font-medium">
                         {row.brand} {row.model}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className="border-white/15">
+                        <Badge variant="outline" className="border-border">
                           {row.plate ?? "—"}
                         </Badge>
                       </TableCell>
@@ -178,7 +194,7 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
                             className={buttonVariants({
                               variant: "outline",
                               size: "sm",
-                              className: "border-white/15",
+                              className: "border-border",
                             })}
                           >
                             Oficina

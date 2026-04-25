@@ -73,7 +73,7 @@ export function BoletimServiceHistoryTable({
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-white/10 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">
+          <tr className="border-b border-border text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <th className="w-10 px-2 py-3" aria-hidden />
             <th className="px-3 py-3 sm:px-4">Data</th>
             <th className="px-3 py-3 sm:px-4">KM</th>
@@ -120,10 +120,10 @@ export function BoletimServiceHistoryTable({
                     : undefined
                 }
                 className={cn(
-                  "border-b border-white/5 transition-colors",
-                  i % 2 === 0 ? "bg-[#1a1a1a]/80" : "bg-[#141414]/80",
+                  "border-b border-border/60 transition-colors",
+                  i % 2 === 0 ? "bg-card/80" : "bg-muted/80",
                   interactive &&
-                    "cursor-pointer hover:bg-[#252525]/90 focus-visible:outline focus-visible:ring-2 focus-visible:ring-primary/60",
+                    "cursor-pointer hover:bg-muted focus-visible:outline focus-visible:ring-2 focus-visible:ring-primary/60",
                   isHi && "ring-1 ring-inset ring-primary/40",
                 )}
               >

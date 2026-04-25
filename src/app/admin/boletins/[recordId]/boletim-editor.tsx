@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {
   addServiceTaskFromForm,
+  applyChecklistPresetToServiceRecord,
   deleteServiceAttachmentForm,
   updateServiceRecord,
   uploadServiceAttachment,
@@ -19,14 +20,19 @@ import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { adminSurface } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
+import {
+  type ChecklistPresetWithItems,
+  formatPresetYearRange,
+} from "@/lib/maintenance-checklist";
 import { TaskRow } from "./task-row";
 
 type Props = {
   record: ServiceRecord;
-  mota: Pick<Motorcycle, "id" | "brand" | "model" | "plate">;
+  mota: Pick<Motorcycle, "id" | "brand" | "model" | "plate" | "year">;
   tasks: ServiceTask[];
   attachments: ServiceAttachment[];
   clients: Pick<Profile, "id" | "full_name" | "phone">[];
+  checklistPresets: ChecklistPresetWithItems[];
 };
 
 export function BoletimEditor({
@@ -35,6 +41,7 @@ export function BoletimEditor({
   tasks,
   attachments,
   clients,
+  checklistPresets,
 }: Props) {
   const recordId = record.id;
 
@@ -53,6 +60,16 @@ export function BoletimEditor({
     ActionState | undefined,
     FormData
   >(addServiceTaskFromForm, undefined);
+
+  const [applyState, applyAction, applyPending] = useActionState<
+    ActionState | undefined,
+    FormData
+  >(applyChecklistPresetToServiceRecord, undefined);
+
+  const linkedPresetLabel = record.checklist_preset_id
+    ? checklistPresets.find((p) => p.id === record.checklist_preset_id)
+        ?.service_type_name ?? "Preset associado (marca/modelo já não coincide com a lista)"
+    : null;
 
   useEffect(() => {
     if (uploadState?.ok) {
@@ -93,7 +110,7 @@ export function BoletimEditor({
             href="/admin/boletins"
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
-              "gap-1.5 border-white/15",
+              "gap-1.5 border-border",
             )}
           >
             <ArrowLeft className="size-4" aria-hidden />
@@ -107,8 +124,10 @@ export function BoletimEditor({
           <div>
             <h2 className="font-heading text-lg font-semibold">Progresso do serviço</h2>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Cada tarefa concluída aumenta a percentagem. O cliente vê o mesmo valor na garagem,
-              nesta intervenção.
+              Cada tarefa concluída aumenta a percentagem. Em boletins de{" "}
+              <span className="text-foreground">manutenção</span>, o dono atual vê o progresso na
+              garagem; em <span className="text-foreground">serviço (só oficina)</span> o cliente não
+              vê este registo.
             </p>
           </div>
           <p className="font-heading text-4xl font-semibold tabular-nums text-primary sm:text-right">
@@ -129,7 +148,7 @@ export function BoletimEditor({
               id="title"
               name="title"
               defaultValue={record.title ?? ""}
-              className="border-white/15 bg-[#1a1a1a]"
+              className="border-input bg-background"
             />
           </div>
           <div className="space-y-2">
@@ -138,7 +157,7 @@ export function BoletimEditor({
               id="status"
               name="status"
               defaultValue={record.status}
-              className="flex h-9 w-full rounded-md border border-white/15 bg-[#1a1a1a] px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="draft">Rascunho</option>
               <option value="in_progress">Em curso</option>
@@ -147,13 +166,34 @@ export function BoletimEditor({
             </select>
           </div>
           <div className="space-y-2">
+            <Label htmlFor="record_kind">Manutenção ou serviço</Label>
+            <select
+              id="record_kind"
+              name="record_kind"
+              defaultValue={record.record_kind}
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              <option value="maintenance">
+                Manutenção — aparece na garagem do dono atual (histórico da mota)
+              </option>
+              <option value="shop_service">
+                Serviço (só oficina) — não aparece ao cliente; útil para trabalho interno ou do
+                proprietário anterior
+              </option>
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Após transferência de propriedade, o novo dono continua a ver apenas os boletins
+              marcados como manutenção.
+            </p>
+          </div>
+          <div className="space-y-2">
             <Label htmlFor="shop_notes">Notas da oficina</Label>
             <Textarea
               id="shop_notes"
               name="shop_notes"
               rows={6}
               defaultValue={record.shop_notes ?? ""}
-              className="border-white/15 bg-[#1a1a1a]"
+              className="border-input bg-background"
             />
           </div>
           {metaState?.error ? (
@@ -166,6 +206,91 @@ export function BoletimEditor({
             {metaPending ? "A guardar…" : "Guardar boletim"}
           </Button>
         </form>
+      </section>
+
+      <section className={cn(adminSurface, "p-6 sm:p-8")}>
+        <h2 className="font-heading text-lg font-semibold">Checklist a partir do modelo</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Escolhe o tipo de serviço configurado para{" "}
+          <span className="text-foreground">
+            {mota.brand} {mota.model}
+            {mota.year != null ? ` (${mota.year})` : " (sem ano na ficha — só presets «todos os anos»)"}
+          </span>{" "}
+          e aplica as linhas ao boletim. Podes editar a lista em{" "}
+          <Link href="/admin/checklists" className="text-primary hover:underline">
+            Checklists
+          </Link>
+          .
+        </p>
+        {linkedPresetLabel ? (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Último preset aplicado:{" "}
+            <span className="font-medium text-foreground">{linkedPresetLabel}</span>
+          </p>
+        ) : null}
+        {checklistPresets.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">
+            Não há presets para esta marca, modelo e ano. Cria ou ajusta presets em{" "}
+            <Link href="/admin/checklists/motas" className="text-primary hover:underline">
+              Motas & presets
+            </Link>
+            .
+          </p>
+        ) : (
+          <form action={applyAction} className="mt-4 space-y-4">
+            <input type="hidden" name="record_id" value={recordId} />
+            <div className="space-y-2">
+              <Label htmlFor="preset_id">Tipo de serviço (preset)</Label>
+              <select
+                id="preset_id"
+                name="preset_id"
+                required
+                className="flex h-9 w-full max-w-xl rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                defaultValue={
+                  record.checklist_preset_id &&
+                  checklistPresets.some((p) => p.id === record.checklist_preset_id)
+                    ? record.checklist_preset_id
+                    : ""
+                }
+              >
+                <option value="" disabled>
+                  Escolher…
+                </option>
+                {checklistPresets.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.service_type_name} · {formatPresetYearRange(p.year_min, p.year_max)} (
+                    {p.items.length} linhas)
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="update_title"
+                name="update_title"
+                value="1"
+                defaultChecked
+                className="mt-1 size-4 rounded border border-border bg-card"
+              />
+              <Label htmlFor="update_title" className="font-normal leading-snug">
+                Atualizar o título do boletim para o nome do tipo de serviço
+              </Label>
+            </div>
+            {applyState?.error ? (
+              <p className="text-sm text-destructive">{applyState.error}</p>
+            ) : null}
+            {applyState?.info ? (
+              <p className="text-sm text-muted-foreground">{applyState.info}</p>
+            ) : null}
+            {applyState?.ok && !applyState?.error && !applyState?.info ? (
+              <p className="text-sm text-primary">Checklist aplicada.</p>
+            ) : null}
+            <Button type="submit" disabled={applyPending} variant="secondary" className="font-heading">
+              {applyPending ? "A aplicar…" : "Aplicar ao boletim"}
+            </Button>
+          </form>
+        )}
       </section>
 
       <section className={cn(adminSurface, "p-6 sm:p-8")}>
@@ -190,10 +315,10 @@ export function BoletimEditor({
               id="label"
               name="label"
               placeholder="Ex.: Óleo e filtro"
-              className="border-white/15 bg-[#1a1a1a]"
+              className="border-input bg-background"
             />
           </div>
-          <Button type="submit" disabled={taskPending} variant="outline" className="border-white/15">
+          <Button type="submit" disabled={taskPending} variant="outline" className="border-border">
             {taskPending ? "…" : "Adicionar"}
           </Button>
         </form>
@@ -217,7 +342,7 @@ export function BoletimEditor({
             attachments.map((a) => (
               <li
                 key={a.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2 text-sm"
+                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/80 bg-card px-3 py-2 text-sm"
               >
                 <span className="font-mono text-xs text-muted-foreground">
                   {a.kind} · {a.storage_path.slice(-48)}
@@ -240,7 +365,7 @@ export function BoletimEditor({
           )}
         </ul>
 
-        <form id="upload-form" action={uploadAction} className="mt-6 space-y-4 border-t border-white/10 pt-6">
+        <form id="upload-form" action={uploadAction} className="mt-6 space-y-4 border-t border-border/80 pt-6">
           <div className="space-y-2">
             <Label htmlFor="file">Ficheiro</Label>
             <Input
@@ -248,7 +373,7 @@ export function BoletimEditor({
               name="file"
               type="file"
               required
-              className="border-white/15 bg-[#1a1a1a]"
+              className="border-input bg-background"
             />
           </div>
           <div className="space-y-2">
@@ -257,7 +382,7 @@ export function BoletimEditor({
               id="kind"
               name="kind"
               defaultValue="photo"
-              className="flex h-9 w-full rounded-md border border-white/15 bg-[#1a1a1a] px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="photo">Foto</option>
               <option value="invoice">Fatura</option>
@@ -271,7 +396,7 @@ export function BoletimEditor({
             <select
               id="visible_to_owner_id"
               name="visible_to_owner_id"
-              className="flex h-9 w-full rounded-md border border-white/15 bg-[#1a1a1a] px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="">— Para faturas: escolher cliente —</option>
               {clients.map((c) => (

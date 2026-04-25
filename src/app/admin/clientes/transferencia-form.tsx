@@ -33,7 +33,7 @@ export function TransferenciaForm({ motas, clients }: Props) {
           id="motorcycle_id"
           name="motorcycle_id"
           required
-          className="flex h-9 w-full rounded-md border border-white/15 bg-[#1a1a1a] px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <option value="">— Escolher —</option>
           {motas.map((m) => (
@@ -50,7 +50,7 @@ export function TransferenciaForm({ motas, clients }: Props) {
           id="new_owner_id"
           name="new_owner_id"
           required
-          className="flex h-9 w-full rounded-md border border-white/15 bg-[#1a1a1a] px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+          className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
         >
           <option value="">— Escolher —</option>
           {clients.map((c) => (
@@ -68,7 +68,7 @@ export function TransferenciaForm({ motas, clients }: Props) {
           name="transfer_note"
           rows={2}
           placeholder="Ex.: venda, documentação entregue…"
-          className="border-white/15 bg-[#1a1a1a]"
+          className="border-input bg-background"
         />
       </div>
       {state?.error ? (
@@ -77,7 +77,7 @@ export function TransferenciaForm({ motas, clients }: Props) {
       {state?.ok ? (
         <p className="text-sm text-primary">Transferência registada.</p>
       ) : null}
-      <Button type="submit" disabled={pending} variant="outline" className="border-white/15 font-heading">
+      <Button type="submit" disabled={pending} variant="outline" className="border-border font-heading">
         {pending ? "A processar…" : "Registar transferência"}
       </Button>
     </form>

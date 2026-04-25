@@ -28,6 +28,7 @@ type RecentRow = {
   title: string | null;
   status: string;
   opened_at: string;
+  record_kind: "maintenance" | "shop_service";
   /** Supabase pode devolver objeto ou array em relações 1:1 */
   motorcycles: MotoJoin | MotoJoin[] | null;
 };
@@ -69,7 +70,7 @@ export default async function AdminDashboardPage() {
     supabase
       .from("service_records")
       .select(
-        "id, title, status, opened_at, motorcycles (brand, model, plate)",
+        "id, title, status, record_kind, opened_at, motorcycles (brand, model, plate)",
       )
       .order("opened_at", { ascending: false })
       .limit(6),
@@ -96,7 +97,7 @@ export default async function AdminDashboardPage() {
       hint: "Iniciar registo",
       href: "/admin/servico",
       icon: PlusCircle,
-      accent: "border-l-primary bg-[#1a1a1a] hover:bg-[#262626]",
+      accent: "border-l-primary bg-card hover:bg-muted",
       iconWrap: "bg-primary/15 text-primary group-hover:bg-primary group-hover:text-primary-foreground",
       arrowClass: "text-primary",
     },
@@ -105,19 +106,20 @@ export default async function AdminDashboardPage() {
       hint: "Adicionar à garagem",
       href: "/admin/clientes#novo-cliente",
       icon: UserPlus,
-      accent: "border-l-[#90e98b] bg-[#1a1a1a] hover:bg-[#262626]",
+      accent: "border-l-emerald-600 bg-card hover:bg-muted",
       iconWrap:
-        "bg-[#90e98b]/12 text-[#90e98b] group-hover:bg-[#90e98b] group-hover:text-black",
-      arrowClass: "text-[#90e98b]",
+        "bg-emerald-500/12 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
+      arrowClass: "text-emerald-600",
     },
     {
       title: "Carregar fatura / anexo",
       hint: "Via boletim de serviço",
       href: "/admin/boletins",
       icon: CloudUpload,
-      accent: "border-l-white/25 bg-[#1a1a1a] hover:bg-[#262626]",
-      iconWrap: "bg-white/5 text-white group-hover:bg-white group-hover:text-black",
-      arrowClass: "text-white",
+      accent: "border-l-muted-foreground/30 bg-card hover:bg-muted",
+      iconWrap:
+        "bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground",
+      arrowClass: "text-muted-foreground",
     },
   ] as const;
 
@@ -136,7 +138,7 @@ export default async function AdminDashboardPage() {
       hint: "Rascunho ou em curso",
       icon: Construction,
       tag: "Operação",
-      tagClass: "text-[#90e98b]",
+      tagClass: "text-emerald-700",
     },
     {
       label: "Anexos tipo fatura",
@@ -152,20 +154,20 @@ export default async function AdminDashboardPage() {
       hint: "Janela preferida",
       icon: CalendarDays,
       tag: "Agenda",
-      tagClass: "text-white",
+      tagClass: "text-primary",
     },
   ] as const;
 
   return (
     <div className="space-y-10">
-      <header className="border-b border-[#484847]/10 pb-8">
+      <header className="border-b border-border pb-8">
         <p className="font-heading text-[10px] font-semibold uppercase tracking-[0.35em] text-primary">
           Scuderia itTECH
         </p>
-        <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+        <h1 className="mt-2 font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Painel operativo
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#adaaaa]">
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground">
           Resumo da frota, trabalhos em curso e movimento recente — alinhado com o fluxo da oficina.
         </p>
       </header>
@@ -178,7 +180,7 @@ export default async function AdminDashboardPage() {
               href={href}
               className={cn(
                 "group flex items-center justify-between rounded-lg border border-transparent p-5 transition-colors duration-300",
-                "border-l-4 shadow-sm shadow-black/20",
+                "border-l-4 shadow-sm shadow-foreground/8",
                 accent,
               )}
             >
@@ -192,10 +194,10 @@ export default async function AdminDashboardPage() {
                   <Icon className="size-6" aria-hidden />
                 </div>
                 <div className="text-left">
-                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-white">
+                  <p className="font-heading text-sm font-bold uppercase tracking-widest text-foreground">
                     {title}
                   </p>
-                  <p className="mt-0.5 font-heading text-[10px] uppercase tracking-widest text-[#adaaaa]">
+                  <p className="mt-0.5 font-heading text-[10px] uppercase tracking-widest text-muted-foreground">
                     {hint}
                   </p>
                 </div>
@@ -212,42 +214,42 @@ export default async function AdminDashboardPage() {
             key={label}
             className={cn(
               adminSurfaceLow,
-              "p-6 transition-colors hover:border-[#484847]/25",
+              "p-6 transition-colors hover:border-border",
             )}
           >
             <div className="mb-4 flex items-start justify-between gap-3">
-              <Icon className="size-6 text-[#adaaaa]" aria-hidden />
+              <Icon className="size-6 text-muted-foreground" aria-hidden />
               <span className={cn("font-heading text-[10px] font-semibold uppercase tracking-widest", tagClass)}>
                 {tag}
               </span>
             </div>
-            <p className="font-heading text-4xl font-black tabular-nums text-white">{value}</p>
-            <p className="mt-1 font-heading text-[10px] font-medium uppercase tracking-widest text-[#adaaaa]">
+            <p className="font-heading text-4xl font-black tabular-nums text-foreground">{value}</p>
+            <p className="mt-1 font-heading text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
               {label}
             </p>
-            <p className="mt-2 text-xs text-[#767575]">{hint}</p>
+            <p className="mt-2 text-xs text-muted-foreground/80">{hint}</p>
           </div>
         ))}
       </section>
 
       <section className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-lg bg-[#1a1a1a] p-6 sm:p-8">
+        <div className="lg:col-span-2 rounded-lg bg-card p-6 sm:p-8">
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white">
+              <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-foreground">
                 Timeline de manutenção
               </h2>
-              <p className="mt-1 font-heading text-[10px] uppercase tracking-widest text-[#adaaaa]">
+              <p className="mt-1 font-heading text-[10px] uppercase tracking-widest text-muted-foreground">
                 Marcos por modelo (ilustrativo)
               </p>
             </div>
-            <div className="flex flex-wrap gap-4 font-heading text-[10px] font-semibold uppercase tracking-widest text-[#adaaaa]">
+            <div className="flex flex-wrap gap-4 font-heading text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               <span className="inline-flex items-center gap-2">
                 <span className="size-2 rounded-full bg-primary" />
                 Desmo / crítico
               </span>
               <span className="inline-flex items-center gap-2">
-                <span className="size-2 rounded-full bg-[#90e98b]" />
+                <span className="size-2 rounded-full bg-emerald-500" />
                 Óleo / anual
               </span>
             </div>
@@ -255,22 +257,25 @@ export default async function AdminDashboardPage() {
           <div className="relative min-h-[280px]">
             <div className="absolute inset-0 flex flex-col justify-between py-2">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-px w-full bg-[#484847]/15" />
+                <div key={i} className="h-px w-full bg-muted-foreground/15" />
               ))}
             </div>
             <div className="relative flex h-[260px] items-end justify-between gap-2 px-2 sm:px-4">
               {fleetBars.length === 0 ? (
-                <p className="w-full pb-8 text-center text-sm text-[#adaaaa]">
+                <p className="w-full pb-8 text-center text-sm text-muted-foreground">
                   Ainda sem motas na frota para visualizar barras.
                 </p>
               ) : (
                 fleetBars.map((m, i) => {
                   const h = barHeights[i % barHeights.length] ?? 40;
-                  const fill = i % 2 === 0 ? "bg-primary/45 border-t border-primary" : "bg-[#90e98b]/40 border-t border-[#90e98b]";
+                  const fill =
+                    i % 2 === 0
+                      ? "bg-primary/45 border-t border-primary"
+                      : "bg-emerald-500/40 border-t border-emerald-600";
                   return (
                     <div key={m.id} className="flex w-12 flex-col items-center sm:w-16">
                       <div
-                        className="relative w-8 rounded-t bg-[#262626] sm:w-10"
+                        className="relative w-8 rounded-t bg-muted sm:w-10"
                         style={{ height: `${h + 40}px` }}
                       >
                         <div
@@ -281,7 +286,7 @@ export default async function AdminDashboardPage() {
                           style={{ height: `${Math.max(24, h * 0.55)}px` }}
                         />
                       </div>
-                      <span className="mt-3 text-center font-heading text-[10px] uppercase leading-tight text-[#adaaaa]">
+                      <span className="mt-3 text-center font-heading text-[10px] uppercase leading-tight text-muted-foreground">
                         {(m.model ?? m.brand).slice(0, 14)}
                       </span>
                     </div>
@@ -292,13 +297,13 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="rounded-lg bg-[#1a1a1a] p-6 sm:p-8">
+        <div className="rounded-lg bg-card p-6 sm:p-8">
           <div className="mb-6 flex items-end justify-between gap-3">
             <div>
-              <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-white">
+              <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-foreground">
                 Fluxo de serviço
               </h2>
-              <p className="mt-1 font-heading text-[10px] uppercase tracking-widest text-[#adaaaa]">
+              <p className="mt-1 font-heading text-[10px] uppercase tracking-widest text-muted-foreground">
                 Últimas entradas
               </p>
             </div>
@@ -311,15 +316,15 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="space-y-6">
             {recent.length === 0 ? (
-              <p className="text-sm text-[#adaaaa]">Sem registos ainda.</p>
+              <p className="text-sm text-muted-foreground">Sem registos ainda.</p>
             ) : (
               recent.map((row, idx) => {
                 const dot =
                   row.status === "completed"
-                    ? "bg-[#484847]"
+                    ? "bg-muted-foreground"
                     : idx % 2 === 0
                       ? "bg-primary"
-                      : "bg-[#90e98b]";
+                      : "bg-emerald-500";
                 const moto = motoFromRow(row);
                 const asset = moto
                   ? `${moto.brand} ${moto.model}${moto.plate ? ` (${moto.plate})` : ""}`
@@ -335,7 +340,7 @@ export default async function AdminDashboardPage() {
                 return (
                   <div
                     key={row.id}
-                    className="relative border-l border-[#484847]/30 pl-4"
+                    className="relative border-l border-border pl-4"
                   >
                     <span
                       className={cn(
@@ -344,18 +349,21 @@ export default async function AdminDashboardPage() {
                       )}
                     />
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-heading text-[11px] font-bold uppercase text-white">
+                      <h3 className="font-heading text-[11px] font-bold uppercase text-foreground">
                         {row.title?.trim() || "Intervenção"}
                       </h3>
-                      <span className="shrink-0 text-[9px] uppercase tracking-wide text-[#767575]">
+                      <span className="shrink-0 text-[9px] uppercase tracking-wide text-muted-foreground/80">
                         {when}
                       </span>
                     </div>
-                    <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-[#adaaaa]">
+                    <p className="mt-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                       Ativo: {asset}
                     </p>
                     <p className="mt-1 text-[9px] uppercase tracking-wide text-primary/80">
                       Estado: {row.status.replace("_", " ")}
+                      {(row.record_kind ?? "maintenance") === "shop_service"
+                        ? " · só oficina"
+                        : " · garagem"}
                     </p>
                   </div>
                 );
@@ -367,7 +375,7 @@ export default async function AdminDashboardPage() {
 
       <section className="grid gap-6 lg:grid-cols-4">
         <div className={cn(adminGlassPanel, "p-6 lg:col-span-1")}>
-          <h3 className="font-heading text-xs font-bold uppercase tracking-widest text-white">
+          <h3 className="font-heading text-xs font-bold uppercase tracking-widest text-foreground">
             Carga da oficina
           </h3>
           <div className="relative mt-4 pt-1">
@@ -375,52 +383,52 @@ export default async function AdminDashboardPage() {
               <span className="inline-block rounded-full bg-primary/15 px-2 py-1 font-heading text-[9px] font-semibold uppercase tracking-widest text-primary">
                 Utilização estimada
               </span>
-              <span className="font-heading text-[10px] font-semibold text-white">{utilization}%</span>
+              <span className="font-heading text-[10px] font-semibold text-foreground">{utilization}%</span>
             </div>
-            <div className="mb-4 flex h-1.5 overflow-hidden rounded-full bg-[#262626] text-xs">
+            <div className="mb-4 flex h-1.5 overflow-hidden rounded-full bg-muted text-xs">
               <div
                 className="bg-primary shadow-none transition-all"
                 style={{ width: `${utilization}%` }}
               />
             </div>
-            <p className="text-[9px] font-medium uppercase leading-relaxed text-[#adaaaa]">
+            <p className="text-[9px] font-medium uppercase leading-relaxed text-muted-foreground">
               Baseado em motas na frota vs. intervenções abertas. Ajusta processos reais na oficina.
             </p>
           </div>
         </div>
 
-        <div className="rounded-lg bg-[#1a1a1a] p-6 lg:col-span-3 lg:flex lg:flex-col lg:justify-center">
+        <div className="rounded-lg bg-card p-6 lg:col-span-3 lg:flex lg:flex-col lg:justify-center">
           <div className="grid gap-6 text-center sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-[#adaaaa]">
+              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Clientes ativos
               </p>
-              <p className="mt-1 font-heading text-xl font-bold text-white">{clientes ?? 0}</p>
+              <p className="mt-1 font-heading text-xl font-bold text-foreground">{clientes ?? 0}</p>
             </div>
             <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-[#adaaaa]">
+              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Taxa de progresso média
               </p>
-              <p className="mt-1 font-heading text-xl font-bold text-white">
+              <p className="mt-1 font-heading text-xl font-bold text-foreground">
                 {typeof abertos === "number" && abertos > 0 ? "Em curso" : "—"}
               </p>
             </div>
             <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-[#adaaaa]">
+              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Peças & stock
               </p>
-              <p className="mt-1 font-heading text-xl font-bold text-white">N/D</p>
+              <p className="mt-1 font-heading text-xl font-bold text-foreground">N/D</p>
             </div>
             <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-[#adaaaa]">
+              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Eficiência registo
               </p>
-              <p className="mt-1 font-heading text-xl font-bold text-white">
+              <p className="mt-1 font-heading text-xl font-bold text-foreground">
                 {typeof motas === "number" && motas > 0 ? `${Math.min(130, 88 + (motas % 15))}%` : "—"}
               </p>
             </div>
           </div>
-          <p className="mt-6 text-center text-[11px] text-[#767575]">
+          <p className="mt-6 text-center text-[11px] text-muted-foreground/80">
             Indicadores operacionais ilustrativos; liga inventário físico quando existir integração.
           </p>
         </div>

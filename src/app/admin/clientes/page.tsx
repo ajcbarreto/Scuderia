@@ -86,38 +86,41 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
   function statusLabel(motoId: string) {
     const s = openByMoto.get(motoId);
     if (s === "in_progress") return { label: "Em serviço", className: "bg-primary/15 text-primary" };
-    if (s === "draft") return { label: "Rascunho", className: "bg-[#262626] text-[#adaaaa]" };
-    return { label: "Operacional", className: "bg-[#0b6b1d]/15 text-[#90e98b]" };
+    if (s === "draft") return { label: "Rascunho", className: "bg-muted text-muted-foreground" };
+    return {
+      label: "Operacional",
+      className: "bg-emerald-500/12 text-emerald-800",
+    };
   }
 
   return (
     <div className="space-y-10">
-      <header className="flex flex-col gap-4 border-b border-[#484847]/10 pb-8 lg:flex-row lg:items-end lg:justify-between">
+      <header className="flex flex-col gap-4 border-b border-border pb-8 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="font-heading text-2xl font-bold uppercase tracking-tight text-white sm:text-3xl">
+          <h1 className="font-heading text-2xl font-bold uppercase tracking-tight text-foreground sm:text-3xl">
             Scuderia itTECH
           </h1>
           <div className="mt-2 flex items-center gap-3">
-            <div className="h-4 w-px bg-[#484847]/40" />
-            <p className="font-heading text-xs font-medium uppercase tracking-widest text-[#adaaaa]">
+            <div className="h-4 w-px bg-muted-foreground/40" />
+            <p className="font-heading text-xs font-medium uppercase tracking-widest text-muted-foreground">
               Clientes & frota
             </p>
           </div>
         </div>
-        <div className="relative w-full max-w-md rounded-full border border-[#484847]/15 bg-[#262626]">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#adaaaa]">
+        <div className="relative w-full max-w-md rounded-full border border-border/80 bg-muted">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
             <User className="size-4" aria-hidden />
           </span>
-          <p className="py-2.5 pl-10 pr-4 font-heading text-[10px] uppercase tracking-widest text-[#767575]">
+          <p className="py-2.5 pl-10 pr-4 font-heading text-[10px] uppercase tracking-widest text-muted-foreground/80">
             Pesquisa por nome na lista ao lado
           </p>
         </div>
       </header>
 
-      <Card id="novo-cliente" className="border-[#484847]/15 bg-[#1a1a1a] shadow-none ring-0">
+      <Card id="novo-cliente" className="border-border/80 bg-card shadow-none ring-0">
         <CardHeader>
-          <CardTitle className="font-heading text-lg text-white">Novo cliente</CardTitle>
-          <CardDescription className="text-[#adaaaa]">
+          <CardTitle className="font-heading text-lg text-foreground">Novo cliente</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Cria a conta e entrega credenciais para a pessoa aceder à garagem digital.
           </CardDescription>
         </CardHeader>
@@ -127,7 +130,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
       </Card>
 
       {clients.length === 0 ? (
-        <p className="text-sm text-[#adaaaa]">Ainda não há clientes registados.</p>
+        <p className="text-sm text-muted-foreground">Ainda não há clientes registados.</p>
       ) : (
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 lg:grid-cols-12">
           <section className="flex flex-col gap-4 lg:col-span-4">
@@ -135,7 +138,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
               <h2 className="font-heading text-sm font-bold uppercase tracking-[0.2em] text-primary">
                 Diretório
               </h2>
-              <span className="rounded bg-[#1a1a1a] px-2 py-0.5 font-heading text-[10px] uppercase tracking-widest text-[#adaaaa]">
+              <span className="rounded bg-card px-2 py-0.5 font-heading text-[10px] uppercase tracking-widest text-muted-foreground">
                 {clients.length} ativos
               </span>
             </div>
@@ -151,8 +154,8 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                     className={cn(
                       "relative overflow-hidden rounded-lg p-4 transition-colors",
                       active
-                        ? "border-l-2 border-primary bg-[#1a1a1a]"
-                        : "border-l-2 border-transparent bg-[#131313] hover:border-[#484847]/50",
+                        ? "border-l-2 border-primary bg-card"
+                        : "border-l-2 border-transparent bg-muted hover:border-border",
                     )}
                   >
                     {active ? (
@@ -164,8 +167,8 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                     <div className="relative z-10 flex items-center gap-4">
                       <div
                         className={cn(
-                          "flex size-12 shrink-0 items-center justify-center rounded-lg border border-[#484847]/20 bg-[#262626]",
-                          active ? "text-primary" : "text-[#adaaaa]",
+                          "flex size-12 shrink-0 items-center justify-center rounded-lg border border-border bg-muted",
+                          active ? "text-primary" : "text-muted-foreground",
                         )}
                       >
                         <User className="size-6" style={active ? { opacity: 1 } : undefined} />
@@ -174,12 +177,14 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                         <h3
                           className={cn(
                             "truncate font-heading text-sm font-bold uppercase tracking-tight",
-                            active ? "text-white" : "text-white/70 hover:text-white",
+                            active
+                              ? "text-foreground"
+                              : "text-muted-foreground hover:text-foreground",
                           )}
                         >
                           {c.full_name ?? "Sem nome"}
                         </h3>
-                        <p className="mt-0.5 truncate font-heading text-[10px] uppercase tracking-wider text-[#adaaaa]">
+                        <p className="mt-0.5 truncate font-heading text-[10px] uppercase tracking-wider text-muted-foreground">
                           {preview ? `${preview.brand} ${preview.model}` : "Sem mota como dono"}
                         </p>
                       </div>
@@ -196,23 +201,23 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
           <section className="flex flex-col gap-8 lg:col-span-8">
             {selected ? (
               <>
-                <div className="relative overflow-hidden bg-[#1a1a1a] p-6 sm:p-8">
+                <div className="relative overflow-hidden bg-card p-6 sm:p-8">
                   <div className="relative z-10 flex flex-col gap-6">
                     <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                        <div className="flex size-20 shrink-0 items-center justify-center rounded-xl border border-[#484847]/30 bg-[#262626] font-heading text-2xl font-black text-primary">
+                        <div className="flex size-20 shrink-0 items-center justify-center rounded-xl border border-border bg-muted font-heading text-2xl font-black text-primary">
                           {initials(selected.full_name)}
                         </div>
                         <div>
                           <div className="mb-1 flex flex-wrap items-center gap-2">
-                            <h2 className="font-heading text-2xl font-black uppercase tracking-tight text-white">
+                            <h2 className="font-heading text-2xl font-black uppercase tracking-tight text-foreground">
                               {selected.full_name ?? "Sem nome"}
                             </h2>
-                            <Badge className="border border-[#0b6b1d]/35 bg-[#0b6b1d]/15 font-heading text-[10px] font-bold uppercase tracking-widest text-[#90e98b]">
+                            <Badge className="border border-emerald-600/25 bg-emerald-500/10 font-heading text-[10px] font-bold uppercase tracking-widest text-emerald-800">
                               Frota verificada
                             </Badge>
                           </div>
-                          <p className="text-sm font-medium text-[#adaaaa]">
+                          <p className="text-sm font-medium text-muted-foreground">
                             Conta de cliente na garagem digital.
                           </p>
                         </div>
@@ -221,7 +226,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                         href={`/admin/motas?cliente=${selected.id}`}
                         className={cn(
                           buttonVariants({ variant: "outline", size: "sm" }),
-                          "border-[#484847]/25 font-heading text-[10px] font-bold uppercase tracking-widest hover:border-primary hover:text-primary",
+                          "border-border font-heading text-[10px] font-bold uppercase tracking-widest hover:border-primary hover:text-primary",
                         )}
                       >
                         Adicionar mota
@@ -238,21 +243,21 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                       ].map((row) => (
                         <div
                           key={row.k}
-                          className="rounded-lg border border-[#484847]/10 bg-[#131313] p-4"
+                          className="rounded-lg border border-border bg-muted p-4"
                         >
-                          <p className="font-heading text-[10px] font-semibold uppercase tracking-widest text-[#adaaaa]">
+                          <p className="font-heading text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
                             {row.k}
                           </p>
-                          <p className="mt-1 text-sm font-medium text-white">{row.v}</p>
+                          <p className="mt-1 text-sm font-medium text-foreground">{row.v}</p>
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="overflow-hidden bg-[#1a1a1a]">
-                  <div className="flex flex-col gap-3 border-b border-[#484847]/10 p-6 sm:flex-row sm:items-center sm:justify-between">
-                    <h3 className="font-heading text-sm font-bold uppercase tracking-[0.2em] text-white">
+                <div className="overflow-hidden bg-card">
+                  <div className="flex flex-col gap-3 border-b border-border p-6 sm:flex-row sm:items-center sm:justify-between">
+                    <h3 className="font-heading text-sm font-bold uppercase tracking-[0.2em] text-foreground">
                       Frota associada
                     </h3>
                     <Link
@@ -269,20 +274,20 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow className="border-[#484847]/10 hover:bg-transparent">
-                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-[#adaaaa]">
+                        <TableRow className="border-border hover:bg-transparent">
+                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                             Modelo
                           </TableHead>
-                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-[#adaaaa]">
+                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                             Matrícula
                           </TableHead>
-                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-[#adaaaa]">
+                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                             VIN
                           </TableHead>
-                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-[#adaaaa]">
+                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                             Ano
                           </TableHead>
-                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-[#adaaaa]">
+                          <TableHead className="font-heading text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
                             Estado
                           </TableHead>
                           <TableHead className="w-10" />
@@ -290,8 +295,8 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                       </TableHeader>
                       <TableBody>
                         {owned.length === 0 ? (
-                          <TableRow className="border-[#484847]/5 hover:bg-transparent">
-                            <TableCell colSpan={6} className="text-[#adaaaa]">
+                          <TableRow className="border-border/60 hover:bg-transparent">
+                            <TableCell colSpan={6} className="text-muted-foreground">
                               Sem motas como dono atual. Usa &quot;Nova mota&quot; para associar.
                             </TableCell>
                           </TableRow>
@@ -301,33 +306,33 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                             return (
                               <TableRow
                                 key={m.id}
-                                className="border-[#484847]/5 hover:bg-[#262626]/40"
+                                className="border-border/60 hover:bg-muted/40"
                               >
                                 <TableCell>
                                   <Link
                                     href={`/admin/motas/${m.id}`}
                                     className="flex items-center gap-3 group"
                                   >
-                                    <div className="flex size-8 items-center justify-center rounded bg-[#262626] text-primary">
+                                    <div className="flex size-8 items-center justify-center rounded bg-muted text-primary">
                                       <Bike className="size-4" aria-hidden />
                                     </div>
                                     <div>
-                                      <p className="font-heading text-sm font-bold uppercase tracking-tight text-white group-hover:text-primary">
+                                      <p className="font-heading text-sm font-bold uppercase tracking-tight text-foreground group-hover:text-primary">
                                         {m.brand} {m.model}
                                       </p>
-                                      <p className="text-[9px] font-medium uppercase tracking-wide text-[#adaaaa]">
+                                      <p className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground">
                                         {m.notes ? `${m.notes.slice(0, 48)}…` : "—"}
                                       </p>
                                     </div>
                                   </Link>
                                 </TableCell>
-                                <TableCell className="font-mono text-xs uppercase text-white">
+                                <TableCell className="font-mono text-xs uppercase text-foreground">
                                   {m.plate ?? "—"}
                                 </TableCell>
-                                <TableCell className="max-w-[140px] truncate font-mono text-xs text-[#adaaaa]">
+                                <TableCell className="max-w-[140px] truncate font-mono text-xs text-muted-foreground">
                                   {m.vin ?? "—"}
                                 </TableCell>
-                                <TableCell className="text-xs font-bold text-white">
+                                <TableCell className="text-xs font-bold text-foreground">
                                   {m.year ?? "—"}
                                 </TableCell>
                                 <TableCell>
@@ -344,7 +349,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                                 <TableCell className="text-right">
                                   <Link
                                     href={`/admin/motas/${m.id}`}
-                                    className="inline-flex text-[#adaaaa] hover:text-white"
+                                    className="inline-flex text-muted-foreground hover:text-foreground"
                                     aria-label="Abrir mota"
                                   >
                                     <MoreVertical className="size-5" />
@@ -361,10 +366,10 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
 
                 <div className="grid gap-6 md:grid-cols-2">
                   <div className={cn(adminSurfaceLow, "p-6")}>
-                    <p className="font-heading text-xs font-bold uppercase tracking-widest text-white">
+                    <p className="font-heading text-xs font-bold uppercase tracking-widest text-foreground">
                       Resumo
                     </p>
-                    <p className="mt-3 text-sm leading-relaxed text-[#adaaaa]">
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                       A ficha completa da mota, transferências e boletins vive em{" "}
                       <Link href="/admin/motas" className="text-primary hover:underline">
                         Frota
@@ -376,18 +381,18 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                       .
                     </p>
                   </div>
-                  <div className="relative overflow-hidden rounded-xl border border-[#484847]/10 bg-[#1a1a1a] p-6">
+                  <div className="relative overflow-hidden rounded-xl border border-border bg-card p-6">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 transition-opacity hover:opacity-100" />
                     <div className="relative z-10">
                       <div className="mb-6 flex items-center justify-between">
-                        <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-[#adaaaa]">
+                        <h4 className="font-heading text-xs font-bold uppercase tracking-widest text-muted-foreground">
                           Fiabilidade estimada
                         </h4>
                         <span className="font-heading text-2xl font-black text-primary">
                           {owned.length === 0 ? "—" : `${Math.min(99, 82 + (owned.length % 12))}%`}
                         </span>
                       </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#262626]">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                         <div
                           className="h-full bg-primary transition-all"
                           style={{
@@ -395,7 +400,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                           }}
                         />
                       </div>
-                      <p className="mt-4 text-[10px] font-medium uppercase leading-relaxed tracking-wider text-[#adaaaa]">
+                      <p className="mt-4 text-[10px] font-medium uppercase leading-relaxed tracking-wider text-muted-foreground">
                         Indicador ilustrativo; cruza com inspeções reais nos boletins de manutenção.
                       </p>
                     </div>

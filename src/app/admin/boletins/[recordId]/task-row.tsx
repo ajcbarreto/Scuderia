@@ -16,7 +16,7 @@ export function TaskRow({ recordId, task }: Props) {
   const [pending, startTransition] = useTransition();
 
   return (
-    <li className="flex items-start gap-3 rounded-lg border border-white/10 bg-[#1a1a1a] px-3 py-2">
+    <li className="flex items-start gap-3 rounded-lg border border-border/80 bg-card px-3 py-2">
       <Checkbox
         checked={task.completed}
         disabled={pending}

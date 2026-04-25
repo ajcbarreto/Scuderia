@@ -14,7 +14,13 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import type { Motorcycle, Profile, ServiceRecord, ServiceRecordStatus } from "@/types/database";
+import type {
+  Motorcycle,
+  Profile,
+  ServiceRecord,
+  ServiceRecordKind,
+  ServiceRecordStatus,
+} from "@/types/database";
 
 type Props = { params: Promise<{ motorcycleId: string }> };
 
@@ -23,6 +29,11 @@ const statusLabel: Record<ServiceRecordStatus, string> = {
   in_progress: "Em curso",
   completed: "Concluído",
   cancelled: "Cancelado",
+};
+
+const recordKindLabel: Record<ServiceRecordKind, string> = {
+  maintenance: "Manutenção",
+  shop_service: "Serviço",
 };
 
 function isOpen(s: ServiceRecordStatus) {
@@ -92,7 +103,7 @@ export default async function AdminMotaDetailPage({ params }: Props) {
               href={`/admin/boletins?mota=${m.id}`}
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
-                "border-white/15",
+                "border-border",
               )}
             >
               Lista de boletins
@@ -179,9 +190,14 @@ export default async function AdminMotaDetailPage({ params }: Props) {
                       Aberto em {r.opened_at?.slice(0, 10)}
                     </p>
                   </div>
-                  <Badge variant="secondary" className="font-normal">
-                    {statusLabel[r.status]}
-                  </Badge>
+                  <div className="flex flex-wrap items-center justify-end gap-1.5">
+                    <Badge variant="outline" className="border-border font-normal">
+                      {recordKindLabel[r.record_kind]}
+                    </Badge>
+                    <Badge variant="secondary" className="font-normal">
+                      {statusLabel[r.status]}
+                    </Badge>
+                  </div>
                 </div>
                 <div className="mt-3 space-y-2">
                   <div className="flex justify-between text-xs text-muted-foreground">
@@ -195,7 +211,7 @@ export default async function AdminMotaDetailPage({ params }: Props) {
                 <Link
                   href={`/admin/boletins/${r.id}`}
                   className={cn(
-                    buttonVariants({ variant: "outline", size: "sm", className: "mt-4 w-full border-white/15" }),
+                    buttonVariants({ variant: "outline", size: "sm", className: "mt-4 w-full border-border" }),
                   )}
                 >
                   Abrir boletim
@@ -235,7 +251,10 @@ export default async function AdminMotaDetailPage({ params }: Props) {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className="border-white/15 font-normal">
+                  <Badge variant="outline" className="border-border font-normal">
+                    {recordKindLabel[r.record_kind]}
+                  </Badge>
+                  <Badge variant="outline" className="border-border font-normal">
                     {statusLabel[r.status]}
                   </Badge>
                   <span className="text-sm tabular-nums text-muted-foreground">

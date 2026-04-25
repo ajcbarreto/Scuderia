@@ -14,7 +14,7 @@ export default async function AgendamentoLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-white/5 bg-background/90 backdrop-blur-xl">
+      <header className="border-b border-border/80 bg-background/90 backdrop-blur-xl">
         <div className="container mx-auto flex h-14 max-w-lg items-center px-4">
           <Link href="/garagem" className="text-sm text-muted-foreground hover:text-foreground">
             ← Garagem

@@ -53,7 +53,7 @@ export function LandingLoginForm() {
   }
 
   return (
-    <div className="relative flex flex-col overflow-hidden rounded-xl border border-white/5 bg-[#131313] p-8">
+    <div className="relative flex flex-col overflow-hidden rounded-xl border border-border/60 bg-card p-8">
       <div className="pointer-events-none absolute -top-10 -right-10 opacity-5">
         <Settings className="size-[120px]" strokeWidth={1} />
       </div>
@@ -83,7 +83,7 @@ export function LandingLoginForm() {
             placeholder="nome@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="h-12 rounded-md border-0 bg-[#262626] text-white ring-primary/0 placeholder:text-white/10 focus-visible:ring-1 focus-visible:ring-[#e80f16]"
+            className="h-12 rounded-md border-0 bg-muted text-foreground ring-primary/0 placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-primary"
           />
         </div>
         <div className="group">
@@ -101,20 +101,20 @@ export function LandingLoginForm() {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="h-12 rounded-md border-0 bg-[#262626] text-white ring-primary/0 placeholder:text-white/10 focus-visible:ring-1 focus-visible:ring-[#e80f16]"
+            className="h-12 rounded-md border-0 bg-muted text-foreground ring-primary/0 placeholder:text-muted-foreground/40 focus-visible:ring-1 focus-visible:ring-primary"
           />
         </div>
         <div className="pt-4">
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-[#e80f16] py-4 text-sm font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-red-900/20 transition-transform hover:bg-[#e80f16]/90 active:scale-95 disabled:opacity-60"
+            className="w-full rounded-md bg-primary py-4 text-sm font-semibold uppercase tracking-[0.2em] text-primary-foreground shadow-lg shadow-primary/25 transition-transform hover:bg-primary/90 active:scale-95 disabled:opacity-60"
           >
             {loading ? "A entrar…" : "Entrar"}
           </button>
           <Link
             href="/login"
-            className="mt-6 block text-center text-xs text-muted-foreground transition-colors hover:text-white"
+            className="mt-6 block text-center text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Esqueceu-se da sua senha?
           </Link>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { loadChecklistPresetsForMoto } from "@/lib/maintenance-checklist";
 import { BoletimEditor } from "./boletim-editor";
 import type {
   Motorcycle,
@@ -26,11 +27,22 @@ export default async function AdminBoletimDetailPage({ params }: Props) {
 
   const { data: mota } = await supabase
     .from("motorcycles")
-    .select("id, brand, model, plate")
+    .select("id, brand, model, plate, year")
     .eq("id", r.motorcycle_id)
     .maybeSingle();
 
   if (!mota) notFound();
+
+  const m = mota as Pick<
+    Motorcycle,
+    "id" | "brand" | "model" | "plate" | "year"
+  >;
+  const checklistPresets = await loadChecklistPresetsForMoto(
+    supabase,
+    m.brand,
+    m.model,
+    m.year ?? null,
+  );
 
   const [{ data: tasks }, { data: attachments }, { data: clients }] =
     await Promise.all([
@@ -54,10 +66,11 @@ export default async function AdminBoletimDetailPage({ params }: Props) {
   return (
     <BoletimEditor
       record={r}
-      mota={mota as Pick<Motorcycle, "id" | "brand" | "model" | "plate">}
+      mota={m}
       tasks={(tasks ?? []) as ServiceTask[]}
       attachments={(attachments ?? []) as ServiceAttachment[]}
       clients={(clients ?? []) as Pick<Profile, "id" | "full_name" | "phone">[]}
+      checklistPresets={checklistPresets}
     />
   );
 }

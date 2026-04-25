@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Manrope, Space_Grotesk } from "next/font/google";
+import { Manrope, Oswald } from "next/font/google";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const oswald = Oswald({
   variable: "--font-family-heading",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt"
-      className={`dark ${spaceGrotesk.variable} ${manrope.variable} h-full antialiased`}
+      className={`${oswald.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background font-sans text-foreground">
         {children}

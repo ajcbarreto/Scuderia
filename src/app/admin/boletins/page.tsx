@@ -15,12 +15,17 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import type { Motorcycle, ServiceRecordStatus } from "@/types/database";
+import type {
+  Motorcycle,
+  ServiceRecordKind,
+  ServiceRecordStatus,
+} from "@/types/database";
 
 type Row = {
   id: string;
   title: string | null;
   status: ServiceRecordStatus;
+  record_kind: ServiceRecordKind;
   progress_percent: number;
   opened_at: string;
   motorcycle_id: string;
@@ -41,6 +46,11 @@ const statusLabel: Record<ServiceRecordStatus, string> = {
   cancelled: "Cancelado",
 };
 
+const recordKindLabel: Record<ServiceRecordKind, string> = {
+  maintenance: "Manutenção",
+  shop_service: "Serviço",
+};
+
 export default async function AdminBoletinsPage({ searchParams }: PageProps) {
   const { mota: preselectMotaId } = await searchParams;
   const supabase = await createClient();
@@ -50,14 +60,14 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
       supabase
         .from("service_records")
         .select(
-          "id, title, status, progress_percent, opened_at, motorcycle_id, motorcycles ( brand, model, plate )",
+          "id, title, status, record_kind, progress_percent, opened_at, motorcycle_id, motorcycles ( brand, model, plate )",
         )
         .in("status", ["draft", "in_progress"])
         .order("opened_at", { ascending: false }),
       supabase
         .from("service_records")
         .select(
-          "id, title, status, progress_percent, opened_at, motorcycle_id, motorcycles ( brand, model, plate )",
+          "id, title, status, record_kind, progress_percent, opened_at, motorcycle_id, motorcycles ( brand, model, plate )",
         )
         .order("opened_at", { ascending: false }),
       supabase
@@ -77,7 +87,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
     <div className="space-y-10">
       <AdminPageHeader
         title="Boletins de intervenção"
-        description="Quando uma mota entra, abres aqui o serviço: registas o trabalho em tarefas, o progresso atualiza automaticamente (também visível para o cliente na garagem) e tens o histórico completo abaixo."
+        description="Indica se o registo é manutenção (histórico visível na garagem do dono atual) ou serviço de oficina (só visível na admin — por exemplo trabalho do proprietário anterior). Regista o trabalho em tarefas; o progresso sincroniza com a garagem nos boletins de manutenção."
       />
 
       <section className={cn(adminSurface, "p-6 sm:p-8")}>
@@ -102,7 +112,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
               name="motorcycle_id"
               required
               defaultValue={preselectMotaId ?? ""}
-              className="flex h-10 w-full rounded-lg border border-white/15 bg-[#1a1a1a] px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="">— Escolher mota —</option>
               {motaList.map((m) => (
@@ -111,6 +121,23 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
                   {m.plate ? ` · ${m.plate}` : ""}
                 </option>
               ))}
+            </select>
+          </div>
+          <div className="min-w-[min(100%,260px)] space-y-2">
+            <label
+              htmlFor="new_record_kind"
+              className="text-sm font-medium leading-none text-foreground"
+            >
+              Tipo
+            </label>
+            <select
+              id="new_record_kind"
+              name="record_kind"
+              defaultValue="maintenance"
+              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+            >
+              <option value="maintenance">Manutenção (garagem)</option>
+              <option value="shop_service">Serviço (só oficina)</option>
             </select>
           </div>
           <Button type="submit" className="h-10 shrink-0 font-heading sm:min-w-[12rem]">
@@ -159,9 +186,14 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
                         {r.title ?? "Intervenção"} · aberto {r.opened_at?.slice(0, 10)}
                       </p>
                     </div>
-                    <Badge variant="secondary" className="shrink-0 font-normal">
-                      {statusLabel[r.status] ?? r.status}
-                    </Badge>
+                    <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+                      <Badge variant="outline" className="border-border font-normal">
+                        {recordKindLabel[r.record_kind] ?? r.record_kind}
+                      </Badge>
+                      <Badge variant="secondary" className="font-normal">
+                        {statusLabel[r.status] ?? r.status}
+                      </Badge>
+                    </div>
                   </div>
                   <div className="mt-4 space-y-2">
                     <div className="flex w-full min-w-0 items-baseline justify-between gap-2">
@@ -201,9 +233,10 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
         <div className={adminTableWrap}>
           <Table>
             <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
+              <TableRow className="border-border/80 hover:bg-transparent">
                 <TableHead>Mota</TableHead>
                 <TableHead>Título</TableHead>
+                <TableHead>Tipo</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Progresso</TableHead>
                 <TableHead>Aberto</TableHead>
@@ -213,7 +246,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
             <TableBody>
               {list.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-muted-foreground">
+                  <TableCell colSpan={7} className="text-muted-foreground">
                     Sem boletins. Cria um acima para começar.
                   </TableCell>
                 </TableRow>
@@ -222,7 +255,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
                   const raw = r.motorcycles;
                   const m = Array.isArray(raw) ? raw[0] ?? null : raw;
                   return (
-                    <TableRow key={r.id} className="border-white/5">
+                    <TableRow key={r.id} className="border-border/60">
                       <TableCell className="font-medium">
                         {m ? `${m.brand} ${m.model}` : "—"}
                         {m?.plate ? (
@@ -232,6 +265,11 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
                         ) : null}
                       </TableCell>
                       <TableCell>{r.title ?? "—"}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="border-border font-normal">
+                          {recordKindLabel[r.record_kind] ?? r.record_kind}
+                        </Badge>
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant="secondary"
@@ -250,7 +288,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
                           className={buttonVariants({
                             variant: "outline",
                             size: "sm",
-                            className: "border-white/15",
+                            className: "border-border",
                           })}
                         >
                           Editar

@@ -10,7 +10,10 @@ import {
   FolderOpen,
   HelpCircle,
   LayoutDashboard,
+  Library,
+  ListChecks,
   LogOut,
+  Rows3,
   Menu,
   Search,
   Settings,
@@ -38,12 +41,22 @@ const NAV = [
   { href: "/admin", label: "Painel", icon: LayoutDashboard, exact: true },
   { href: "/admin/clientes", label: "Clientes", icon: Users, exact: false },
   { href: "/admin/motas", label: "Frota", icon: Bike, exact: false },
+  { href: "/admin/catalogo-motos", label: "Catálogo motas", icon: Library, exact: false },
   { href: "/admin/boletins", label: "Registos", icon: ClipboardList, exact: false },
+  { href: "/admin/checklists", label: "Checklists", icon: ListChecks, exact: false },
+  { href: "/admin/checklists/motas", label: "Motas (presets)", icon: Rows3, exact: false },
   { href: "/admin/documentos", label: "Documentos", icon: FolderOpen, exact: false },
 ] as const;
 
 function navActive(pathname: string, href: string, exact: boolean) {
   if (exact) return pathname === href;
+  if (href === "/admin/checklists") {
+    return (
+      pathname === "/admin/checklists" ||
+      (pathname.startsWith("/admin/checklists/") &&
+        !pathname.startsWith("/admin/checklists/motas"))
+    );
+  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -52,8 +65,14 @@ function headerCopy(pathname: string): { title: string; badge?: string } {
   if (pathname.startsWith("/admin/clientes"))
     return { title: "Scuderia itTECH", badge: "Clientes & frota" };
   if (pathname.startsWith("/admin/motas")) return { title: "Frota", badge: "Motas & transferências" };
+  if (pathname.startsWith("/admin/catalogo-motos"))
+    return { title: "Catálogo de motas", badge: "Marca · modelo · ano" };
   if (pathname.startsWith("/admin/servico")) return { title: "Oficina", badge: "Entrada em serviço" };
   if (pathname.startsWith("/admin/boletins")) return { title: "Registos de serviço", badge: "Boletins" };
+  if (pathname.startsWith("/admin/checklists/motas"))
+    return { title: "Motas & presets", badge: "Frota × checklists" };
+  if (pathname.startsWith("/admin/checklists"))
+    return { title: "Checklists", badge: "Marca · modelo · ano" };
   if (pathname.startsWith("/admin/documentos")) return { title: "Faturas & anexos", badge: "Armazenamento" };
   return { title: "Backoffice", badge: "Admin" };
 }
@@ -116,34 +135,34 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
 
   const headerActions = (
     <div className="flex items-center gap-2 sm:gap-4">
-      <div className="relative hidden items-center rounded-md border border-[#484847]/15 bg-[#1a1a1a] px-3 py-1.5 md:flex">
-        <Search className="mr-2 size-4 shrink-0 text-[#adaaaa]" aria-hidden />
+      <div className="relative hidden items-center rounded-md border border-border/80 bg-card px-3 py-1.5 md:flex">
+        <Search className="mr-2 size-4 shrink-0 text-muted-foreground" aria-hidden />
         <input
           type="search"
           name="q"
           placeholder="Pesquisar…"
-          className="w-36 border-0 bg-transparent font-heading text-[10px] font-medium uppercase tracking-widest text-white placeholder:text-[#767575] focus:ring-0 lg:w-48"
+          className="w-36 border-0 bg-transparent font-heading text-[10px] font-medium uppercase tracking-widest text-foreground placeholder:text-muted-foreground/70 focus:ring-0 lg:w-48"
           readOnly
           title="Pesquisa contextual em desenvolvimento"
         />
       </div>
       <button
         type="button"
-        className="hidden text-[#adaaaa] transition-colors hover:text-white sm:inline-flex"
+        className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
         aria-label="Definições"
       >
         <Settings className="size-5" />
       </button>
       <button
         type="button"
-        className="relative hidden text-[#adaaaa] transition-colors hover:text-white sm:inline-flex"
+        className="relative hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
         aria-label="Notificações"
       >
         <Bell className="size-5" />
         <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-primary" />
       </button>
       <div
-        className="flex size-8 shrink-0 items-center justify-center rounded-full border border-primary/35 bg-[#262626] font-heading text-[11px] font-bold text-white"
+        className="flex size-8 shrink-0 items-center justify-center rounded-full border border-primary/35 bg-muted font-heading text-[11px] font-bold text-foreground"
         aria-hidden
       >
         {initials}
@@ -152,13 +171,13 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
   );
 
   return (
-    <div className="relative min-h-screen bg-[#0e0e0e] text-foreground technical-grid">
-      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-[#484847]/20 bg-[#0e0e0e] py-8 lg:flex">
+    <div className="relative min-h-screen bg-background text-foreground">
+      <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar py-8 shadow-[4px_0_24px_-8px_color-mix(in_oklch,var(--foreground)_6%,transparent)] lg:flex">
         <div className="px-6 pb-10">
           <p className="font-heading text-xl font-black uppercase tracking-[0.2em] text-primary">
             Engineering Ops
           </p>
-          <p className="mt-1 font-heading text-[10px] uppercase tracking-[0.25em] text-[#adaaaa]">
+          <p className="mt-1 font-heading text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
             v2.04 Precision
           </p>
         </div>
@@ -176,12 +195,12 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
             <Wrench className="size-4" />
             Serviço rápido
           </Link>
-          <div className="space-y-1 border-t border-[#484847]/20 pt-4">
+          <div className="space-y-1 border-t border-border/80 pt-4">
             <Link
               href="/"
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "w-full justify-start gap-2 px-2 font-heading text-[10px] font-medium uppercase tracking-widest text-[#adaaaa] hover:text-white",
+                "w-full justify-start gap-2 px-2 font-heading text-[10px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground",
               )}
             >
               <HelpCircle className="size-4" />
@@ -192,7 +211,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                 type="submit"
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start gap-2 px-2 font-heading text-[10px] font-medium uppercase tracking-widest text-[#adaaaa] hover:text-white"
+                className="w-full justify-start gap-2 px-2 font-heading text-[10px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground"
               >
                 <LogOut className="size-4" />
                 Terminar sessão
@@ -202,7 +221,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
         </div>
       </aside>
 
-      <header className="fixed left-0 right-0 top-0 z-40 border-b border-[#484847]/10 bg-[#0e0e0e]/85 backdrop-blur-xl lg:left-64">
+      <header className="fixed left-0 right-0 top-0 z-40 border-b border-border bg-card/95 shadow-sm backdrop-blur-md lg:left-64">
         <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <div className="flex min-w-0 flex-1 items-center gap-2 lg:gap-3">
             <div className="lg:hidden">
@@ -212,7 +231,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                     <Button
                       variant="outline"
                       size="icon-sm"
-                      className="border-[#484847]/30 bg-[#141414]"
+                      className="border-border bg-card"
                       type="button"
                     />
                   }
@@ -222,13 +241,13 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                 </SheetTrigger>
                 <SheetContent
                   side="left"
-                  className="w-[min(100%,20rem)] border-[#484847]/20 bg-[#0e0e0e] p-0"
+                  className="w-[min(100%,20rem)] border-border bg-background p-0"
                 >
-                  <SheetHeader className="border-b border-[#484847]/15 px-5 py-5 text-left">
+                  <SheetHeader className="border-b border-border/80 px-5 py-5 text-left">
                     <SheetTitle className="font-heading text-base font-black uppercase tracking-widest text-primary">
                       Engineering Ops
                     </SheetTitle>
-                    <p className="font-heading text-[10px] uppercase tracking-[0.2em] text-[#adaaaa]">
+                    <p className="font-heading text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
                       v2.04 Precision
                     </p>
                   </SheetHeader>
@@ -245,7 +264,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                       <Wrench className="size-4" />
                       Serviço rápido
                     </Link>
-                    <Separator className="bg-[#484847]/20" />
+                    <Separator className="bg-border" />
                     <Link
                       href="/"
                       className={cn(
@@ -261,7 +280,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                         type="submit"
                         variant="outline"
                         size="sm"
-                        className="w-full border-[#484847]/30"
+                        className="w-full border-border"
                       >
                         Terminar sessão
                       </Button>
@@ -271,7 +290,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
               </Sheet>
             </div>
             <div className="min-w-0">
-              <span className="truncate font-heading text-base font-bold tracking-tight text-white lg:text-lg">
+              <span className="truncate font-heading text-base font-bold tracking-tight text-foreground lg:text-lg">
                 {title}
               </span>
               {badge ? (
@@ -281,7 +300,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
               ) : null}
             </div>
             {badge ? (
-              <span className="hidden shrink-0 rounded bg-[#262626] px-2.5 py-1 font-heading text-[10px] font-semibold uppercase tracking-widest text-primary lg:inline">
+              <span className="hidden shrink-0 rounded bg-muted px-2.5 py-1 font-heading text-[10px] font-semibold uppercase tracking-widest text-primary lg:inline">
                 {badge}
               </span>
             ) : null}

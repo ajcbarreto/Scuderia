@@ -31,7 +31,7 @@ export function NovoClienteForm() {
           name="full_name"
           required
           autoComplete="name"
-          className="border-white/15 bg-[#1a1a1a]"
+          className="border-input bg-background"
         />
       </div>
       <div className="space-y-2">
@@ -42,7 +42,7 @@ export function NovoClienteForm() {
           type="email"
           required
           autoComplete="off"
-          className="border-white/15 bg-[#1a1a1a]"
+          className="border-input bg-background"
         />
       </div>
       <div className="space-y-2">
@@ -52,7 +52,7 @@ export function NovoClienteForm() {
           name="phone"
           type="tel"
           autoComplete="tel"
-          className="border-white/15 bg-[#1a1a1a]"
+          className="border-input bg-background"
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -65,7 +65,7 @@ export function NovoClienteForm() {
             required
             autoComplete="new-password"
             minLength={6}
-            className="border-white/15 bg-[#1a1a1a]"
+            className="border-input bg-background"
           />
         </div>
         <div className="space-y-2">
@@ -77,7 +77,7 @@ export function NovoClienteForm() {
             required
             autoComplete="new-password"
             minLength={6}
-            className="border-white/15 bg-[#1a1a1a]"
+            className="border-input bg-background"
           />
         </div>
       </div>
