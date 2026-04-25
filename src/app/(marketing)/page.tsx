@@ -9,24 +9,18 @@ import {
   RefreshCw,
   Wrench,
 } from "lucide-react";
-/* Hero com branding SCUDERIA / ItTech no cenário — export Stitch */
-const HERO_MAIN =
-  "https://lh3.googleusercontent.com/aida-public/AB6AXuD22sl-i1KuhGMMALc08T-7SQuk3bgT-F28_db0A6IKeS3wtpe1w7TouhE-2ghJplZPCMT-BMmOqzDs2NJcmQzmKWrP_bQIggFKo8uF8701vRAtlRWgd4jLqqQSKkVMQNQCvT_edepFyscHVLOFscSWexCi6RaVG7AUNdI3KiaSqzq6sTRVUfM6Ru4735Ugfjl8YN4m6aqlfBOfJ8bISOdiKWL2hyvfTF2s1OrB5zMfm4Q-7j-sFPznDscUdjvaWoRxkQpDeYFJXfw";
-
-const HERO_ENGINE =
-  "https://lh3.googleusercontent.com/aida/ADBb0ujZLCMjlUnb8j4xrf1g2zEdD8G7URde8-dFtZiIxMR46XGtv4bzvHYxw0jI8_jM9zoABi02LX7-kQmBKfFU9u2clb-HcnLlln-xwD2hzFNdIQOAnfx2LTr8jkECnEHQUDhwvosOZxkXRgobyZeZy8ysAp28Mvm10ANQc351-3DxuXCALNMhCooj0rF96VJOSYWsIho8_OOZDhir5EL5z2CvN20ey-uOUt7UDHqiGfhwKaNm2Jp8VYbIqqU";
-
+import { ContactForm } from "@/components/marketing/contact-form";
 const EMPRESA_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBxhk8r0nqC7ZpGdhrDvI1h2VMR61BUDVgs87GrRp3wAeLzf2j7QX-YCaVL9kmWGi4oNkDhc14VeOVU-4hoquuafeaQvsdq-49Ncqf9wT7zSI8jIHKNdYtzmPp1LPsutMF1BYC4TOXonEJ5NQcEmRFD2tJLryMDqDeudk1nrz2NsOoa9jnCUbIa-XMAIjhFJWuLxBM_ctKzKG7xenDomGA3Jg_QHBtIuSnAVCYZg650AITpMlZ6sKsy0_INXgR9X0C5d9jWw_rpYUE";
 
 export const metadata: Metadata = {
-  title: "Scuderia ITTECH | Técnica, Precisão e Confiança",
+  title: "Scuderia itTech | Técnica, Precisão e Confiança",
   description:
-    "Oficina independente especializada em motos premium. Onde a alma da tua máquina encontra o rigor da engenharia.",
+    "Oficina independente dedicada à manutenção, reparação e comercialização de motociclos usados, com especial foco na marca Ducati.",
   openGraph: {
-    title: "Scuderia ITTECH | Excelência em engenharia",
+    title: "Scuderia itTech | Excelência em engenharia",
     description:
-      "Manutenção, diagnóstico digital e boletim de manutenção digital.",
+      "Manutenção, reparação e comercialização de motociclos usados. Área de cliente e acompanhamento do estado da sua moto.",
     locale: "pt_PT",
     type: "website",
   },
@@ -38,25 +32,17 @@ export default function HomePage() {
       {/* Hero */}
       <section
         id="top"
-        className="relative flex h-screen w-full items-center justify-start overflow-hidden"
+        className="relative flex h-screen w-full scroll-mt-24 items-center justify-start overflow-hidden"
       >
         <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="hero-vignette pointer-events-none absolute inset-0 z-10" />
           <Image
-            src={HERO_MAIN}
-            alt="Oficina high-tech com branding Scuderia ITTECH — ambiente premium"
+            src="/images/hero-oficina.jpg"
+            alt="Oficina Scuderia itTech — moto desportiva vermelha, néon e ambiente high-tech"
             fill
             className="object-cover object-center"
             sizes="100vw"
             priority
-          />
-          <Image
-            src={HERO_ENGINE}
-            alt=""
-            fill
-            className="pointer-events-none object-cover mix-blend-multiply opacity-0 md:opacity-[0.22]"
-            sizes="100vw"
-            aria-hidden
           />
         </div>
         <div className="relative z-20 max-w-4xl px-8 md:px-20">
@@ -66,17 +52,13 @@ export default function HomePage() {
               Excelência em engenharia
             </span>
           </div>
-          <h1 className="mb-6 font-heading text-6xl leading-[0.92] font-bold tracking-tight text-foreground md:text-7xl lg:text-8xl">
+          <h1 className="mb-10 font-heading text-6xl leading-[0.92] font-bold tracking-tight text-foreground md:text-7xl lg:text-8xl">
             Técnica.
             <br />
             Precisão.
             <br />
             Confiança.
           </h1>
-          <p className="mb-10 max-w-xl font-sans text-xl leading-relaxed text-muted-foreground md:text-2xl">
-            Oficina independente especializada em motos premium. Onde a alma da
-            tua máquina encontra o rigor da engenharia.
-          </p>
           <div className="flex flex-wrap gap-4">
             <Link
               href="/#servicos"
@@ -92,56 +74,29 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        <div className="absolute bottom-10 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center gap-2 text-muted-foreground/70">
-          <span className="font-heading text-[10px] tracking-[0.5em] uppercase">
-            Desliza para descobrir
-          </span>
-          <div className="h-12 w-px animate-pulse bg-gradient-to-b from-primary to-transparent" />
-        </div>
       </section>
 
-      {/* A Empresa */}
+      {/* Scuderia itTech */}
       <section
         id="empresa"
-        className="technical-grid relative overflow-hidden bg-card py-32"
+        className="technical-grid relative scroll-mt-24 overflow-hidden bg-card py-32"
       >
         <div className="mx-auto max-w-7xl px-8">
           <div className="grid items-center gap-20 md:grid-cols-2">
             <div className="relative">
-              <div className="pointer-events-none absolute -top-10 -left-10 font-heading text-[12rem] leading-none font-bold text-primary/[0.08] select-none">
-                16
-              </div>
               <h2 className="relative z-10 mb-8 font-heading text-5xl font-semibold tracking-tight text-foreground">
-                A Empresa
+                Scuderia itTech
               </h2>
               <p className="mb-6 font-sans text-xl leading-relaxed text-muted-foreground">
-                Cuidamos da tua moto com rigor. Na Scuderia ITTECH, a manutenção
-                não é apenas um serviço; é um compromisso com a performance.
+                A Scuderia itTech é uma oficina independente dedicada à
+                manutenção, reparação e comercialização de motociclos usados, com
+                especial foco na marca Ducati.
               </p>
-              <p className="mb-10 font-sans text-lg text-muted-foreground/85">
-                Com mais de 16 anos de paixão e especialização técnica,
-                tornámo-nos o santuário para entusiastas que exigem o melhor das
-                suas máquinas. Cada parafuso, cada diagnóstico, cada afinação é
-                executada com a precisão de uma equipa de competição.
+              <p className="mb-10 font-sans text-lg leading-relaxed text-muted-foreground/85">
+                Fundada em 2026, ano do centenário da Ducati, a empresa nasce da
+                paixão pelas motas e foi criada por profundo respeito pela
+                história e pelo passado que moldaram o motociclismo.
               </p>
-              <div className="grid grid-cols-2 gap-8">
-                <div className="border-l-2 border-primary pl-6">
-                  <div className="font-heading text-3xl font-semibold text-foreground">
-                    16 Anos
-                  </div>
-                  <div className="font-heading text-sm tracking-widest text-muted-foreground uppercase">
-                    Experiência
-                  </div>
-                </div>
-                <div className="border-l-2 border-primary pl-6">
-                  <div className="font-heading text-3xl font-semibold text-foreground">
-                    4500+
-                  </div>
-                  <div className="font-heading text-sm tracking-widest text-muted-foreground uppercase">
-                    Motos Assistidas
-                  </div>
-                </div>
-              </div>
             </div>
             <div className="group relative">
               <div className="absolute inset-0 rounded-xl bg-primary/20 opacity-0 blur-3xl transition-opacity duration-700 group-hover:opacity-40" />
@@ -165,13 +120,23 @@ export default function HomePage() {
       </section>
 
       {/* Serviços — grelha tipo bento */}
-      <section id="servicos" className="bg-background py-32">
+      <section id="servicos" className="scroll-mt-24 bg-background py-32">
         <div className="mx-auto max-w-7xl px-8">
           <div className="mb-20 text-center">
             <h2 className="mb-4 font-heading text-4xl font-semibold tracking-tight text-foreground uppercase">
-              Serviços Especializados
+              Serviços
             </h2>
-            <div className="mx-auto h-1 w-24 bg-primary" />
+            <div className="mx-auto mb-8 h-1 w-24 bg-primary" />
+            <p className="mx-auto mb-4 max-w-3xl text-lg leading-relaxed text-muted-foreground">
+              Na Scuderia itTech, disponibilizamos um conjunto de serviços
+              especializados para garantir o desempenho, a fiabilidade e a
+              segurança do seu motociclo.
+            </p>
+            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
+              Cada serviço é executado com profissionalismo e respeito por cada
+              máquina, assegurando que a sua moto está pronta para a pilotar com
+              total confiança.
+            </p>
           </div>
           <div className="grid h-auto gap-6 md:h-[700px] md:grid-cols-12">
             <div className="group flex flex-col justify-between border-t border-l border-border/50 bg-card p-10 transition-colors hover:bg-muted md:col-span-6 lg:col-span-7">
@@ -259,7 +224,7 @@ export default function HomePage() {
       {/* Área Cliente */}
       <section
         id="area-cliente"
-        className="technical-grid relative overflow-hidden bg-muted py-32"
+        className="technical-grid relative scroll-mt-24 overflow-hidden bg-muted py-32"
       >
         <div className="pointer-events-none absolute top-1/2 left-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/[0.12] blur-[120px]" />
         <div className="relative z-10 mx-auto max-w-7xl px-8">
@@ -271,13 +236,17 @@ export default function HomePage() {
                 </span>
               </div>
               <h2 className="mb-8 font-heading text-4xl font-semibold tracking-tight text-foreground md:text-5xl">
-                Área Cliente
+                Área de Cliente
               </h2>
+              <p className="mb-6 text-xl leading-relaxed text-muted-foreground">
+                A Área de Cliente da Scuderia itTech foi criada para oferecer
+                maior comodidade, transparência e acompanhamento do estado do seu
+                motociclo.
+              </p>
               <p className="mb-8 text-xl leading-relaxed text-muted-foreground">
-                Acede ao teu{" "}
-                <strong className="text-foreground">boletim de manutenção</strong>{" "}
-                digital e acompanha todo o histórico da tua moto em tempo real.
-                Fotos, diagnósticos e faturas — tudo num só lugar.
+                O nosso objetivo é proporcionar uma experiência simples, clara e
+                profissional, mantendo-o sempre informado e com total confiança no
+                trabalho realizado.
               </p>
               <ul className="space-y-4">
                 {[
@@ -346,6 +315,28 @@ export default function HomePage() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contacto */}
+      <section
+        id="contacto"
+        className="scroll-mt-24 border-t border-border bg-card py-24 md:py-32"
+      >
+        <div className="mx-auto max-w-7xl px-8">
+          <div className="mb-12 text-center md:mb-16">
+            <h2 className="mb-4 font-heading text-4xl font-semibold tracking-tight text-foreground">
+              Contacto
+            </h2>
+            <div className="mx-auto h-1 w-24 bg-primary" />
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground">
+              Escreva-nos — respondemos o mais breve possível. Indique o assunto
+              e, se for o caso, a sua moto ou a matrícula.
+            </p>
+          </div>
+          <div className="mx-auto max-w-xl">
+            <ContactForm />
           </div>
         </div>
       </section>
