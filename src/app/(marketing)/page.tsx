@@ -1,14 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  ArrowRight,
-  BarChart3,
-  Bike,
-  CheckCircle2,
-  RefreshCw,
-  Wrench,
-} from "lucide-react";
+import { Bike, CheckCircle2 } from "lucide-react";
 import { ContactForm } from "@/components/marketing/contact-form";
 const EMPRESA_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBxhk8r0nqC7ZpGdhrDvI1h2VMR61BUDVgs87GrRp3wAeLzf2j7QX-YCaVL9kmWGi4oNkDhc14VeOVU-4hoquuafeaQvsdq-49Ncqf9wT7zSI8jIHKNdYtzmPp1LPsutMF1BYC4TOXonEJ5NQcEmRFD2tJLryMDqDeudk1nrz2NsOoa9jnCUbIa-XMAIjhFJWuLxBM_ctKzKG7xenDomGA3Jg_QHBtIuSnAVCYZg650AITpMlZ6sKsy0_INXgR9X0C5d9jWw_rpYUE";
@@ -122,98 +115,46 @@ export default function HomePage() {
       {/* Serviços — grelha tipo bento */}
       <section id="servicos" className="scroll-mt-24 bg-background py-32">
         <div className="mx-auto max-w-7xl px-8">
-          <div className="mb-20 text-center">
+          <div className="mb-20 text-left">
             <h2 className="mb-4 font-heading text-4xl font-semibold tracking-tight text-foreground uppercase">
               Serviços
             </h2>
-            <div className="mx-auto mb-8 h-1 w-24 bg-primary" />
-            <p className="mx-auto mb-4 max-w-3xl text-lg leading-relaxed text-muted-foreground">
+            <div className="mb-8 h-1 w-24 bg-primary" />
+            <p className="mb-4 max-w-3xl text-lg leading-relaxed text-muted-foreground">
               Na Scuderia itTech, disponibilizamos um conjunto de serviços
               especializados para garantir o desempenho, a fiabilidade e a
               segurança do seu motociclo.
             </p>
-            <p className="mx-auto max-w-3xl text-lg leading-relaxed text-muted-foreground">
+            <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground">
               Cada serviço é executado com profissionalismo e respeito por cada
               máquina, assegurando que a sua moto está pronta para a pilotar com
               total confiança.
             </p>
           </div>
-          <div className="grid h-auto gap-6 md:h-[700px] md:grid-cols-12">
-            <div className="group flex flex-col justify-between border-t border-l border-border/50 bg-card p-10 transition-colors hover:bg-muted md:col-span-6 lg:col-span-7">
-              <div>
-                <Wrench
-                  className="mb-6 size-14 text-primary"
-                  strokeWidth={1.25}
-                />
-                <h3 className="mb-4 font-heading text-3xl font-semibold text-foreground">
-                  Manutenção Geral
-                </h3>
-                <p className="max-w-md text-muted-foreground">
-                  Serviços preventivos e corretivos realizados sob os mais
-                  restritos padrões de qualidade internacional.
-                </p>
-              </div>
-              <Link
-                href="/#servicos"
-                className="mt-8 flex items-center gap-4 font-heading font-semibold tracking-widest text-primary transition-all group-hover:gap-6"
-              >
-                SABER MAIS <ArrowRight className="size-5" />
-              </Link>
-            </div>
-            <div className="grid grid-rows-2 gap-6 md:col-span-6 lg:col-span-5">
-              <div className="flex items-center gap-6 border-t border-border/50 bg-muted p-8 transition-all hover:bg-accent">
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-background shadow-inner">
-                  <BarChart3 className="size-8 text-accent-warm" />
-                </div>
-                <div>
-                  <h4 className="font-heading text-xl font-semibold text-foreground">
-                    Diagnóstico Digital
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Sistemas avançados de leitura de telemetria e erros.
-                  </p>
-                </div>
-              </div>
-              <div
-                id="pista"
-                className="flex items-center gap-6 border-t border-border/50 bg-muted p-8 transition-all hover:bg-accent"
-              >
-                <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-background shadow-inner">
-                  <RefreshCw className="size-8 text-accent-warm" />
-                </div>
-                <div>
-                  <h4 className="font-heading text-xl font-semibold text-foreground">
-                    Reparação Profunda
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    Reconstrução de motores e componentes estruturais.
-                  </p>
-                </div>
-              </div>
-            </div>
+          <div className="grid gap-6 md:grid-cols-2">
             <div
               id="inventory"
-              className="flex flex-col justify-center border-t border-border/50 bg-card p-8 md:col-span-6"
+              className="flex flex-col justify-center border-t border-l border-border/50 bg-card p-8 md:p-10"
             >
-              <h4 className="mb-4 font-heading text-2xl font-semibold text-foreground">
+              <h3 className="mb-4 font-heading text-2xl font-semibold text-foreground md:text-3xl">
                 Venda & Aconselhamento
-              </h4>
+              </h3>
               <p className="mb-6 text-muted-foreground">
                 Encontramos a moto perfeita para o teu perfil de condução.
               </p>
               <div className="h-1 w-12 bg-primary" />
             </div>
-            <div className="flex items-center justify-between border-t border-border/50 bg-card p-8 md:col-span-6">
+            <div className="flex items-center justify-between border-t border-border/50 bg-card p-8 md:p-10">
               <div>
-                <h4 className="font-heading text-2xl font-semibold text-foreground">
+                <h3 className="mb-2 font-heading text-2xl font-semibold text-foreground md:text-3xl">
                   Aluguer Premium
-                </h4>
+                </h3>
                 <p className="text-muted-foreground">
                   Experiências de condução exclusivas.
                 </p>
               </div>
               <Bike
-                className="size-14 text-muted-foreground/35"
+                className="size-14 shrink-0 text-muted-foreground/35"
                 strokeWidth={1}
               />
             </div>
