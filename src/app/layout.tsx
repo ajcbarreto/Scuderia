@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Manrope, Oswald } from "next/font/google";
 import "./globals.css";
 
@@ -29,13 +29,26 @@ export const metadata: Metadata = {
   },
   description:
     "Oficina de motos com manutenção digital, boletins técnicos e garagem online.",
+  other: { "msapplication-TileColor": "#0a0a0a" } as const,
   icons: {
     icon: [
       { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: "/favicon-32.png",
+    apple: [
+      {
+        url: "/apple-touch-icon.png",
+        sizes: "180x180",
+        type: "image/png",
+      },
+    ],
   },
+  manifest: "/manifest.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
