@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { ArrowLeft } from "lucide-react";
+import { BrandLogo } from "@/components/brand-logo";
 import { LoginForm } from "@/components/auth/login-form";
 
 export default function LoginPage() {
@@ -18,10 +19,11 @@ export default function LoginPage() {
       <div className="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 py-14 sm:px-6">
         <Link
           href="/"
-          className="group mb-10 flex items-center gap-2 font-heading text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+          className="group mb-10 flex items-center gap-3 text-foreground transition-opacity hover:opacity-90"
+          aria-label="Voltar ao início — Scuderia itTech"
         >
-          <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-0.5" />
-          Scuderia <span className="text-primary">itTECH</span>
+          <ArrowLeft className="size-4 shrink-0 transition-transform group-hover:-translate-x-0.5" />
+          <BrandLogo size="md" priority />
         </Link>
 
         <div className="w-full max-w-[440px] overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-card to-card/95 shadow-[0_0_0_1px_color-mix(in_oklch,var(--foreground)_5%,transparent),0_24px_48px_-16px_color-mix(in_oklch,var(--foreground)_8%,transparent)] backdrop-blur-xl">
