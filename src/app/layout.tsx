@@ -14,16 +14,28 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700"],
 });
 
+/** Em Vercel, define o host certo para favicon/OG; evita href com localhost em produção. */
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+  (process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000");
+
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Scuderia itTECH",
     template: "%s | Scuderia itTECH",
   },
   description:
     "Oficina de motos com manutenção digital, boletins técnicos e garagem online.",
+  icons: {
+    icon: [
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/favicon-32.png",
+  },
 };
 
 export default function RootLayout({
