@@ -19,21 +19,31 @@ export default async function MotorcycleDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <div className="print:hidden">
-        <p className="text-sm text-muted-foreground">
-          <Link href="/garagem" className="hover:text-foreground">
+      <header className="border-b border-border/60 pb-6 print:hidden">
+        <nav className="flex flex-wrap items-center gap-x-1 gap-y-1 text-sm text-muted-foreground">
+          <Link href="/garagem" className="transition-colors hover:text-foreground">
             Garagem
-          </Link>{" "}
-          / Boletim
-        </p>
-        <h1 className="mt-2 font-heading text-3xl font-semibold tracking-tight md:text-4xl">
+          </Link>
+          <span aria-hidden className="text-border">
+            /
+          </span>
+          <span className="font-medium text-foreground">Boletim de manutenção</span>
+        </nav>
+        <h1 className="mt-3 font-heading text-3xl font-bold tracking-tight text-foreground md:text-4xl">
           {m.brand} {m.model}
         </h1>
-        <p className="mt-2 max-w-xl text-muted-foreground">
-          Estado da frota, histórico de serviços na oficina e acesso ao detalhe de
-          cada intervenção.
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+          <span>{m.year != null ? `Ano ${m.year}` : "Ano —"}</span>
+          <span className="hidden text-border sm:inline" aria-hidden>
+            ·
+          </span>
+          <span className="font-mono">{m.plate ?? "Sem matrícula"}</span>
         </p>
-      </div>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+          Histórico de serviços na oficina e detalhe de cada intervenção. Toca numa
+          linha do histórico para abrir o resumo desse serviço.
+        </p>
+      </header>
 
       <MaintenanceBulletin
         variant="overview"

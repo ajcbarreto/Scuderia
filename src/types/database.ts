@@ -44,6 +44,13 @@ export type ServiceRecordStatus =
 /** Manutenção: histórico na garagem do dono atual. Serviço de oficina: só admin (ex.: trabalho do proprietário anterior). */
 export type ServiceRecordKind = "maintenance" | "shop_service";
 
+/** Valores alinhados com a constraint `service_records_revision_type_chk` na base de dados. */
+export type ServiceRevisionType =
+  | "Serviço Anual"
+  | "Serviço de Oleo"
+  | "Serviço Desmo"
+  | "Serviço de Verificação de Válvulas";
+
 export type ServiceRecord = {
   id: string;
   motorcycle_id: string;
@@ -54,32 +61,25 @@ export type ServiceRecord = {
   progress_percent: number;
   opened_at: string;
   closed_at: string | null;
-  /** Preset de checklist aplicado (se existir). */
-  checklist_preset_id?: string | null;
   record_kind: ServiceRecordKind;
+  /** Data do serviço (oficina). Se null, usa-se closed_at/opened_at na UI. */
+  service_date: string | null;
+  repair_order_ref: string | null;
+  odometer_km: number | null;
+  revision_type: ServiceRevisionType | null;
+  /** Alvo de data para a próxima revisão (opcional). */
+  next_service_due_date: string | null;
+  /** Alvo de quilometragem para a próxima revisão (opcional). */
+  next_service_due_km: number | null;
 };
 
-export type MaintenanceChecklistPreset = {
+/** Linhas da lista global de tarefas (admin). Copiadas para cada novo boletim. */
+export type ServiceTaskTemplate = {
   id: string;
-  brand: string;
-  model: string;
-  service_type_name: string;
-  /** Ano mínimo do modelo (inclusive). Null = sem limite. */
-  year_min: number | null;
-  /** Ano máximo do modelo (inclusive). Null = sem limite. */
-  year_max: number | null;
-  /** Opcional: ligação à entrada do catálogo usada na criação. */
-  catalog_entry_id?: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type MaintenanceChecklistPresetItem = {
-  id: string;
-  preset_id: string;
   label: string;
   sort_order: number;
+  created_at: string;
+  updated_at: string;
 };
 
 export type ServiceTask = {

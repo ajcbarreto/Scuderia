@@ -14,7 +14,7 @@ export function GaragemVoltarBar({ href, label, subtitle }: Props) {
   return (
     <div
       className={cn(
-        "print:hidden sticky top-14 z-30 -mx-4 mb-6 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-md",
+        "print:hidden sticky top-20 z-30 -mx-4 mb-6 border-b border-border bg-background/95 px-4 py-3 backdrop-blur-md",
         "sm:-mx-0 sm:mb-8 sm:rounded-xl sm:border sm:px-4 sm:py-3",
       )}
     >

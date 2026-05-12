@@ -13,7 +13,6 @@ import {
   Library,
   ListChecks,
   LogOut,
-  Rows3,
   Menu,
   Search,
   Settings,
@@ -43,20 +42,12 @@ const NAV = [
   { href: "/admin/motas", label: "Frota", icon: Bike, exact: false },
   { href: "/admin/catalogo-motos", label: "Catálogo motas", icon: Library, exact: false },
   { href: "/admin/boletins", label: "Registos", icon: ClipboardList, exact: false },
-  { href: "/admin/checklists", label: "Checklists", icon: ListChecks, exact: false },
-  { href: "/admin/checklists/motas", label: "Motas (presets)", icon: Rows3, exact: false },
+  { href: "/admin/checklists", label: "Tarefas padrão", icon: ListChecks, exact: true },
   { href: "/admin/documentos", label: "Documentos", icon: FolderOpen, exact: false },
 ] as const;
 
 function navActive(pathname: string, href: string, exact: boolean) {
   if (exact) return pathname === href;
-  if (href === "/admin/checklists") {
-    return (
-      pathname === "/admin/checklists" ||
-      (pathname.startsWith("/admin/checklists/") &&
-        !pathname.startsWith("/admin/checklists/motas"))
-    );
-  }
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -69,10 +60,8 @@ function headerCopy(pathname: string): { title: string; badge?: string } {
     return { title: "Catálogo de motas", badge: "Marca · modelo · ano" };
   if (pathname.startsWith("/admin/servico")) return { title: "Oficina", badge: "Entrada em serviço" };
   if (pathname.startsWith("/admin/boletins")) return { title: "Registos de serviço", badge: "Boletins" };
-  if (pathname.startsWith("/admin/checklists/motas"))
-    return { title: "Motas & presets", badge: "Frota × checklists" };
   if (pathname.startsWith("/admin/checklists"))
-    return { title: "Checklists", badge: "Marca · modelo · ano" };
+    return { title: "Lista de tarefas padrão", badge: "Oficina" };
   if (pathname.startsWith("/admin/documentos")) return { title: "Faturas & anexos", badge: "Armazenamento" };
   return { title: "Backoffice", badge: "Admin" };
 }
@@ -175,10 +164,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar py-8 shadow-[4px_0_24px_-8px_color-mix(in_oklch,var(--foreground)_6%,transparent)] lg:flex">
         <div className="px-6 pb-10">
           <p className="font-heading text-xl font-black uppercase tracking-[0.2em] text-primary">
-            Engineering Ops
-          </p>
-          <p className="mt-1 font-heading text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-            v2.04 Precision
+            Scuderia BackOffice
           </p>
         </div>
         <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-0">
@@ -245,11 +231,8 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                 >
                   <SheetHeader className="border-b border-border/80 px-5 py-5 text-left">
                     <SheetTitle className="font-heading text-base font-black uppercase tracking-widest text-primary">
-                      Engineering Ops
+                      Scuderia BackOffice
                     </SheetTitle>
-                    <p className="font-heading text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                      v2.04 Precision
-                    </p>
                   </SheetHeader>
                   <div className="flex flex-col gap-6 p-4">
                     <NavLinks pathname={pathname} onNavigate={() => setMobileOpen(false)} />

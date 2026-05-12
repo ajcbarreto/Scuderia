@@ -89,7 +89,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
     if (s === "draft") return { label: "Rascunho", className: "bg-muted text-muted-foreground" };
     return {
       label: "Operacional",
-      className: "bg-emerald-500/12 text-emerald-800",
+      className: "bg-emerald-500/12 text-emerald-900 dark:text-emerald-200",
     };
   }
 
@@ -107,12 +107,11 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
             </p>
           </div>
         </div>
-        <div className="relative w-full max-w-md rounded-full border border-border/80 bg-muted">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <User className="size-4" aria-hidden />
-          </span>
-          <p className="py-2.5 pl-10 pr-4 font-heading text-[10px] uppercase tracking-widest text-muted-foreground/80">
-            Pesquisa por nome na lista ao lado
+        <div className="flex w-full max-w-md items-start gap-3 rounded-lg border border-dashed border-border bg-muted/50 px-4 py-3">
+          <User className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <p className="text-left text-xs leading-relaxed text-muted-foreground">
+            Escolhe um cliente na lista do diretório à esquerda para ver a ficha, contactos e
+            frota associada.
           </p>
         </div>
       </header>
@@ -213,7 +212,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                             <h2 className="font-heading text-2xl font-black uppercase tracking-tight text-foreground">
                               {selected.full_name ?? "Sem nome"}
                             </h2>
-                            <Badge className="border border-emerald-600/25 bg-emerald-500/10 font-heading text-[10px] font-bold uppercase tracking-widest text-emerald-800">
+                            <Badge className="border border-emerald-600/25 bg-emerald-500/10 font-heading text-[10px] font-bold uppercase tracking-widest text-emerald-900 dark:text-emerald-200">
                               Frota verificada
                             </Badge>
                           </div>

@@ -32,23 +32,26 @@ export default async function AdminCatalogoMotosPage() {
       <AdminPageHeader
         eyebrow="Configuração"
         title="Catálogo de motas"
-        description="Lista de variantes (marca, modelo, ano). Usa esta lista ao registar uma mota para um cliente ou ao criar um preset de checklist — evita erros de escrita e mantém tudo alinhado."
+        description="Lista de variantes (marca, modelo, ano). Usa esta lista ao registar uma mota para um cliente — evita erros de escrita e mantém tudo alinhado."
         actions={
           <div className="flex flex-wrap gap-2">
             <Link
               href="/admin/motas"
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
-                "border-white/15",
+                "border-border",
               )}
             >
               Frota
             </Link>
             <Link
               href="/admin/checklists"
-              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "border-white/15")}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "border-border",
+              )}
             >
-              Checklists
+              Tarefas padrão
             </Link>
           </div>
         }
@@ -57,50 +60,48 @@ export default async function AdminCatalogoMotosPage() {
       <section className={cn(adminSurface, "p-6 sm:p-8")}>
         <h2 className="font-heading text-lg font-semibold">Nova entrada</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Um registo por variante (ex.: Ducati Panigale V4 de 2022). Depois escolhe-a nos formulários de nova mota ou novo preset.
+          Um registo por variante (ex.: Ducati Panigale V4 de 2022). Depois escolhe-a no formulário de nova mota.
         </p>
         <div className="mt-4">
           <CatalogAddForm />
         </div>
       </section>
 
-      <section className={cn(adminSurface, "p-0")}>
-        <div className={adminTableWrap}>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-white/10 hover:bg-transparent">
-                <TableHead>Marca</TableHead>
-                <TableHead>Modelo</TableHead>
-                <TableHead className="tabular-nums">Ano</TableHead>
-                <TableHead>Notas</TableHead>
-                <TableHead className="w-[100px] text-right">Ações</TableHead>
+      <section className={adminTableWrap}>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-border/80 hover:bg-transparent">
+              <TableHead>Marca</TableHead>
+              <TableHead>Modelo</TableHead>
+              <TableHead className="tabular-nums">Ano</TableHead>
+              <TableHead>Notas</TableHead>
+              <TableHead className="w-[100px] text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.length === 0 ? (
+              <TableRow className="border-border/80 hover:bg-transparent">
+                <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
+                  Catálogo vazio. Adiciona a primeira variante acima.
+                </TableCell>
               </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.length === 0 ? (
-                <TableRow className="border-white/10 hover:bg-transparent">
-                  <TableCell colSpan={5} className="py-10 text-center text-sm text-muted-foreground">
-                    Catálogo vazio. Adiciona a primeira variante acima.
+            ) : (
+              rows.map((r) => (
+                <TableRow key={r.id} className="border-border/60">
+                  <TableCell className="font-medium">{r.brand}</TableCell>
+                  <TableCell>{r.model}</TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">{r.year}</TableCell>
+                  <TableCell className="max-w-[240px] truncate text-sm text-muted-foreground">
+                    {r.notes ?? "—"}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <CatalogEntryDeleteButton entryId={r.id} />
                   </TableCell>
                 </TableRow>
-              ) : (
-                rows.map((r) => (
-                  <TableRow key={r.id} className="border-white/10">
-                    <TableCell className="font-medium">{r.brand}</TableCell>
-                    <TableCell>{r.model}</TableCell>
-                    <TableCell className="tabular-nums text-muted-foreground">{r.year}</TableCell>
-                    <TableCell className="max-w-[240px] truncate text-sm text-muted-foreground">
-                      {r.notes ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <CatalogEntryDeleteButton entryId={r.id} />
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </section>
     </div>
   );

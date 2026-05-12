@@ -8,8 +8,11 @@ const PASSPORT_GOLD = "#E3B337";
 
 export type PassportTableRow = {
   date: string;
+  orderRef: string;
   km: string;
   service: string;
+  /** Próxima revisão (km/data) registada nesse serviço. */
+  nextDue?: string | null;
   parts: string;
   technician: string;
 };
@@ -231,6 +234,7 @@ export function BoletimPassportPrint({
               <thead>
                 <tr className="border-b border-neutral-400 bg-neutral-100 text-left text-[7px] font-bold uppercase tracking-wide text-neutral-600">
                   <th className="border border-neutral-300 px-1.5 py-1.5">Data</th>
+                  <th className="border border-neutral-300 px-1.5 py-1.5">N.º OR</th>
                   <th className="border border-neutral-300 px-1.5 py-1.5">Km</th>
                   <th className="border border-neutral-300 px-1.5 py-1.5">
                     Serviço
@@ -248,7 +252,7 @@ export function BoletimPassportPrint({
                   <tr>
                     <td
                       className="border border-neutral-300 px-1.5 py-2 text-neutral-500"
-                      colSpan={5}
+                      colSpan={6}
                     >
                       Sem intervenções registadas.
                     </td>
@@ -263,10 +267,18 @@ export function BoletimPassportPrint({
                         {row.date}
                       </td>
                       <td className="border border-neutral-300 px-1.5 py-1 text-neutral-600">
+                        {row.orderRef}
+                      </td>
+                      <td className="border border-neutral-300 px-1.5 py-1 text-neutral-600">
                         {row.km}
                       </td>
                       <td className="border border-neutral-300 px-1.5 py-1 font-semibold text-neutral-900">
-                        {row.service}
+                        <div>{row.service}</div>
+                        {row.nextDue ? (
+                          <div className="mt-0.5 font-normal text-[7px] leading-tight text-neutral-600">
+                            Próx. revisão: {row.nextDue}
+                          </div>
+                        ) : null}
                       </td>
                       <td className="max-w-[52mm] border border-neutral-300 px-1.5 py-1 text-neutral-700">
                         {row.parts}

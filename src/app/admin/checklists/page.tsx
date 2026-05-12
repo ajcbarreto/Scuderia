@@ -1,167 +1,148 @@
 import Link from "next/link";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { adminSurface, adminTableWrap } from "@/components/admin/admin-styles";
-import { buttonVariants } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { adminSurface } from "@/components/admin/admin-styles";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { DeletePresetButton } from "@/app/admin/checklists/delete-preset-button";
+import { loadServiceTaskTemplates } from "@/lib/service-task-templates";
 import {
-  formatPresetYearRange,
-  normalizePresetKey,
-} from "@/lib/maintenance-checklist";
+  addTaskTemplateForm,
+  deleteTaskTemplateForm,
+  moveTaskTemplateForm,
+  updateTaskTemplateLabelForm,
+} from "@/app/admin/checklists/actions";
 
-type PresetRow = {
-  id: string;
-  brand: string;
-  model: string;
-  service_type_name: string;
-  year_min: number | null;
-  year_max: number | null;
-  updated_at: string;
-  maintenance_checklist_preset_items: { id: string }[] | null;
-};
-
-type PageProps = {
-  searchParams: Promise<{ brand?: string; model?: string }>;
-};
-
-export default async function AdminChecklistsPage({ searchParams }: PageProps) {
-  const { brand: qBrand, model: qModel } = await searchParams;
+export default async function AdminTaskTemplatesPage() {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("maintenance_checklist_presets")
-    .select(
-      "id, brand, model, service_type_name, year_min, year_max, updated_at, maintenance_checklist_preset_items ( id )",
-    )
-    .order("brand", { ascending: true })
-    .order("model", { ascending: true })
-    .order("service_type_name", { ascending: true });
-
-  const rows = (data ?? []) as PresetRow[];
-  const filtered = rows.filter((r) => {
-    if (qBrand?.trim() && normalizePresetKey(r.brand) !== normalizePresetKey(qBrand)) {
-      return false;
-    }
-    if (qModel?.trim() && normalizePresetKey(r.model) !== normalizePresetKey(qModel)) {
-      return false;
-    }
-    return true;
-  });
-
-  const filterActive = Boolean(qBrand?.trim() || qModel?.trim());
+  const templates = await loadServiceTaskTemplates(supabase);
 
   return (
     <div className="space-y-10">
       <AdminPageHeader
         eyebrow="Configuração"
-        title="Checklists por modelo"
-        description="Define, por marca, modelo, ano (intervalo) e tipo de serviço, a lista de trabalhos sugeridos. Na edição do boletim, só aparecem presets compatíveis com a mota."
+        title="Lista de tarefas padrão"
+        description="Uma única lista para toda a oficina. Ao abrires um novo boletim para qualquer mota, estas linhas são copiadas para esse serviço (podes marcar vistos e acrescentar tarefas extra no boletim). Na garagem do cliente só aparecem as tarefas já concluídas."
         actions={
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/admin/catalogo-motos"
+              href="/admin/boletins"
               className={cn(
                 buttonVariants({ variant: "outline", size: "sm" }),
                 "border-border font-heading",
               )}
             >
-              Catálogo
-            </Link>
-            <Link
-              href="/admin/checklists/motas"
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "border-border font-heading",
-              )}
-            >
-              Motas & presets
-            </Link>
-            <Link href="/admin/checklists/new" className={cn(buttonVariants(), "font-heading")}>
-              Novo preset
+              Boletins
             </Link>
           </div>
         }
       />
 
-      {filterActive ? (
-        <p className="text-sm text-muted-foreground">
-          Filtro:{" "}
-          <span className="text-foreground">
-            {[qBrand?.trim(), qModel?.trim()].filter(Boolean).join(" · ")}
-          </span>
-          .{" "}
-          <Link href="/admin/checklists" className="text-primary hover:underline">
-            Limpar filtro
-          </Link>
+      <section className={cn(adminSurface, "p-6 sm:p-8")}>
+        <h2 className="font-heading text-lg font-semibold">Adicionar linha</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Novas entradas ficam no fim da lista. Usa as setas em cada linha para reordenar.
         </p>
-      ) : null}
+        <form action={addTaskTemplateForm} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Label htmlFor="new_label">Descrição da tarefa</Label>
+            <Input
+              id="new_label"
+              name="label"
+              required
+              placeholder="Ex.: Verificar níveis de fluidos"
+              className="border-input bg-background text-foreground"
+            />
+          </div>
+          <Button type="submit" className="font-heading sm:shrink-0">
+            Adicionar
+          </Button>
+        </form>
+      </section>
 
       <section className={cn(adminSurface, "p-0")}>
-        <div className={adminTableWrap}>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-border/80 hover:bg-transparent">
-                <TableHead>Marca</TableHead>
-                <TableHead>Modelo</TableHead>
-                <TableHead>Anos (modelo)</TableHead>
-                <TableHead>Tipo de serviço</TableHead>
-                <TableHead className="text-right">Linhas</TableHead>
-                <TableHead className="w-[200px] text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filtered.length === 0 ? (
-                <TableRow className="border-border/80 hover:bg-transparent">
-                  <TableCell colSpan={6} className="py-10 text-center text-sm text-muted-foreground">
-                    {rows.length === 0
-                      ? "Ainda não há presets. Cria o primeiro para desmo, revisões ou outros programas."
-                      : "Nenhum preset corresponde ao filtro. Ajusta marca/modelo ou limpa o filtro."}
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((r) => {
-                  const n = r.maintenance_checklist_preset_items?.length ?? 0;
-                  return (
-                    <TableRow key={r.id} className="border-border/80">
-                      <TableCell className="font-medium">{r.brand}</TableCell>
-                      <TableCell>{r.model}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {formatPresetYearRange(
-                          r.year_min ?? null,
-                          r.year_max ?? null,
-                        )}
-                      </TableCell>
-                      <TableCell>{r.service_type_name}</TableCell>
-                      <TableCell className="text-right tabular-nums">{n}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Link
-                            href={`/admin/checklists/${r.id}`}
-                            className={cn(
-                              buttonVariants({ variant: "ghost", size: "sm" }),
-                              "text-primary",
-                            )}
-                          >
-                            Editar
-                          </Link>
-                          <DeletePresetButton presetId={r.id} />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
+        <div className="border-b border-border px-6 py-5 sm:px-8">
+          <h2 className="font-heading text-lg font-semibold">Linhas ({templates.length})</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Alterações aqui só afectam <strong className="text-foreground">novos</strong> boletins. Serviços
+            antigos mantêm a cópia que tinham no momento da abertura.
+          </p>
         </div>
+        {templates.length === 0 ? (
+          <p className="px-6 py-12 text-center text-sm text-muted-foreground sm:px-8">
+            Lista vazia. Adiciona a primeira tarefa acima — será copiada para o próximo boletim que
+            criares.
+          </p>
+        ) : (
+          <ul className="divide-y divide-border">
+            {templates.map((t, i) => (
+              <li
+                key={t.id}
+                className="flex flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:gap-4 sm:px-8"
+              >
+                <div className="flex shrink-0 gap-1">
+                  <form action={moveTaskTemplateForm}>
+                    <input type="hidden" name="id" value={t.id} />
+                    <input type="hidden" name="direction" value="up" />
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      size="icon-sm"
+                      className="border-border"
+                      disabled={i === 0}
+                      aria-label="Subir"
+                    >
+                      <ChevronUp className="size-4" />
+                    </Button>
+                  </form>
+                  <form action={moveTaskTemplateForm}>
+                    <input type="hidden" name="id" value={t.id} />
+                    <input type="hidden" name="direction" value="down" />
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      size="icon-sm"
+                      className="border-border"
+                      disabled={i === templates.length - 1}
+                      aria-label="Descer"
+                    >
+                      <ChevronDown className="size-4" />
+                    </Button>
+                  </form>
+                </div>
+                <form
+                  action={updateTaskTemplateLabelForm}
+                  className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center"
+                >
+                  <input type="hidden" name="id" value={t.id} />
+                  <Input
+                    name="label"
+                    defaultValue={t.label}
+                    required
+                    className="border-input bg-background text-foreground sm:flex-1"
+                  />
+                  <Button type="submit" variant="secondary" size="sm" className="font-heading sm:shrink-0">
+                    Guardar texto
+                  </Button>
+                </form>
+                <form action={deleteTaskTemplateForm} className="shrink-0">
+                  <input type="hidden" name="id" value={t.id} />
+                  <Button
+                    type="submit"
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-muted-foreground hover:text-destructive"
+                    aria-label="Remover linha"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

@@ -10,7 +10,7 @@ export function CatalogEntryDeleteButton({ entryId }: { entryId: string }) {
       onSubmit={(e) => {
         if (
           !confirm(
-            "Remover esta entrada do catálogo? Motas e presets que a usavam ficam sem referência (marca/modelo/ano mantêm-se).",
+            "Remover esta entrada do catálogo? Motas que a usavam mantêm marca, modelo e ano na ficha; perde-se só a ligação ao catálogo.",
           )
         ) {
           e.preventDefault();

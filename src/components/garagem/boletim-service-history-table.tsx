@@ -5,15 +5,14 @@ import { useRouter } from "next/navigation";
 import { ChevronRight, FileText } from "lucide-react";
 import type { BoletimHistoryRow } from "@/types/boletim";
 import type { ServiceRecord } from "@/types/database";
+import {
+  formatBoletimDisplayDate,
+  formatNextServiceSummary,
+  formatOdometerKm,
+  formatRepairOrderRef,
+  formatRevisionAndTitle,
+} from "@/lib/garagem/service-record-display";
 import { cn } from "@/lib/utils";
-
-function formatPtDateTime(iso: string) {
-  return new Intl.DateTimeFormat("pt-PT", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  }).format(new Date(iso));
-}
 
 function statusShort(s: ServiceRecord["status"]): string {
   switch (s) {
@@ -33,15 +32,15 @@ function statusShort(s: ServiceRecord["status"]): string {
 function statusBadgeClass(s: ServiceRecord["status"]): string {
   switch (s) {
     case "completed":
-      return "bg-emerald-950/50 text-[#90e98b] border-emerald-800/40";
+      return "border border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-800/50 dark:bg-emerald-950/40 dark:text-emerald-300";
     case "in_progress":
-      return "bg-amber-950/50 text-amber-200 border-amber-800/40";
+      return "border border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-800/50 dark:bg-amber-950/40 dark:text-amber-200";
     case "draft":
-      return "bg-zinc-800/80 text-zinc-300 border-zinc-600/40";
+      return "border border-zinc-200 bg-zinc-100 text-zinc-800 dark:border-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-200";
     case "cancelled":
-      return "bg-red-950/40 text-red-300 border-red-900/40";
+      return "border border-red-200 bg-red-50 text-red-900 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300";
     default:
-      return "bg-zinc-800 text-zinc-300";
+      return "border border-border bg-muted text-muted-foreground";
   }
 }
 
@@ -62,7 +61,7 @@ export function BoletimServiceHistoryTable({
 
   if (historyRows.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-white/15 bg-[#141414]/80 px-6 py-10 text-center text-sm text-muted-foreground">
+      <p className="rounded-xl border border-dashed border-border bg-muted/50 px-6 py-10 text-center text-sm text-muted-foreground">
         Ainda não há serviços registados. Quando a oficina abrir uma intervenção,
         o histórico aparece aqui.
       </p>
@@ -70,14 +69,18 @@ export function BoletimServiceHistoryTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
       <table className="w-full border-collapse text-sm">
         <thead>
           <tr className="border-b border-border text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">
             <th className="w-10 px-2 py-3" aria-hidden />
             <th className="px-3 py-3 sm:px-4">Data</th>
+            <th className="hidden px-3 py-3 sm:table-cell sm:px-4">N.º OR</th>
             <th className="px-3 py-3 sm:px-4">KM</th>
             <th className="min-w-[140px] px-3 py-3 sm:px-4">Serviço</th>
+            <th className="hidden max-w-[140px] px-3 py-3 lg:table-cell lg:px-4">
+              Próx. revisão
+            </th>
             <th className="hidden px-4 py-3 md:table-cell">Peças / tarefas</th>
             <th className="px-3 py-3 sm:px-4">Estado</th>
             <th className="hidden px-4 py-3 sm:table-cell sm:text-right">
@@ -88,11 +91,15 @@ export function BoletimServiceHistoryTable({
         </thead>
         <tbody>
           {historyRows.map(({ record: row, tasks, invoiceHref }, i) => {
-            const when = row.closed_at ?? row.opened_at;
-            const parts = tasks.map((t) => t.label).join(", ") || "—";
+            const parts =
+              tasks
+                .filter((t) => t.completed)
+                .map((t) => t.label)
+                .join(", ") || "—";
             const isHi = highlightRecordId != null && row.id === highlightRecordId;
             const detailHref = `/garagem/motas/${motorcycleId}/manutencao/${row.id}`;
-            const title = row.title ?? "Manutenção";
+            const title = formatRevisionAndTitle(row);
+            const nextDue = formatNextServiceSummary(row);
 
             const stop = (e: MouseEvent) => {
               e.stopPropagation();
@@ -139,13 +146,19 @@ export function BoletimServiceHistoryTable({
                     isHi && "border-l-2 border-l-primary",
                   )}
                 >
-                  {formatPtDateTime(when)}
+                  {formatBoletimDisplayDate(row)}
+                </td>
+                <td className="hidden px-3 py-5 align-middle text-muted-foreground sm:table-cell sm:px-4 sm:py-4">
+                  {formatRepairOrderRef(row)}
                 </td>
                 <td className="px-3 py-5 align-middle text-muted-foreground sm:px-4 sm:py-4">
-                  —
+                  {formatOdometerKm(row)}
                 </td>
                 <td className="px-3 py-5 align-middle font-semibold sm:px-4 sm:py-4">
                   {title}
+                </td>
+                <td className="hidden max-w-[140px] px-3 py-5 align-middle text-xs text-muted-foreground lg:table-cell lg:px-4 lg:py-4">
+                  {nextDue ?? "—"}
                 </td>
                 <td className="hidden max-w-[220px] px-4 py-4 text-xs italic text-muted-foreground md:table-cell">
                   {parts}

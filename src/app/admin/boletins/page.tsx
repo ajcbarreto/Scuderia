@@ -87,14 +87,14 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
     <div className="space-y-10">
       <AdminPageHeader
         title="Boletins de intervenção"
-        description="Indica se o registo é manutenção (histórico visível na garagem do dono atual) ou serviço de oficina (só visível na admin — por exemplo trabalho do proprietário anterior). Regista o trabalho em tarefas; o progresso sincroniza com a garagem nos boletins de manutenção."
+        description="Indica se o registo é manutenção (histórico visível na garagem do dono atual) ou serviço de oficina (só visível na admin). Ao criar um boletim, a lista de tarefas em «Tarefas padrão» é copiada para esse serviço; na garagem o cliente só vê as tarefas já concluídas."
       />
 
       <section className={cn(adminSurface, "p-6 sm:p-8")}>
         <h2 className="font-heading text-lg font-semibold">Iniciar serviço na mota</h2>
         <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-          Cria um boletim para esta entrada. Depois descreves o que foi feito, marcas tarefas e
-          acompanhas o progresso no editor.
+          Cria um boletim para esta entrada. As tarefas da lista global são copiadas automaticamente;
+          no editor marcas vistos e podes acrescentar linhas extra.
         </p>
         <form
           action={createServiceRecordFromMotaForm}
@@ -112,7 +112,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
               name="motorcycle_id"
               required
               defaultValue={preselectMotaId ?? ""}
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="">— Escolher mota —</option>
               {motaList.map((m) => (
@@ -134,7 +134,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
               id="new_record_kind"
               name="record_kind"
               defaultValue="maintenance"
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="maintenance">Manutenção (garagem)</option>
               <option value="shop_service">Serviço (só oficina)</option>

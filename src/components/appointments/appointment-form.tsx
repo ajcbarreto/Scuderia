@@ -67,7 +67,7 @@ export function AppointmentForm() {
           type="datetime-local"
           value={preferred}
           onChange={(e) => setPreferred(e.target.value)}
-          className="border-white/10 bg-[#262626]"
+          className="border-input bg-background text-foreground"
         />
       </div>
       <div className="space-y-2">
@@ -78,7 +78,7 @@ export function AppointmentForm() {
           placeholder="Ex.: revisão dos 20.000 km, ruído na travagem…"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          className="border-white/10 bg-[#262626]"
+          className="border-input bg-background text-foreground"
         />
       </div>
       {error ? (

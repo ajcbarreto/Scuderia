@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import {
   addServiceTaskFromForm,
-  applyChecklistPresetToServiceRecord,
   deleteServiceAttachmentForm,
   updateServiceRecord,
   uploadServiceAttachment,
@@ -16,14 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
 import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask } from "@/types/database";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { adminSurface } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
-import {
-  type ChecklistPresetWithItems,
-  formatPresetYearRange,
-} from "@/lib/maintenance-checklist";
 import { TaskRow } from "./task-row";
 
 type Props = {
@@ -32,7 +28,6 @@ type Props = {
   tasks: ServiceTask[];
   attachments: ServiceAttachment[];
   clients: Pick<Profile, "id" | "full_name" | "phone">[];
-  checklistPresets: ChecklistPresetWithItems[];
 };
 
 export function BoletimEditor({
@@ -41,7 +36,6 @@ export function BoletimEditor({
   tasks,
   attachments,
   clients,
-  checklistPresets,
 }: Props) {
   const recordId = record.id;
 
@@ -61,16 +55,6 @@ export function BoletimEditor({
     FormData
   >(addServiceTaskFromForm, undefined);
 
-  const [applyState, applyAction, applyPending] = useActionState<
-    ActionState | undefined,
-    FormData
-  >(applyChecklistPresetToServiceRecord, undefined);
-
-  const linkedPresetLabel = record.checklist_preset_id
-    ? checklistPresets.find((p) => p.id === record.checklist_preset_id)
-        ?.service_type_name ?? "Preset associado (marca/modelo já não coincide com a lista)"
-    : null;
-
   useEffect(() => {
     if (uploadState?.ok) {
       const el = document.getElementById("upload-form") as HTMLFormElement | null;
@@ -84,6 +68,9 @@ export function BoletimEditor({
       el?.reset();
     }
   }, [taskState?.ok]);
+
+  const completedTaskCount = tasks.filter((t) => t.completed).length;
+  const metaFormId = "boletim-meta-form";
 
   return (
     <div className="space-y-10">
@@ -102,8 +89,8 @@ export function BoletimEditor({
         title="Intervenção na oficina"
         description={
           mota.plate
-            ? `Matrícula ${mota.plate} — regista o trabalho em tarefas; o progresso segue a checklist.`
-            : "Regista o trabalho em tarefas; o progresso segue a checklist."
+            ? `Matrícula ${mota.plate} — checklist e próxima revisão à esquerda; dados do boletim e anexos à direita.`
+            : "Checklist e próxima revisão à esquerda; dados e anexos à direita."
         }
         actions={
           <Link
@@ -119,220 +106,247 @@ export function BoletimEditor({
         }
       />
 
-      <section className={cn(adminSurface, "p-6 sm:p-8")}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-heading text-lg font-semibold">Progresso do serviço</h2>
-            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-              Cada tarefa concluída aumenta a percentagem. Em boletins de{" "}
-              <span className="text-foreground">manutenção</span>, o dono atual vê o progresso na
-              garagem; em <span className="text-foreground">serviço (só oficina)</span> o cliente não
-              vê este registo.
+      <div className="flex flex-col gap-10 xl:grid xl:grid-cols-12 xl:items-start xl:gap-8">
+        <div className="flex flex-col gap-6 xl:col-span-7">
+          <section
+            className={cn(
+              adminSurface,
+              "border-primary/20 p-6 shadow-sm ring-1 ring-primary/15 sm:p-8",
+            )}
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h2 className="font-heading text-lg font-semibold tracking-tight">
+                  Lista de tarefas
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {tasks.length === 0
+                    ? "Sem linhas neste boletim — adiciona abaixo ou gere a lista em «Tarefas padrão»."
+                    : `${completedTaskCount} de ${tasks.length} concluídas · cada visto atualiza o progresso.`}
+                </p>
+              </div>
+              <p className="shrink-0 font-heading text-3xl font-semibold tabular-nums text-primary sm:text-4xl">
+                {record.progress_percent}%
+              </p>
+            </div>
+            <Progress value={record.progress_percent} className="mt-4">
+              <span className="sr-only">{record.progress_percent}% concluído</span>
+            </Progress>
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              <span className="text-foreground">Manutenção</span>: o dono vê na garagem só as linhas
+              com visto. <span className="text-foreground">Serviço (só oficina)</span>: registo
+              oculto ao cliente.
             </p>
-          </div>
-          <p className="font-heading text-4xl font-semibold tabular-nums text-primary sm:text-right">
-            {record.progress_percent}%
-          </p>
-        </div>
-        <Progress value={record.progress_percent} className="mt-5">
-          <span className="sr-only">{record.progress_percent}% concluído</span>
-        </Progress>
-      </section>
 
-      <section className={cn(adminSurface, "p-6 sm:p-8")}>
-        <h2 className="font-heading text-lg font-semibold">Dados do boletim</h2>
-        <form action={metaAction} className="mt-4 space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="title">Título</Label>
-            <Input
-              id="title"
-              name="title"
-              defaultValue={record.title ?? ""}
-              className="border-input bg-background"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="status">Estado</Label>
-            <select
-              id="status"
-              name="status"
-              defaultValue={record.status}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              <option value="draft">Rascunho</option>
-              <option value="in_progress">Em curso</option>
-              <option value="completed">Concluído</option>
-              <option value="cancelled">Cancelado</option>
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="record_kind">Manutenção ou serviço</Label>
-            <select
-              id="record_kind"
-              name="record_kind"
-              defaultValue={record.record_kind}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              <option value="maintenance">
-                Manutenção — aparece na garagem do dono atual (histórico da mota)
-              </option>
-              <option value="shop_service">
-                Serviço (só oficina) — não aparece ao cliente; útil para trabalho interno ou do
-                proprietário anterior
-              </option>
-            </select>
-            <p className="text-xs text-muted-foreground">
-              Após transferência de propriedade, o novo dono continua a ver apenas os boletins
-              marcados como manutenção.
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="shop_notes">Notas da oficina</Label>
-            <Textarea
-              id="shop_notes"
-              name="shop_notes"
-              rows={6}
-              defaultValue={record.shop_notes ?? ""}
-              className="border-input bg-background"
-            />
-          </div>
-          {metaState?.error ? (
-            <p className="text-sm text-destructive">{metaState.error}</p>
-          ) : null}
-          {metaState?.ok ? (
-            <p className="text-sm text-primary">Alterações guardadas.</p>
-          ) : null}
-          <Button type="submit" disabled={metaPending} className="font-heading">
-            {metaPending ? "A guardar…" : "Guardar boletim"}
-          </Button>
-        </form>
-      </section>
-
-      <section className={cn(adminSurface, "p-6 sm:p-8")}>
-        <h2 className="font-heading text-lg font-semibold">Checklist a partir do modelo</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Escolhe o tipo de serviço configurado para{" "}
-          <span className="text-foreground">
-            {mota.brand} {mota.model}
-            {mota.year != null ? ` (${mota.year})` : " (sem ano na ficha — só presets «todos os anos»)"}
-          </span>{" "}
-          e aplica as linhas ao boletim. Podes editar a lista em{" "}
-          <Link href="/admin/checklists" className="text-primary hover:underline">
-            Checklists
-          </Link>
-          .
-        </p>
-        {linkedPresetLabel ? (
-          <p className="mt-3 text-xs text-muted-foreground">
-            Último preset aplicado:{" "}
-            <span className="font-medium text-foreground">{linkedPresetLabel}</span>
-          </p>
-        ) : null}
-        {checklistPresets.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            Não há presets para esta marca, modelo e ano. Cria ou ajusta presets em{" "}
-            <Link href="/admin/checklists/motas" className="text-primary hover:underline">
-              Motas & presets
-            </Link>
-            .
-          </p>
-        ) : (
-          <form action={applyAction} className="mt-4 space-y-4">
-            <input type="hidden" name="record_id" value={recordId} />
-            <div className="space-y-2">
-              <Label htmlFor="preset_id">Tipo de serviço (preset)</Label>
-              <select
-                id="preset_id"
-                name="preset_id"
-                required
-                className="flex h-9 w-full max-w-xl rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                defaultValue={
-                  record.checklist_preset_id &&
-                  checklistPresets.some((p) => p.id === record.checklist_preset_id)
-                    ? record.checklist_preset_id
-                    : ""
-                }
+            <div className="mt-6 border-t border-border/80 pt-6">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Checklist
+              </h3>
+              <ul className="mt-3 max-h-[min(65vh,560px)] space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-border/70 bg-muted/20 p-2 pr-1 [scrollbar-gutter:stable] sm:p-3">
+                {tasks.length === 0 ? (
+                  <li className="px-2 py-6 text-center text-sm text-muted-foreground">
+                    Sem tarefas.
+                  </li>
+                ) : (
+                  tasks.map((t) => <TaskRow key={t.id} recordId={recordId} task={t} />)
+                )}
+              </ul>
+              <form
+                id="add-task-form"
+                action={taskAction}
+                className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
               >
-                <option value="" disabled>
-                  Escolher…
-                </option>
-                {checklistPresets.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.service_type_name} · {formatPresetYearRange(p.year_min, p.year_max)} (
-                    {p.items.length} linhas)
-                  </option>
-                ))}
-              </select>
+                <input type="hidden" name="record_id" value={recordId} />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Label htmlFor="label">Nova tarefa</Label>
+                  <Input
+                    id="label"
+                    name="label"
+                    placeholder="Ex.: Óleo e filtro"
+                    className="border-input bg-background text-foreground"
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  disabled={taskPending}
+                  variant="outline"
+                  className="shrink-0 border-border"
+                >
+                  {taskPending ? "…" : "Adicionar"}
+                </Button>
+              </form>
+              {taskState?.error ? (
+                <p className="mt-2 text-sm text-destructive">{taskState.error}</p>
+              ) : null}
             </div>
-            <div className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                id="update_title"
-                name="update_title"
-                value="1"
-                defaultChecked
-                className="mt-1 size-4 rounded border border-border bg-card"
-              />
-              <Label htmlFor="update_title" className="font-normal leading-snug">
-                Atualizar o título do boletim para o nome do tipo de serviço
-              </Label>
+          </section>
+
+          <section className={cn(adminSurface, "p-6 sm:p-8")}>
+            <h2 className="font-heading text-lg font-semibold">Próxima revisão (cliente)</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Opcional. Aparece no boletim na garagem. Os campos abaixo fazem parte do mesmo
+              guardar que «Dados do boletim» — usa o botão à direita.
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="next_service_due_date">Data alvo</Label>
+                <Input
+                  id="next_service_due_date"
+                  form={metaFormId}
+                  name="next_service_due_date"
+                  type="date"
+                  defaultValue={record.next_service_due_date ?? ""}
+                  className="border-input bg-background text-foreground"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="next_service_due_km">Quilometragem alvo (km)</Label>
+                <Input
+                  id="next_service_due_km"
+                  form={metaFormId}
+                  name="next_service_due_km"
+                  type="number"
+                  min={0}
+                  step={1}
+                  placeholder="Ex.: 18 000"
+                  defaultValue={record.next_service_due_km ?? ""}
+                  className="border-input bg-background text-foreground"
+                />
+              </div>
             </div>
-            {applyState?.error ? (
-              <p className="text-sm text-destructive">{applyState.error}</p>
+          </section>
+        </div>
+
+        <div className="flex flex-col gap-10 xl:sticky xl:top-6 xl:col-span-5 xl:self-start">
+          <form id={metaFormId} action={metaAction} className="flex flex-col gap-6">
+            <section className={cn(adminSurface, "p-6 sm:p-8")}>
+              <h2 className="font-heading text-lg font-semibold">Dados do boletim</h2>
+              <div className="mt-4 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Título</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    defaultValue={record.title ?? ""}
+                    className="border-input bg-background text-foreground"
+                  />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="service_date">Data do serviço</Label>
+                    <Input
+                      id="service_date"
+                      name="service_date"
+                      type="date"
+                      defaultValue={record.service_date ?? ""}
+                      className="border-input bg-background text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="repair_order_ref">N.º ordem de reparação</Label>
+                    <Input
+                      id="repair_order_ref"
+                      name="repair_order_ref"
+                      placeholder="Ex.: OR-2026-0042"
+                      defaultValue={record.repair_order_ref ?? ""}
+                      className="border-input bg-background text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="odometer_km">Quilometragem (km)</Label>
+                    <Input
+                      id="odometer_km"
+                      name="odometer_km"
+                      type="number"
+                      min={0}
+                      step={1}
+                      placeholder="Ex.: 12450"
+                      defaultValue={record.odometer_km ?? ""}
+                      className="border-input bg-background text-foreground"
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="revision_type">Tipo de revisão</Label>
+                    <select
+                      id="revision_type"
+                      name="revision_type"
+                      defaultValue={record.revision_type ?? ""}
+                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                    >
+                      <option value="">— Não indicado —</option>
+                      {SERVICE_REVISION_TYPES.map((t) => (
+                        <option key={t} value={t}>
+                          {t}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status">Estado</Label>
+                  <select
+                    id="status"
+                    name="status"
+                    defaultValue={record.status}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <option value="draft">Rascunho</option>
+                    <option value="in_progress">Em curso</option>
+                    <option value="completed">Concluído</option>
+                    <option value="cancelled">Cancelado</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="record_kind">Manutenção ou serviço</Label>
+                  <select
+                    id="record_kind"
+                    name="record_kind"
+                    defaultValue={record.record_kind}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <option value="maintenance">
+                      Manutenção — aparece na garagem do dono atual (histórico da mota)
+                    </option>
+                    <option value="shop_service">
+                      Serviço (só oficina) — não aparece ao cliente; útil para trabalho interno ou do
+                      proprietário anterior
+                    </option>
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Após transferência de propriedade, o novo dono continua a ver apenas os boletins
+                    marcados como manutenção.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="shop_notes">Notas da oficina</Label>
+                  <Textarea
+                    id="shop_notes"
+                    name="shop_notes"
+                    rows={6}
+                    defaultValue={record.shop_notes ?? ""}
+                    className="border-input bg-background text-foreground"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {metaState?.error ? (
+              <p className="text-sm text-destructive">{metaState.error}</p>
             ) : null}
-            {applyState?.info ? (
-              <p className="text-sm text-muted-foreground">{applyState.info}</p>
+            {metaState?.ok ? (
+              <p className="text-sm text-primary">Alterações guardadas.</p>
             ) : null}
-            {applyState?.ok && !applyState?.error && !applyState?.info ? (
-              <p className="text-sm text-primary">Checklist aplicada.</p>
-            ) : null}
-            <Button type="submit" disabled={applyPending} variant="secondary" className="font-heading">
-              {applyPending ? "A aplicar…" : "Aplicar ao boletim"}
+            <Button type="submit" disabled={metaPending} className="font-heading w-full sm:w-auto">
+              {metaPending ? "A guardar…" : "Guardar boletim"}
             </Button>
           </form>
-        )}
-      </section>
 
-      <section className={cn(adminSurface, "p-6 sm:p-8")}>
-        <div>
-          <h2 className="font-heading text-lg font-semibold">Trabalho realizado</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Lista o que foi feito e marca como concluído — o progresso atualiza em cima.
-          </p>
-        </div>
-        <ul className="mt-4 space-y-2">
-          {tasks.length === 0 ? (
-            <li className="text-sm text-muted-foreground">Sem tarefas.</li>
-          ) : (
-            tasks.map((t) => <TaskRow key={t.id} recordId={recordId} task={t} />)
-          )}
-        </ul>
-        <form id="add-task-form" action={taskAction} className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
-          <input type="hidden" name="record_id" value={recordId} />
-          <div className="flex-1 space-y-2">
-            <Label htmlFor="label">Nova tarefa</Label>
-            <Input
-              id="label"
-              name="label"
-              placeholder="Ex.: Óleo e filtro"
-              className="border-input bg-background"
-            />
-          </div>
-          <Button type="submit" disabled={taskPending} variant="outline" className="border-border">
-            {taskPending ? "…" : "Adicionar"}
-          </Button>
-        </form>
-        {taskState?.error ? (
-          <p className="mt-2 text-sm text-destructive">{taskState.error}</p>
-        ) : null}
-      </section>
-
-      <section className={cn(adminSurface, "p-6 sm:p-8")}>
+          <section className={cn(adminSurface, "p-6 sm:p-8")}>
         <h2 className="font-heading text-lg font-semibold">Anexos (Storage)</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Faturas: escolhe o cliente que pode ver o ficheiro (
-          <code className="text-xs">visible_to_owner_id</code>). Fotos e outros
-          seguem o dono atual da mota.
+          <code className="text-xs">visible_to_owner_id</code>). Fotos e outros seguem o dono atual
+          da mota.
         </p>
 
         <ul className="mt-4 space-y-2">
@@ -373,7 +387,7 @@ export function BoletimEditor({
               name="file"
               type="file"
               required
-              className="border-input bg-background"
+              className="border-input bg-background text-foreground"
             />
           </div>
           <div className="space-y-2">
@@ -382,7 +396,7 @@ export function BoletimEditor({
               id="kind"
               name="kind"
               defaultValue="photo"
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="photo">Foto</option>
               <option value="invoice">Fatura</option>
@@ -390,13 +404,11 @@ export function BoletimEditor({
             </select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="visible_to_owner_id">
-              Visível a (só faturas)
-            </Label>
+            <Label htmlFor="visible_to_owner_id">Visível a (só faturas)</Label>
             <select
               id="visible_to_owner_id"
               name="visible_to_owner_id"
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
             >
               <option value="">— Para faturas: escolher cliente —</option>
               {clients.map((c) => (
@@ -412,11 +424,13 @@ export function BoletimEditor({
           {uploadState?.ok ? (
             <p className="text-sm text-primary">Upload concluído.</p>
           ) : null}
-          <Button type="submit" disabled={uploadPending} variant="secondary">
+          <Button type="submit" disabled={uploadPending} variant="secondary" className="font-heading">
             {uploadPending ? "A enviar…" : "Enviar para Storage"}
           </Button>
         </form>
       </section>
+        </div>
+      </div>
     </div>
   );
 }

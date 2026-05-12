@@ -108,7 +108,7 @@ export default async function AdminDashboardPage() {
       icon: UserPlus,
       accent: "border-l-emerald-600 bg-card hover:bg-muted",
       iconWrap:
-        "bg-emerald-500/12 text-emerald-800 group-hover:bg-emerald-600 group-hover:text-white",
+        "bg-emerald-500/12 text-emerald-900 group-hover:bg-emerald-600 group-hover:text-white dark:text-emerald-200 dark:group-hover:text-white",
       arrowClass: "text-emerald-600",
     },
     {
@@ -138,7 +138,7 @@ export default async function AdminDashboardPage() {
       hint: "Rascunho ou em curso",
       icon: Construction,
       tag: "Operação",
-      tagClass: "text-emerald-700",
+      tagClass: "text-emerald-800 dark:text-emerald-300",
     },
     {
       label: "Anexos tipo fatura",

@@ -7,8 +7,6 @@ function revalidateCatalogPaths() {
   revalidatePath("/admin/catalogo-motos");
   revalidatePath("/admin/motas");
   revalidatePath("/admin/checklists");
-  revalidatePath("/admin/checklists/new");
-  revalidatePath("/admin/checklists/motas");
 }
 
 export async function createMotorcycleCatalogEntry(

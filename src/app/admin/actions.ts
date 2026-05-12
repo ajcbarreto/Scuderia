@@ -3,14 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { normalizePresetKey, presetAppliesToMotoYear } from "@/lib/maintenance-checklist";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
-import type { AttachmentKind } from "@/types/database";
+import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
+import type { AttachmentKind, ServiceRevisionType } from "@/types/database";
 
 export type ActionState = {
   error?: string;
   ok?: boolean;
-  /** Mensagem informativa (ex.: preset aplicado sem tarefas novas). */
+  /** Mensagem informativa ao operador. */
   info?: string;
   /** Email da conta criada (para confirmar ao operador). */
   createdEmail?: string;
@@ -211,7 +211,7 @@ export async function createMotorcycle(
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
   revalidatePath("/admin/motas");
-  revalidatePath("/admin/checklists/motas");
+  revalidatePath("/admin/checklists");
   revalidatePath(`/admin/motas/${mota.id}`);
   return { ok: true };
 }
@@ -351,6 +351,25 @@ export async function createServiceRecordFromMotaForm(formData: FormData) {
     redirect("/admin/boletins");
   }
 
+  const { data: tmpl } = await supabase
+    .from("service_task_templates")
+    .select("label, sort_order")
+    .order("sort_order", { ascending: true });
+
+  if (tmpl?.length) {
+    const { error: taskInsErr } = await supabase.from("service_tasks").insert(
+      tmpl.map((row) => ({
+        service_record_id: rec.id,
+        label: row.label,
+        sort_order: row.sort_order,
+        completed: false,
+      })),
+    );
+    if (taskInsErr && process.env.NODE_ENV === "development") {
+      console.error("[createServiceRecord] service_tasks insert:", taskInsErr.message);
+    }
+  }
+
   revalidatePath("/admin/boletins");
   revalidatePath("/admin/servico");
   revalidatePath("/admin/motas");
@@ -372,6 +391,60 @@ export async function updateServiceRecord(
   const record_kind =
     recordKindRaw === "shop_service" ? "shop_service" : "maintenance";
 
+  const serviceDateRaw = String(formData.get("service_date") ?? "").trim();
+  const service_date =
+    serviceDateRaw === ""
+      ? null
+      : /^\d{4}-\d{2}-\d{2}$/.test(serviceDateRaw)
+        ? serviceDateRaw
+        : null;
+  if (serviceDateRaw !== "" && service_date === null) {
+    return { error: "Data inválida." };
+  }
+
+  const repair_order_ref =
+    String(formData.get("repair_order_ref") ?? "").trim() || null;
+
+  const kmRaw = String(formData.get("odometer_km") ?? "").trim();
+  let odometer_km: number | null = null;
+  if (kmRaw !== "") {
+    const n = Number.parseInt(kmRaw, 10);
+    if (!Number.isFinite(n) || n < 0) {
+      return { error: "Quilometragem inválida." };
+    }
+    odometer_km = n;
+  }
+
+  const revisionRaw = String(formData.get("revision_type") ?? "").trim();
+  let revision_type: ServiceRevisionType | null = null;
+  if (revisionRaw !== "") {
+    if (!SERVICE_REVISION_TYPES.includes(revisionRaw as ServiceRevisionType)) {
+      return { error: "Tipo de revisão inválido." };
+    }
+    revision_type = revisionRaw as ServiceRevisionType;
+  }
+
+  const nextDueDateRaw = String(formData.get("next_service_due_date") ?? "").trim();
+  const next_service_due_date =
+    nextDueDateRaw === ""
+      ? null
+      : /^\d{4}-\d{2}-\d{2}$/.test(nextDueDateRaw)
+        ? nextDueDateRaw
+        : null;
+  if (nextDueDateRaw !== "" && next_service_due_date === null) {
+    return { error: "Data da próxima revisão inválida." };
+  }
+
+  const nextDueKmRaw = String(formData.get("next_service_due_km") ?? "").trim();
+  let next_service_due_km: number | null = null;
+  if (nextDueKmRaw !== "") {
+    const nk = Number.parseInt(nextDueKmRaw, 10);
+    if (!Number.isFinite(nk) || nk < 0) {
+      return { error: "Quilometragem da próxima revisão inválida." };
+    }
+    next_service_due_km = nk;
+  }
+
   const allowed = ["draft", "in_progress", "completed", "cancelled"];
   if (!allowed.includes(status)) {
     return { error: "Estado inválido." };
@@ -384,6 +457,12 @@ export async function updateServiceRecord(
       status: status as "draft" | "in_progress" | "completed" | "cancelled",
       shop_notes: shopNotes,
       record_kind,
+      service_date,
+      repair_order_ref,
+      odometer_km,
+      revision_type,
+      next_service_due_date,
+      next_service_due_km,
     })
     .eq("id", recordId);
 
@@ -441,151 +520,6 @@ export async function addServiceTaskFromForm(
   const recordId = String(formData.get("record_id") ?? "").trim();
   const label = String(formData.get("label") ?? "");
   return addServiceTask(recordId, label);
-}
-
-/**
- * Aplica um preset de checklist ao boletim: cria tarefas em falta e opcionalmente
- * atualiza o título e a referência ao preset.
- */
-export async function applyChecklistPresetToServiceRecord(
-  _prev: ActionState | undefined,
-  formData: FormData,
-): Promise<ActionState> {
-  const { supabase } = await requireAdmin();
-  const recordId = String(formData.get("record_id") ?? "").trim();
-  const presetId = String(formData.get("preset_id") ?? "").trim();
-  const updateTitle = String(formData.get("update_title") ?? "") === "1";
-
-  if (!recordId || !presetId) {
-    return { error: "Boletim ou preset em falta." };
-  }
-
-  const { data: sr } = await supabase
-    .from("service_records")
-    .select("id, motorcycle_id, title")
-    .eq("id", recordId)
-    .maybeSingle();
-  if (!sr) {
-    return { error: "Boletim não encontrado." };
-  }
-
-  const { data: mota } = await supabase
-    .from("motorcycles")
-    .select("brand, model, year")
-    .eq("id", sr.motorcycle_id)
-    .maybeSingle();
-  if (!mota) {
-    return { error: "Mota não encontrada." };
-  }
-
-  const { data: preset } = await supabase
-    .from("maintenance_checklist_presets")
-    .select("id, brand, model, service_type_name, year_min, year_max")
-    .eq("id", presetId)
-    .maybeSingle();
-  if (!preset) {
-    return { error: "Preset não encontrado." };
-  }
-
-  if (
-    normalizePresetKey(preset.brand) !== normalizePresetKey(mota.brand) ||
-    normalizePresetKey(preset.model) !== normalizePresetKey(mota.model)
-  ) {
-    return {
-      error:
-        "Este preset não corresponde à marca/modelo desta mota. Ajusta o preset ou a ficha da mota.",
-    };
-  }
-
-  const motoYear = mota.year ?? null;
-  const pMin = (preset as { year_min?: number | null }).year_min ?? null;
-  const pMax = (preset as { year_max?: number | null }).year_max ?? null;
-  if (!presetAppliesToMotoYear(motoYear, pMin, pMax)) {
-    return {
-      error:
-        "Este preset não se aplica ao ano desta mota. Define o ano na ficha da mota ou ajusta o intervalo de anos do preset.",
-    };
-  }
-
-  const { data: items } = await supabase
-    .from("maintenance_checklist_preset_items")
-    .select("label, sort_order")
-    .eq("preset_id", presetId)
-    .order("sort_order", { ascending: true });
-
-  const rows = items ?? [];
-  if (rows.length === 0) {
-    return { error: "Este preset ainda não tem linhas de serviço." };
-  }
-
-  const { data: existingTasks } = await supabase
-    .from("service_tasks")
-    .select("label")
-    .eq("service_record_id", recordId);
-  const existingLabels = new Set(
-    (existingTasks ?? []).map((t) => normalizePresetKey(t.label)),
-  );
-
-  const { data: last } = await supabase
-    .from("service_tasks")
-    .select("sort_order")
-    .eq("service_record_id", recordId)
-    .order("sort_order", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let nextOrder = (last?.sort_order ?? -1) + 1;
-  let added = 0;
-
-  for (const row of rows) {
-    const label = String(row.label ?? "").trim();
-    if (!label) continue;
-    if (existingLabels.has(normalizePresetKey(label))) continue;
-
-    const { error: insErr } = await supabase.from("service_tasks").insert({
-      service_record_id: recordId,
-      label,
-      sort_order: nextOrder++,
-      completed: false,
-    });
-    if (insErr) {
-      return { error: insErr.message };
-    }
-    existingLabels.add(normalizePresetKey(label));
-    added += 1;
-  }
-
-  const patch: {
-    checklist_preset_id: string;
-    title?: string | null;
-  } = { checklist_preset_id: presetId };
-  if (updateTitle) {
-    patch.title = preset.service_type_name;
-  }
-
-  const { error: updRecErr } = await supabase
-    .from("service_records")
-    .update(patch)
-    .eq("id", recordId);
-  if (updRecErr) {
-    return { error: updRecErr.message };
-  }
-
-  revalidatePath(`/admin/boletins/${recordId}`);
-  revalidatePath("/admin/boletins");
-  revalidatePath("/admin/servico");
-  await revalidateMotaForServiceRecord(supabase, recordId);
-  revalidatePath("/garagem");
-
-  if (added === 0) {
-    return {
-      ok: true,
-      info:
-        "Preset associado ao boletim. Todas as tarefas do preset já existiam na lista — nada novo foi adicionado.",
-    };
-  }
-
-  return { ok: true };
 }
 
 export async function setServiceTaskCompleted(

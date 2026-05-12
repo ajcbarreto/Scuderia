@@ -18,7 +18,7 @@ export function AdminPageHeader({
   className,
 }: AdminPageHeaderProps) {
   return (
-    <header className={cn("space-y-4 border-b border-white/[0.06] pb-8", className)}>
+    <header className={cn("space-y-4 border-b border-border pb-8", className)}>
       {eyebrow ? <div className="text-sm text-muted-foreground">{eyebrow}</div> : null}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">

@@ -126,7 +126,7 @@ export default async function AdminDocumentosPage({ searchParams }: PageProps) {
               Total de anexos
             </p>
             <p className="mt-2 font-heading text-3xl font-bold text-foreground">{totalAll ?? 0}</p>
-            <p className="mt-3 flex items-center gap-1 text-xs font-bold text-emerald-700">
+            <p className="mt-3 flex items-center gap-1 text-xs font-bold text-emerald-800 dark:text-emerald-300">
               <TrendingUp className="size-4" />
               Histórico no armazenamento
             </p>
@@ -238,7 +238,7 @@ export default async function AdminDocumentosPage({ searchParams }: PageProps) {
                                   Abrir
                                 </Link>
                               ) : null}
-                              <span className="rounded-full border border-border px-2 py-0.5 font-heading text-[9px] font-bold uppercase tracking-widest text-emerald-700">
+                              <span className="rounded-full border border-border px-2 py-0.5 font-heading text-[9px] font-bold uppercase tracking-widest text-emerald-800 dark:text-emerald-300">
                                 {statusPaid}
                               </span>
                             </div>

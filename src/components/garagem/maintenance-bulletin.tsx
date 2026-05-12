@@ -14,10 +14,18 @@ import {
 } from "lucide-react";
 import type { Motorcycle, ServiceRecord, ServiceTask } from "@/types/database";
 import type { BoletimHistoryRow } from "@/types/boletim";
+import {
+  formatBoletimDisplayDate,
+  formatNextServiceSummary,
+  formatOdometerKm,
+  formatRepairOrderRef,
+  formatRevisionAndTitle,
+} from "@/lib/garagem/service-record-display";
 import { BoletimFooterActions } from "@/components/garagem/boletim-footer-actions";
 import { BoletimPassportPrint } from "@/components/garagem/boletim-passport-print";
 import { BoletimServiceHistoryTable } from "@/components/garagem/boletim-service-history-table";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 export type { BoletimHistoryRow as HistoryRow } from "@/types/boletim";
 
@@ -64,17 +72,18 @@ function statusLabel(status: ServiceRecord["status"]): {
 
 function mapHistoryToPassportRows(rows: BoletimHistoryRow[]) {
   return rows.map(({ record, tasks }) => {
-    const when = record.closed_at ?? record.opened_at;
-    const dateStr = new Intl.DateTimeFormat("pt-PT", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(new Date(when));
-    const parts = tasks.map((t) => t.label).join(", ") || "—";
+    const parts =
+      tasks
+        .filter((t) => t.completed)
+        .map((t) => t.label)
+        .join(", ") || "—";
+    const nextDue = formatNextServiceSummary(record);
     return {
-      date: dateStr,
-      km: "—",
-      service: record.title ?? "Manutenção",
+      date: formatBoletimDisplayDate(record),
+      orderRef: formatRepairOrderRef(record),
+      km: formatOdometerKm(record),
+      service: formatRevisionAndTitle(record),
+      nextDue: nextDue ?? undefined,
       parts,
       technician: "Scuderia itTECH",
     };
@@ -145,6 +154,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
   const isDetail = props.variant === "detail";
   const r = isDetail ? props.currentRecord : null;
   const currentTasks = isDetail ? props.currentTasks : [];
+  const clientVisibleTasks = currentTasks.filter((t) => t.completed);
   const standalone =
     props.variant === "detail" &&
     "detailPresentation" in props &&
@@ -154,8 +164,11 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
   const vehicleTitle = `${m.brand} ${m.model}`.trim();
   const lastService = historyRows[0]?.record;
   const lastServiceLabel = lastService
-    ? formatPtDate((lastService.closed_at ?? lastService.opened_at) as string)
+    ? formatBoletimDisplayDate(lastService)
     : "—";
+  const nextRevisionPlanned = lastService
+    ? formatNextServiceSummary(lastService)
+    : null;
 
   const fleetStatus = aggregateFleetStatus(historyRows);
   const detailStatus = r ? statusLabel(r.status) : fleetStatus;
@@ -170,15 +183,6 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
       ?.split(/\n\s*\n/)
       .map((b) => b.trim())
       .filter(Boolean) ?? [];
-
-  const whatsappHref =
-    process.env.NEXT_PUBLIC_WHATSAPP_URL ??
-    "https://wa.me/?text=" +
-      encodeURIComponent(
-        isDetail && r
-          ? `Olá Scuderia itTECH — boletim ${formatBulletinId(r.id, r.opened_at)} (${vehicleTitle}).`
-          : `Olá Scuderia itTECH — garagem: ${vehicleTitle} (${m.plate ?? "sem matrícula"}).`,
-      );
 
   const passportRows = mapHistoryToPassportRows(historyRows);
   const { antesSrc, depoisSrc } = pickAntesDepoisPhotos(
@@ -196,8 +200,8 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             .map((l) => l.trim())
             .filter(Boolean),
         )
-      : isDetail && r && currentTasks.length > 0
-        ? currentTasks.map((t) => t.label).filter(Boolean)
+      : isDetail && r && clientVisibleTasks.length > 0
+        ? clientVisibleTasks.map((t) => t.label).filter(Boolean)
         : [
             "Histórico digital disponível na garagem Scuderia.",
             "Recomendamos calendarizar a próxima revisão com a equipa.",
@@ -229,20 +233,22 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
     >
       {!standalone ? (
         <>
-          <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end print:mb-6">
-            <div>
-              <h1 className="font-heading text-4xl font-bold uppercase tracking-tighter md:text-6xl">
+          <div className="mb-8 flex flex-col gap-4 border-b border-border pb-8 md:mb-10 md:flex-row md:items-end md:justify-between print:mb-6">
+            <div className="min-w-0">
+              <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Boletim de manutenção
               </h1>
-              <p className="mt-2 text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              <p className="mt-2 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
                 {isDetail
                   ? "Detalhe da intervenção"
                   : "Relatório de controlo e manutenção"}
               </p>
             </div>
-            <div className="text-left md:text-right">
-              <p className="font-heading text-lg font-bold text-primary">{headerRef}</p>
-              <p className="text-sm text-muted-foreground">Gerado em: {generatedLabel}</p>
+            <div className="shrink-0 text-left md:text-right">
+              <p className="font-heading text-base font-bold text-primary sm:text-lg">
+                {headerRef}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">Gerado em: {generatedLabel}</p>
             </div>
           </div>
 
@@ -271,115 +277,214 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                     Placa: {m.plate ?? "—"} | VIN: {m.vin ?? "—"}
                   </p>
                 </div>
-                <div className="grid grid-cols-2 gap-6 border-t border-border pt-8 md:grid-cols-4">
-                  <div>
-                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                      Proprietário
-                    </p>
-                    <p className="text-lg font-bold">{ownerName ?? "—"}</p>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6 border-t border-border pt-8 md:grid-cols-4">
+                    <div>
+                      <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                        Proprietário
+                      </p>
+                      <p className="text-lg font-bold">{ownerName ?? "—"}</p>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                        Quilometragem
+                      </p>
+                      <p className="text-lg font-bold text-muted-foreground">
+                        {lastService ? formatOdometerKm(lastService) : "—"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                        Última revisão
+                      </p>
+                      <p className="text-lg font-bold">{lastServiceLabel}</p>
+                    </div>
+                    <div>
+                      <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                        Estado geral
+                      </p>
+                      <p
+                        className={cn(
+                          "flex items-center gap-1.5 text-base font-semibold sm:text-lg",
+                          estado.variant === "ok" &&
+                            "text-emerald-800 dark:text-emerald-400",
+                          estado.variant === "warn" &&
+                            "text-amber-900 dark:text-amber-300",
+                          estado.variant === "muted" && "text-muted-foreground",
+                        )}
+                      >
+                        {estado.variant === "ok" ? (
+                          <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+                        ) : estado.variant === "warn" ? (
+                          <Info className="size-4 shrink-0" aria-hidden />
+                        ) : (
+                          <CircleDot className="size-4 shrink-0" aria-hidden />
+                        )}
+                        {estado.text}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                      Quilometragem
+                  <div className="rounded-lg border border-border bg-muted/40 px-4 py-4 sm:px-5">
+                    <p className="text-xs font-bold uppercase tracking-tighter text-muted-foreground">
+                      Próxima revisão planead
                     </p>
-                    <p className="text-lg font-bold text-muted-foreground">—</p>
-                  </div>
-                  <div>
-                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                      Última revisão
-                    </p>
-                    <p className="text-lg font-bold">{lastServiceLabel}</p>
-                  </div>
-                  <div>
-                    <p className="mb-1 text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                      Estado geral
-                    </p>
-                    <p
-                      className={
-                        estado.variant === "ok"
-                          ? "flex items-center gap-1 text-lg font-bold text-[#90e98b]"
-                          : "flex items-center gap-1 text-lg font-bold text-amber-200"
-                      }
-                    >
-                      {estado.variant === "ok" ? (
-                        <CheckCircle2 className="size-4 shrink-0" aria-hidden />
-                      ) : estado.variant === "warn" ? (
-                        <Info className="size-4 shrink-0" aria-hidden />
-                      ) : (
-                        <CircleDot className="size-4 shrink-0" aria-hidden />
-                      )}
-                      {estado.text}
-                    </p>
+                    {nextRevisionPlanned ? (
+                      <p className="mt-2 text-lg font-bold text-primary sm:text-xl">
+                        {nextRevisionPlanned}
+                      </p>
+                    ) : (
+                      <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                        Quando a oficina indicar no fecho de um serviço a data ou os km da
+                        próxima revisão, o plano aparece aqui, na tabela de histórico e no
+                        passaporte impresso.
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="boletim-glow-card flex flex-col gap-6 rounded-xl border border-primary/20 bg-[#121212] p-8 shadow-[0_0_40px_rgba(220,38,38,0.12)]">
-              <p className="flex items-center gap-3 font-heading text-[10px] font-black uppercase tracking-[0.35em] text-primary">
-                <span className="h-px w-8 bg-primary/30" />
+            <div className="flex flex-col justify-between gap-5 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8 lg:min-h-[280px]">
+              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <span className="h-px w-6 shrink-0 bg-border" aria-hidden />
                 Próxima revisão
               </p>
               <div>
-                <p className="font-heading text-5xl font-bold leading-none tracking-tighter md:text-6xl">
-                  Agendar
+                <p className="font-heading text-2xl font-bold leading-snug tracking-tight text-foreground sm:text-3xl">
+                  Agendar com a oficina
                 </p>
-                <p className="mt-2 text-xl font-bold uppercase tracking-[0.2em] text-primary/90">
-                  com a oficina
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  Planeie a manutenção preventiva e o desempenho contínuo da sua
+                  unidade. A equipa Scuderia itTECH acompanha cada detalhe.
                 </p>
+                {nextRevisionPlanned ? (
+                  <p className="mt-3 rounded-md border border-border bg-muted/60 px-3 py-2 text-xs leading-snug text-foreground">
+                    <span className="font-semibold">Sugestão no último serviço:</span>{" "}
+                    <span className="text-primary">{nextRevisionPlanned}</span>
+                  </p>
+                ) : null}
               </div>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                Planeie a manutenção preventiva e desempenho contínuo da sua unidade.
-                A equipa Scuderia itTECH acompanha cada detalhe.
-              </p>
-              <div className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 px-3 py-1.5">
-                <AlertTriangle className="size-3.5 shrink-0 text-primary" aria-hidden />
-                <span className="text-[10px] font-black uppercase tracking-widest text-primary">
-                  Revisões desmo conforme programa Ducati
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200/80 bg-amber-50 px-3 py-2 dark:border-amber-900/50 dark:bg-amber-950/30">
+                <AlertTriangle
+                  className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-400"
+                  aria-hidden
+                />
+                <span className="text-xs font-medium leading-snug text-amber-950 dark:text-amber-100">
+                  Revisões desmo conforme programa Ducati — confirma datas com a
+                  equipa.
                 </span>
               </div>
               <Link
                 href="/agendamento"
-                className="group flex w-full items-center justify-center gap-3 rounded-xl bg-[#348017] py-4 text-sm font-black uppercase tracking-widest text-white shadow-xl transition-all hover:brightness-110"
+                className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
               >
                 Agendar agora
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
               </Link>
             </div>
           </div>
         </>
       ) : isDetail && r ? (
-        <div className="mb-8 border-b border-border pb-6 print:hidden">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Scuderia itTECH · serviço
+        <header className="mb-8 space-y-4 border-b border-border pb-6 print:hidden">
+          <nav
+            className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-muted-foreground"
+            aria-label="Navegação"
+          >
+            <Link href="/garagem" className="transition-colors hover:text-foreground">
+              Garagem
+            </Link>
+            <span aria-hidden className="text-border">
+              /
+            </span>
+            <Link
+              href={`/garagem/motas/${motorcycleId}`}
+              className="max-w-[200px] truncate transition-colors hover:text-foreground sm:max-w-none"
+            >
+              {vehicleTitle}
+            </Link>
+            <span aria-hidden className="text-border">
+              /
+            </span>
+            <span className="font-medium text-foreground">Serviço</span>
+          </nav>
+          <div>
+            <h1
+              id="intervencao-heading"
+              className="font-heading text-2xl font-bold tracking-tight text-foreground md:text-3xl"
+            >
+              {r.title ?? "Manutenção"}
+            </h1>
+            {r.revision_type ? (
+              <p className="mt-1 text-sm font-medium text-primary">{r.revision_type}</p>
+            ) : null}
+            <p className="mt-2 text-sm text-muted-foreground">
+              {formatBulletinId(r.id, r.opened_at)} · {formatBoletimDisplayDate(r)}
+              {r.repair_order_ref?.trim()
+                ? ` · Ordem ${r.repair_order_ref.trim()}`
+                : ""}
+              {r.odometer_km != null ? ` · ${formatOdometerKm(r)}` : ""}
+            </p>
+          </div>
+          <p
+            className={
+              estado.variant === "ok"
+                ? "inline-flex w-fit items-center gap-2 rounded-full border border-emerald-800/40 bg-emerald-950/25 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+                : estado.variant === "warn"
+                  ? "inline-flex w-fit items-center gap-2 rounded-full border border-amber-800/40 bg-amber-950/20 px-3 py-1.5 text-xs font-semibold text-amber-800 dark:text-amber-200"
+                  : "inline-flex w-fit items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-semibold text-muted-foreground"
+            }
+          >
+            {estado.variant === "ok" ? (
+              <CheckCircle2 className="size-3.5 shrink-0" aria-hidden />
+            ) : estado.variant === "warn" ? (
+              <Info className="size-3.5 shrink-0" aria-hidden />
+            ) : (
+              <CircleDot className="size-3.5 shrink-0" aria-hidden />
+            )}
+            {estado.text}
           </p>
-          <p className="mt-2 font-heading text-xl font-bold">{vehicleTitle}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {m.plate ?? "—"} · {headerRef} · Gerado em {generatedLabel}
-          </p>
-        </div>
+        </header>
       ) : null}
 
       {isDetail && r ? (
         <section
-          className="mb-10 rounded-xl border border-primary/25 bg-gradient-to-b from-[#161616] to-[#0a0a0a] p-6 md:p-8 print:mb-6"
-          aria-labelledby="intervencao-heading"
+          className="mb-10 rounded-xl border border-border bg-card p-6 shadow-sm md:p-8 print:mb-6"
+          aria-labelledby={standalone ? undefined : "intervencao-panel-heading"}
+          aria-label={standalone ? "Detalhe do serviço" : undefined}
         >
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-            Este serviço
-          </p>
-          <h2
-            id="intervencao-heading"
-            className="mt-2 font-heading text-2xl font-bold md:text-3xl"
-          >
-            {r.title ?? "Manutenção"}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {formatBulletinId(r.id, r.opened_at)} ·{" "}
-            {formatPtDate((r.closed_at ?? r.opened_at) as string)}
-          </p>
+          {!standalone ? (
+            <>
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                Este serviço
+              </p>
+              <h2
+                id="intervencao-panel-heading"
+                className="mt-2 font-heading text-2xl font-bold text-foreground md:text-3xl"
+              >
+                {r.title ?? "Manutenção"}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {formatBulletinId(r.id, r.opened_at)} · {formatBoletimDisplayDate(r)}
+                {r.repair_order_ref?.trim()
+                  ? ` · Ordem ${r.repair_order_ref.trim()}`
+                  : ""}
+                {r.odometer_km != null ? ` · ${formatOdometerKm(r)}` : ""}
+              </p>
+              {r.revision_type ? (
+                <p className="mt-1 text-sm font-medium text-primary">{r.revision_type}</p>
+              ) : null}
+            </>
+          ) : (
+            <h2 className="sr-only">Detalhe do serviço</h2>
+          )}
 
-          <div className="mt-6 max-w-md border-t border-border pt-6">
+          <div
+            className={
+              standalone
+                ? "max-w-md"
+                : "mt-6 max-w-md border-t border-border pt-6"
+            }
+          >
             <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Progresso na oficina
             </p>
@@ -411,32 +516,26 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
 
           <div className="mt-8">
             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
-              Checklist
+              Trabalho concluído
             </p>
-            {currentTasks.length > 0 ? (
+            <p className="mb-3 text-xs text-muted-foreground">
+              Só aparecem as tarefas que a oficina já marcou como feitas neste serviço.
+            </p>
+            {clientVisibleTasks.length > 0 ? (
               <ul className="space-y-2">
-                {currentTasks.map((t) => (
+                {clientVisibleTasks.map((t) => (
                   <li key={t.id} className="flex gap-3 text-sm">
                     <CheckCircle2
-                      className={
-                        t.completed
-                          ? "mt-0.5 size-4 shrink-0 text-[#90e98b]"
-                          : "mt-0.5 size-4 shrink-0 text-muted-foreground"
-                      }
+                      className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+                      aria-hidden
                     />
-                    <span
-                      className={
-                        t.completed ? "text-muted-foreground line-through" : ""
-                      }
-                    >
-                      {t.label}
-                    </span>
+                    <span className="text-foreground">{t.label}</span>
                   </li>
                 ))}
               </ul>
             ) : (
               <p className="text-sm text-muted-foreground">
-                Sem tarefas listadas para este registo.
+                Ainda não há tarefas concluídas registadas para este serviço.
               </p>
             )}
           </div>
@@ -489,6 +588,27 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
               </p>
             )}
           </div>
+
+          <div className="mt-8 border-t border-border pt-8">
+            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Próxima revisão
+            </p>
+            {(() => {
+              const nextLine = formatNextServiceSummary(r);
+              return nextLine ? (
+                <div className="rounded-xl border border-primary/25 bg-primary/5 px-4 py-3">
+                  <p className="text-base font-semibold text-foreground">{nextLine}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Indicado pela oficina para planear a manutenção seguinte.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  A oficina ainda não registou aqui a próxima revisão em km ou por data.
+                </p>
+              );
+            })()}
+          </div>
         </section>
       ) : null}
 
@@ -496,11 +616,11 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
         <>
       <section className="mb-10 print:mb-6">
         <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-grow items-center gap-4">
-            <h3 className="font-heading text-xl font-bold uppercase md:text-2xl">
+          <div className="flex min-w-0 flex-grow items-center gap-3">
+            <h3 className="font-heading text-lg font-semibold tracking-tight text-foreground md:text-xl">
               Histórico de serviços
             </h3>
-            <div className="h-px flex-1 bg-white/10" />
+            <div className="hidden h-px min-w-[2rem] flex-1 bg-border sm:block" />
           </div>
           <p className="text-xs text-muted-foreground sm:max-w-md sm:text-right">
             Toca ou clica numa linha para abrir o detalhe completo noutro ecrã — ideal
@@ -519,7 +639,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
         <section className="rounded-xl border border-border bg-card p-8">
           <div className="mb-2 flex items-center gap-3">
             <Wrench className="size-6 text-primary" aria-hidden />
-            <h3 className="font-heading text-lg font-bold uppercase tracking-tight">
+            <h3 className="font-heading text-lg font-semibold tracking-tight text-foreground">
               Notas técnicas — última revisão
             </h3>
           </div>
@@ -541,8 +661,8 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                   <span
                     className={
                       idx === 0
-                        ? "rounded bg-red-950/40 p-1 text-red-400"
-                        : "rounded bg-emerald-950/40 p-1 text-[#90e98b]"
+                        ? "rounded-md bg-red-100 p-1.5 text-red-700 dark:bg-red-950/50 dark:text-red-400"
+                        : "rounded-md bg-emerald-100 p-1.5 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400"
                     }
                   >
                     {idx === 0 ? (
@@ -613,7 +733,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             )}
           </section>
 
-          <BoletimFooterActions whatsappHref={whatsappHref} />
+          <BoletimFooterActions />
         </div>
       </div>
 
