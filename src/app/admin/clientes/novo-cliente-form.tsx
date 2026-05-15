@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { CheckCircle2, Mail } from "lucide-react";
 import { createClientUser, type ActionState } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ export function NovoClienteForm() {
           required
           autoComplete="name"
           className="border-input bg-background"
+          disabled={pending}
         />
       </div>
       <div className="space-y-2">
@@ -43,6 +45,7 @@ export function NovoClienteForm() {
           required
           autoComplete="off"
           className="border-input bg-background"
+          disabled={pending}
         />
       </div>
       <div className="space-y-2">
@@ -53,49 +56,38 @@ export function NovoClienteForm() {
           type="tel"
           autoComplete="tel"
           className="border-input bg-background"
+          disabled={pending}
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="nc_password">Palavra-passe</Label>
-          <Input
-            id="nc_password"
-            name="password"
-            type="password"
-            required
-            autoComplete="new-password"
-            minLength={6}
-            className="border-input bg-background"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="nc_password_confirm">Confirmar palavra-passe</Label>
-          <Input
-            id="nc_password_confirm"
-            name="password_confirm"
-            type="password"
-            required
-            autoComplete="new-password"
-            minLength={6}
-            className="border-input bg-background"
-          />
-        </div>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        A conta fica ativa de imediato. Entrega o email e a palavra-passe ao cliente para aceder à
-        garagem.
+      <p className="flex items-start gap-2 rounded-lg border border-dashed border-border bg-muted/50 px-3 py-2.5 text-xs leading-relaxed text-muted-foreground">
+        <Mail className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+        <span>
+          O cliente recebe um email com convite para definir a própria palavra-passe.
+          Nada de credenciais a trocar por WhatsApp.
+        </span>
       </p>
       {state?.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
+        <p
+          className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 text-sm text-destructive"
+          role="alert"
+        >
+          {state.error}
+        </p>
       ) : null}
       {state?.ok && state.createdEmail ? (
-        <p className="text-sm text-primary">
-          Conta criada para <span className="font-medium">{state.createdEmail}</span>. Podes
-          associar motas a este cliente abaixo.
+        <p
+          className="flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm text-foreground"
+          role="status"
+        >
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
+          <span>
+            Convite enviado para <span className="font-medium">{state.createdEmail}</span>.
+            {state.info ? <span className="block text-muted-foreground">{state.info}</span> : null}
+          </span>
         </p>
       ) : null}
       <Button type="submit" disabled={pending} className="font-heading">
-        {pending ? "A criar…" : "Criar conta de cliente"}
+        {pending ? "A enviar convite…" : "Convidar cliente"}
       </Button>
     </form>
   );

@@ -35,8 +35,15 @@ type Row = {
     | null;
 };
 
+type StatusFilter = "all" | "open" | ServiceRecordStatus;
+type KindFilter = "all" | ServiceRecordKind;
+
 type PageProps = {
-  searchParams: Promise<{ mota?: string }>;
+  searchParams: Promise<{
+    mota?: string;
+    status?: string;
+    kind?: string;
+  }>;
 };
 
 const statusLabel: Record<ServiceRecordStatus, string> = {
@@ -51,12 +58,71 @@ const recordKindLabel: Record<ServiceRecordKind, string> = {
   shop_service: "Serviço",
 };
 
+const STATUS_OPTIONS: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "Todos" },
+  { value: "open", label: "Abertos" },
+  { value: "draft", label: "Rascunho" },
+  { value: "in_progress", label: "Em curso" },
+  { value: "completed", label: "Concluídos" },
+  { value: "cancelled", label: "Cancelados" },
+];
+
+const KIND_OPTIONS: { value: KindFilter; label: string }[] = [
+  { value: "all", label: "Todos" },
+  { value: "maintenance", label: "Manutenção" },
+  { value: "shop_service", label: "Só oficina" },
+];
+
+function parseStatus(raw: string | undefined): StatusFilter {
+  const allowed = STATUS_OPTIONS.map((o) => o.value);
+  return (allowed as string[]).includes(raw ?? "") ? (raw as StatusFilter) : "all";
+}
+
+function parseKind(raw: string | undefined): KindFilter {
+  const allowed = KIND_OPTIONS.map((o) => o.value);
+  return (allowed as string[]).includes(raw ?? "") ? (raw as KindFilter) : "all";
+}
+
+function filterHref(
+  base: { status: StatusFilter; kind: KindFilter; mota?: string },
+  patch: Partial<{ status: StatusFilter; kind: KindFilter }>,
+): string {
+  const next = { ...base, ...patch };
+  const params = new URLSearchParams();
+  if (next.status !== "all") params.set("status", next.status);
+  if (next.kind !== "all") params.set("kind", next.kind);
+  if (next.mota) params.set("mota", next.mota);
+  const qs = params.toString();
+  return qs ? `/admin/boletins?${qs}` : "/admin/boletins";
+}
+
 export default async function AdminBoletinsPage({ searchParams }: PageProps) {
-  const { mota: preselectMotaId } = await searchParams;
+  const sp = await searchParams;
+  const preselectMotaId = sp.mota;
+  const status = parseStatus(sp.status);
+  const kind = parseKind(sp.kind);
   const supabase = await createClient();
+
+  // Lista filtrada (server-side). `open` = draft∪in_progress; é tratado
+  // como filtro composto separado dos estados individuais.
+  let recordsQuery = supabase
+    .from("service_records")
+    .select(
+      "id, title, status, record_kind, progress_percent, opened_at, motorcycle_id, motorcycles ( brand, model, plate )",
+    )
+    .order("opened_at", { ascending: false });
+
+  if (status === "open") {
+    recordsQuery = recordsQuery.in("status", ["draft", "in_progress"]);
+  } else if (status !== "all") {
+    recordsQuery = recordsQuery.eq("status", status);
+  }
+  if (kind !== "all") recordsQuery = recordsQuery.eq("record_kind", kind);
 
   const [{ data: openRecords }, { data: records }, { data: motas }] =
     await Promise.all([
+      // O bloco "Serviços em curso" mantém-se sempre — não é influenciado
+      // pelos filtros da lista grande.
       supabase
         .from("service_records")
         .select(
@@ -64,12 +130,7 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
         )
         .in("status", ["draft", "in_progress"])
         .order("opened_at", { ascending: false }),
-      supabase
-        .from("service_records")
-        .select(
-          "id, title, status, record_kind, progress_percent, opened_at, motorcycle_id, motorcycles ( brand, model, plate )",
-        )
-        .order("opened_at", { ascending: false }),
+      recordsQuery,
       supabase
         .from("motorcycles")
         .select("id, brand, model, plate")
@@ -82,6 +143,8 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
     Motorcycle,
     "id" | "brand" | "model" | "plate"
   >[];
+  const filterBase = { status, kind, mota: preselectMotaId };
+  const hasFilters = status !== "all" || kind !== "all";
 
   return (
     <div className="space-y-10">
@@ -224,11 +287,77 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
       </section>
 
       <section className="space-y-3">
-        <div>
-          <h2 className="font-heading text-lg font-semibold">Todos os boletins</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ordenados do mais recente para o mais antigo.
-          </p>
+        <div className="flex flex-col gap-3">
+          <div>
+            <h2 className="font-heading text-lg font-semibold">Todos os boletins</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Ordenados do mais recente para o mais antigo.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+            <div
+              role="tablist"
+              aria-label="Filtrar por estado"
+              className="flex flex-wrap gap-1.5"
+            >
+              {STATUS_OPTIONS.map((opt) => {
+                const active = status === opt.value;
+                return (
+                  <Link
+                    key={opt.value}
+                    href={filterHref(filterBase, { status: opt.value })}
+                    role="tab"
+                    aria-selected={active}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 font-heading text-[10px] font-semibold uppercase tracking-widest transition-colors",
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                    )}
+                  >
+                    {opt.label}
+                  </Link>
+                );
+              })}
+            </div>
+            <span className="hidden h-5 w-px bg-border sm:inline-block" aria-hidden />
+            <div
+              role="tablist"
+              aria-label="Filtrar por tipo"
+              className="flex flex-wrap gap-1.5"
+            >
+              {KIND_OPTIONS.map((opt) => {
+                const active = kind === opt.value;
+                return (
+                  <Link
+                    key={opt.value}
+                    href={filterHref(filterBase, { kind: opt.value })}
+                    role="tab"
+                    aria-selected={active}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 font-heading text-[10px] font-semibold uppercase tracking-widest transition-colors",
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                    )}
+                  >
+                    {opt.label}
+                  </Link>
+                );
+              })}
+            </div>
+            {hasFilters ? (
+              <Link
+                href={filterHref(
+                  { status: "all", kind: "all", mota: preselectMotaId },
+                  {},
+                )}
+                className="font-heading text-[10px] font-medium uppercase tracking-widest text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+              >
+                Limpar
+              </Link>
+            ) : null}
+          </div>
         </div>
         <div className={adminTableWrap}>
           <Table>
@@ -247,7 +376,9 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
               {list.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-muted-foreground">
-                    Sem boletins. Cria um acima para começar.
+                    {hasFilters
+                      ? "Nenhum boletim coincide com os filtros selecionados."
+                      : "Sem boletins. Cria um acima para começar."}
                   </TableCell>
                 </TableRow>
               ) : (

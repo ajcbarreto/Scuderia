@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,9 @@ export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [feedback, setFeedback] = useState("");
   const [suggestWhatsapp, setSuggestWhatsapp] = useState(false);
+  // Anti-spam: tempo de carregamento do componente. Submissões <1.5s a partir
+  // daqui são silenciosamente descartadas pelo backend.
+  const loadedAtRef = useRef<number>(Date.now());
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -24,6 +27,9 @@ export function ContactForm() {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
       message: (form.elements.namedItem("message") as HTMLTextAreaElement).value,
+      website: (form.elements.namedItem("website") as HTMLInputElement | null)
+        ?.value ?? "",
+      loadedAt: loadedAtRef.current,
     };
     try {
       const res = await fetch("/api/contact", {
@@ -52,7 +58,7 @@ export function ContactForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6" noValidate>
+    <form onSubmit={onSubmit} className="relative space-y-6" noValidate>
       {status === "success" && (
         <div className="space-y-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm text-foreground">
           <p>{feedback}</p>
@@ -91,6 +97,23 @@ export function ContactForm() {
 
       {status !== "success" && (
         <>
+          {/* Honeypot: bots preenchem este campo, humanos não o vêem.
+              `aria-hidden` + tabIndex={-1} + autocomplete=off escondem-no a
+              utilizadores de teclado / leitores de ecrã. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -left-[10000px] top-auto h-0 w-0 overflow-hidden opacity-0"
+          >
+            <Label htmlFor="contact-website">Website (não preencher)</Label>
+            <Input
+              id="contact-website"
+              name="website"
+              type="text"
+              tabIndex={-1}
+              autoComplete="off"
+              defaultValue=""
+            />
+          </div>
           <div className="space-y-2">
             <Label htmlFor="contact-name">Nome</Label>
             <Input

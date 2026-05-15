@@ -1,6 +1,11 @@
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
-/** Apenas servidor (ex.: Server Actions). Nunca importar em Client Components. */
+/**
+ * Apenas servidor (Server Actions, Route Handlers, RSC server-only).
+ * `import "server-only"` faz o build estoirar imediatamente se este módulo
+ * for puxado para um Client Component — protege a service-role key.
+ */
 export function createServiceRoleClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

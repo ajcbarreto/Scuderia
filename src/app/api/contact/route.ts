@@ -1,19 +1,22 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+/** Bots agressivos preenchem submetem em <1.5s; humanos não. */
+const MIN_FILL_MS = 1500;
+
 const contactSchema = z.object({
   name: z.string().trim().min(1, "Nome é obrigatório").max(200),
-  email: z
-    .string()
-    .trim()
-    .email("Email inválido")
-    .max(320),
+  email: z.string().trim().email("Email inválido").max(320),
   phone: z
     .string()
     .max(40)
     .default("")
     .transform((s) => s.trim() || undefined),
   message: z.string().trim().min(1, "Mensagem é obrigatória").max(10000),
+  /** Honeypot — campo invisível; bots preenchem, humanos não. */
+  website: z.string().max(200).optional(),
+  /** Timestamp de quando o form foi renderizado, em ms desde epoch. */
+  loadedAt: z.coerce.number().int().nonnegative().optional(),
 });
 
 export async function POST(request: Request) {
@@ -36,7 +39,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const { name, email, phone, message } = parsed.data;
+  const { name, email, phone, message, website, loadedAt } = parsed.data;
+
+  // Anti-spam silencioso: respondemos 200 OK como se tivesse sido entregue,
+  // mas não fazemos nada. Isto evita dar feedback ao bot sobre a heurística.
+  if (website && website.length > 0) {
+    return NextResponse.json({ ok: true, delivered: false } as const);
+  }
+  if (loadedAt && Date.now() - loadedAt < MIN_FILL_MS) {
+    return NextResponse.json({ ok: true, delivered: false } as const);
+  }
+
   const resendKey = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_TO_EMAIL;
   const from = process.env.RESEND_FROM;

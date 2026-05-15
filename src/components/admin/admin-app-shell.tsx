@@ -4,8 +4,8 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
   Bike,
+  CalendarRange,
   ClipboardList,
   FolderOpen,
   HelpCircle,
@@ -14,8 +14,6 @@ import {
   ListChecks,
   LogOut,
   Menu,
-  Search,
-  Settings,
   Users,
   Wrench,
 } from "lucide-react";
@@ -38,6 +36,7 @@ import {
 
 const NAV = [
   { href: "/admin", label: "Painel", icon: LayoutDashboard, exact: true },
+  { href: "/admin/agendamentos", label: "Agendamentos", icon: CalendarRange, exact: false },
   { href: "/admin/clientes", label: "Clientes", icon: Users, exact: false },
   { href: "/admin/motas", label: "Frota", icon: Bike, exact: false },
   { href: "/admin/catalogo-motos", label: "Catálogo motas", icon: Library, exact: false },
@@ -53,6 +52,8 @@ function navActive(pathname: string, href: string, exact: boolean) {
 
 function headerCopy(pathname: string): { title: string; badge?: string } {
   if (pathname === "/admin") return { title: "Painel operativo", badge: "Telemetria ao vivo" };
+  if (pathname.startsWith("/admin/agendamentos"))
+    return { title: "Agendamentos", badge: "Pedidos de marcação" };
   if (pathname.startsWith("/admin/clientes"))
     return { title: "Scuderia itTECH", badge: "Clientes & frota" };
   if (pathname.startsWith("/admin/motas")) return { title: "Frota", badge: "Motas & transferências" };
@@ -124,35 +125,10 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
 
   const headerActions = (
     <div className="flex items-center gap-2 sm:gap-4">
-      <div className="relative hidden items-center rounded-md border border-border/80 bg-card px-3 py-1.5 md:flex">
-        <Search className="mr-2 size-4 shrink-0 text-muted-foreground" aria-hidden />
-        <input
-          type="search"
-          name="q"
-          placeholder="Pesquisar…"
-          className="w-36 border-0 bg-transparent font-heading text-[10px] font-medium uppercase tracking-widest text-foreground placeholder:text-muted-foreground/70 focus:ring-0 lg:w-48"
-          readOnly
-          title="Pesquisa contextual em desenvolvimento"
-        />
-      </div>
-      <button
-        type="button"
-        className="hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-        aria-label="Definições"
-      >
-        <Settings className="size-5" />
-      </button>
-      <button
-        type="button"
-        className="relative hidden text-muted-foreground transition-colors hover:text-foreground sm:inline-flex"
-        aria-label="Notificações"
-      >
-        <Bell className="size-5" />
-        <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full bg-primary" />
-      </button>
       <div
         className="flex size-8 shrink-0 items-center justify-center rounded-full border border-primary/35 bg-muted font-heading text-[11px] font-bold text-foreground"
-        aria-hidden
+        title={userLabel}
+        aria-label={`Sessão: ${userLabel}`}
       >
         {initials}
       </div>
