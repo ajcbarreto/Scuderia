@@ -1,5 +1,6 @@
 "use server";
 
+import { cache } from "react";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -16,23 +17,38 @@ export type ActionState = {
   createdEmail?: string;
 };
 
-export async function requireAdmin() {
+/**
+ * Memoizado por request: várias server actions encadeadas no mesmo request
+ * partilham o mesmo `getUser` + `select role` (em vez de 2 RTTs por action).
+ */
+const loadAdminContext = cache(async () => {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) {
-    redirect("/login?next=/admin");
-  }
+  if (!user) return { kind: "anon" as const };
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", user.id)
     .maybeSingle();
-  if (profile?.role !== "admin") {
+  return {
+    kind: "user" as const,
+    supabase,
+    userId: user.id,
+    role: profile?.role ?? null,
+  };
+});
+
+export async function requireAdmin() {
+  const ctx = await loadAdminContext();
+  if (ctx.kind === "anon") {
+    redirect("/login?next=/admin");
+  }
+  if (ctx.role !== "admin") {
     redirect("/garagem");
   }
-  return { supabase, userId: user.id };
+  return { supabase: ctx.supabase, userId: ctx.userId };
 }
 
 type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
@@ -52,8 +68,22 @@ async function revalidateMotaForServiceRecord(
   }
 }
 
-const MIN_CLIENT_PASSWORD_LEN = 6;
+function resolveSiteUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+    "http://localhost:3000"
+  );
+}
 
+/**
+ * Cria a conta do cliente e envia convite por email — o cliente define a
+ * própria palavra-passe via `/onboarding/set-password`. O admin nunca toca
+ * em credenciais.
+ *
+ * O trigger `handle_new_user` cria automaticamente o perfil `client`;
+ * a seguir actualizamos `full_name` e `phone`.
+ */
 export async function createClientUser(
   _prev: ActionState | undefined,
   formData: FormData,
@@ -63,22 +93,12 @@ export async function createClientUser(
   const fullName = String(formData.get("full_name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim() || null;
-  const password = String(formData.get("password") ?? "");
-  const passwordConfirm = String(formData.get("password_confirm") ?? "");
 
   if (!fullName) {
     return { error: "O nome é obrigatório." };
   }
   if (!email || !email.includes("@")) {
     return { error: "Indica um email válido." };
-  }
-  if (password.length < MIN_CLIENT_PASSWORD_LEN) {
-    return {
-      error: `A palavra-passe deve ter pelo menos ${MIN_CLIENT_PASSWORD_LEN} caracteres.`,
-    };
-  }
-  if (password !== passwordConfirm) {
-    return { error: "As palavras-passe não coincidem." };
   }
 
   let admin;
@@ -92,40 +112,46 @@ export async function createClientUser(
     return { error: msg };
   }
 
-  const { data: created, error: authError } =
-    await admin.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
-      user_metadata: { full_name: fullName },
+  const redirectTo = `${resolveSiteUrl()}/auth/callback?next=${encodeURIComponent(
+    "/onboarding/set-password",
+  )}`;
+
+  const { data: invited, error: inviteError } =
+    await admin.auth.admin.inviteUserByEmail(email, {
+      data: { full_name: fullName },
+      redirectTo,
     });
 
-  if (authError || !created.user) {
-    return {
-      error: authError?.message ?? "Não foi possível criar o utilizador.",
-    };
+  if (inviteError || !invited.user) {
+    // Supabase devolve 422 com "User already registered" se já existir.
+    const msg = inviteError?.message ?? "Não foi possível enviar o convite.";
+    return { error: msg };
   }
 
-  const userId = created.user.id;
+  const userId = invited.user.id;
 
+  // O trigger handle_new_user já criou a linha em `profiles`; só falta
+  // completar nome e telefone.
   const { error: profileError } = await admin
     .from("profiles")
-    .update({
-      full_name: fullName,
-      phone,
-    })
+    .update({ full_name: fullName, phone })
     .eq("id", userId);
 
   if (profileError) {
-    await admin.auth.admin.deleteUser(userId);
+    // Convite já foi enviado e o utilizador existe — não vale a pena fazer
+    // rollback. Reporta para o operador completar manualmente se preciso.
     return {
-      error: `Conta criada mas falhou ao atualizar o perfil: ${profileError.message}`,
+      error: `Convite enviado mas falhou ao gravar o perfil: ${profileError.message}`,
     };
   }
 
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
-  return { ok: true, createdEmail: email };
+  return {
+    ok: true,
+    createdEmail: email,
+    info: "Convite enviado por email. O cliente define a palavra-passe ao aceder.",
+  };
 }
 
 function sanitizeFilename(name: string) {
@@ -230,71 +256,26 @@ export async function transferMotorcycle(
     return { error: "Mota e novo dono são obrigatórios." };
   }
 
-  const { data: mota, error: fetchErr } = await supabase
-    .from("motorcycles")
-    .select("id, current_owner_id, created_at")
-    .eq("id", motorcycleId)
-    .maybeSingle();
-
-  if (fetchErr || !mota) {
-    return { error: "Mota não encontrada." };
-  }
-
-  if (mota.current_owner_id === newOwnerId) {
-    return { error: "O novo dono é igual ao atual." };
-  }
-
-  const now = new Date().toISOString();
-
-  const { data: openPeriod } = await supabase
-    .from("motorcycle_ownership_periods")
-    .select("id")
-    .eq("motorcycle_id", motorcycleId)
-    .is("ended_at", null)
-    .order("started_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (openPeriod?.id) {
-    const { error: endErr } = await supabase
-      .from("motorcycle_ownership_periods")
-      .update({ ended_at: now, transfer_note: transferNote })
-      .eq("id", openPeriod.id);
-    if (endErr) {
-      return { error: endErr.message };
-    }
-  } else {
-    const { error: insOldErr } = await supabase
-      .from("motorcycle_ownership_periods")
-      .insert({
-        motorcycle_id: motorcycleId,
-        owner_id: mota.current_owner_id,
-        started_at: mota.created_at,
-        ended_at: now,
-        transfer_note: transferNote,
-      });
-    if (insOldErr) {
-      return { error: insOldErr.message };
-    }
-  }
-
-  const { error: insNewErr } = await supabase.from("motorcycle_ownership_periods").insert({
-    motorcycle_id: motorcycleId,
-    owner_id: newOwnerId,
-    started_at: now,
-    ended_at: null,
-    transfer_note: null,
+  // Toda a transferência (fechar período, abrir novo, actualizar
+  // current_owner_id) corre numa única transacção atómica em Postgres —
+  // ver `supabase/migrations/20260514120000_transfer_motorcycle_rpc.sql`.
+  const { error: rpcErr } = await supabase.rpc("transfer_motorcycle", {
+    p_motorcycle_id: motorcycleId,
+    p_new_owner_id: newOwnerId,
+    p_transfer_note: transferNote,
   });
-  if (insNewErr) {
-    return { error: insNewErr.message };
-  }
 
-  const { error: updErr } = await supabase
-    .from("motorcycles")
-    .update({ current_owner_id: newOwnerId })
-    .eq("id", motorcycleId);
-  if (updErr) {
-    return { error: updErr.message };
+  if (rpcErr) {
+    if (rpcErr.code === "22023" && rpcErr.message.includes("equals current owner")) {
+      return { error: "O novo dono é igual ao atual." };
+    }
+    if (rpcErr.code === "P0002") {
+      return { error: "Mota não encontrada." };
+    }
+    if (rpcErr.code === "42501") {
+      return { error: "Sem permissões para transferir." };
+    }
+    return { error: rpcErr.message };
   }
 
   revalidatePath("/admin/clientes");
@@ -656,12 +637,3 @@ export async function deleteServiceAttachment(
   return { ok: true };
 }
 
-export async function deleteServiceAttachmentForm(formData: FormData) {
-  const attachmentId = String(formData.get("attachment_id") ?? "").trim();
-  const recordId = String(formData.get("record_id") ?? "").trim();
-  const storagePath = String(formData.get("storage_path") ?? "").trim();
-  if (!attachmentId || !recordId || !storagePath) {
-    return;
-  }
-  await deleteServiceAttachment(attachmentId, recordId, storagePath);
-}

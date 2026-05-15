@@ -1,12 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, Settings } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { UserCircle2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/garagem/actions";
 
 export function GaragemChrome({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() ?? "";
+  const onProfile = pathname.startsWith("/garagem/perfil");
+
   return (
     <div
       className="min-h-screen bg-background text-foreground"
@@ -18,20 +22,19 @@ export function GaragemChrome({ children }: { children: React.ReactNode }) {
           <span className="text-foreground">itTECH</span>
         </Link>
         <div className="flex items-center gap-2 sm:gap-3">
-          <button
-            type="button"
-            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            aria-label="Notificações"
+          <Link
+            href="/garagem/perfil"
+            aria-current={onProfile ? "page" : undefined}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-medium transition-colors",
+              onProfile
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
           >
-            <Bell className="size-5" />
-          </button>
-          <button
-            type="button"
-            className="hidden rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
-            aria-label="Definições"
-          >
-            <Settings className="size-5" />
-          </button>
+            <UserCircle2 className="size-5" aria-hidden />
+            <span className="hidden sm:inline">Perfil</span>
+          </Link>
           <Link
             href="/agendamento"
             className={cn(

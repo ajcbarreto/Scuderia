@@ -22,21 +22,33 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Motorcycle, Profile } from "@/types/database";
 import { loadMotorcycleCatalogEntries } from "@/lib/motorcycle-catalog";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { NovaMotaForm } from "../clientes/nova-mota-form";
 import { TransferenciaForm } from "../clientes/transferencia-form";
 
 type PageProps = {
-  searchParams: Promise<{ cliente?: string }>;
+  searchParams: Promise<{ cliente?: string; q?: string }>;
 };
 
 export default async function AdminMotasPage({ searchParams }: PageProps) {
-  const { cliente: preselectClienteId } = await searchParams;
+  const { cliente: preselectClienteId, q } = await searchParams;
   const supabase = await createClient();
 
-  const { data: motas } = await supabase
+  // Pesquisa em marca, modelo, matrícula ou VIN — `ilike` case-insensitive.
+  let motasQuery = supabase
     .from("motorcycles")
     .select("*")
     .order("updated_at", { ascending: false });
+
+  const term = q?.trim();
+  if (term) {
+    const safe = term.replace(/[%_]/g, "\\$&");
+    motasQuery = motasQuery.or(
+      `brand.ilike.%${safe}%,model.ilike.%${safe}%,plate.ilike.%${safe}%,vin.ilike.%${safe}%`,
+    );
+  }
+
+  const { data: motas } = await motasQuery;
 
   const { data: clientProfiles } = await supabase
     .from("profiles")
@@ -135,11 +147,14 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
       </div>
 
       <section className="space-y-3">
-        <div>
-          <h2 className="font-heading text-lg font-semibold">Frota</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Abre a ficha da mota para ver intervenções abertas e histórico de revisões.
-          </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="font-heading text-lg font-semibold">Frota</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Abre a ficha da mota para ver intervenções abertas e histórico de revisões.
+            </p>
+          </div>
+          <AdminSearch placeholder="Pesquisar marca, modelo, matrícula, VIN…" />
         </div>
         <div className={adminTableWrap}>
           <Table>
@@ -155,7 +170,9 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
               {list.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="text-muted-foreground">
-                    Sem motas. Regista uma acima ou cria um cliente em Clientes.
+                    {term
+                      ? `Nenhuma mota coincide com "${term}".`
+                      : "Sem motas. Regista uma acima ou cria um cliente em Clientes."}
                   </TableCell>
                 </TableRow>
               ) : (

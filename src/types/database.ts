@@ -71,6 +71,7 @@ export type ServiceRecord = {
   next_service_due_date: string | null;
   /** Alvo de quilometragem para a próxima revisão (opcional). */
   next_service_due_km: number | null;
+  updated_at: string;
 };
 
 /** Linhas da lista global de tarefas (admin). Copiadas para cada novo boletim. */
@@ -89,6 +90,7 @@ export type ServiceTask = {
   sort_order: number;
   completed: boolean;
   completed_at: string | null;
+  updated_at: string;
 };
 
 export type AttachmentKind = "invoice" | "photo" | "other";
@@ -112,4 +114,24 @@ export type MotorcycleOwnershipPeriod = {
   started_at: string;
   ended_at: string | null;
   transfer_note: string | null;
+};
+
+export type AppointmentStatus =
+  | "pending"
+  | "confirmed"
+  | "rejected"
+  | "completed";
+
+export type AppointmentRequest = {
+  id: string;
+  client_id: string;
+  motorcycle_id: string | null;
+  preferred_start: string | null;
+  message: string | null;
+  status: AppointmentStatus;
+  created_at: string;
+  /** Data/hora aceite pela oficina (pode diferir de preferred_start). */
+  confirmed_start: string | null;
+  confirmed_at: string | null;
+  admin_note: string | null;
 };

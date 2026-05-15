@@ -1,17 +1,22 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Oswald } from "next/font/google";
+import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
 const oswald = Oswald({
   variable: "--font-family-heading",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  // `swap` evita FOIT (texto invisível durante o carregamento da fonte) — o
+  // browser mostra a fallback enquanto a Oswald descarrega e troca depois.
+  display: "swap",
 });
 
 const manrope = Manrope({
   variable: "--font-family-sans",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+  display: "swap",
 });
 
 /** Em Vercel, define o host certo para favicon/OG; evita href com localhost em produção. */
@@ -63,6 +68,7 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-background font-sans text-foreground">
         {children}
+        <Toaster />
       </body>
     </html>
   );

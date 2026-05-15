@@ -11,9 +11,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { AppointmentsBanner } from "@/components/garagem/appointments-banner";
 import { formatBoletimDisplayDate, formatNextServiceSummary } from "@/lib/garagem/service-record-display";
 import { cn } from "@/lib/utils";
-import type { Motorcycle, ServiceRecord, ServiceRecordStatus } from "@/types/database";
+import type {
+  AppointmentRequest,
+  Motorcycle,
+  ServiceRecord,
+  ServiceRecordStatus,
+} from "@/types/database";
 
 const CARD_IMAGE =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCSDKQVpb9MjJndC53F3QIcjh1SJKCZ03HKBbbTpRgtMVCeuzV6v4mzwlVOQx85KKQ7j4LjXiNjzCYjr4gxjrXo9M0wpRdkT-JUjBA5UgDkvwne0_DbygXUoygfalM0mS1VOI8SPmUK_pPJ0XZdRu7IN32nXYw5pIWnnn7Jv7Mu0wgQeM5ROEmjRdRfjMLpycugWo1y9pcUPTTFJ4QhHvofPs5oeNpq2_JJA89QIalBClcH86vxImSN7feTLeHSQmcKQvBCInqVRa4";
@@ -33,46 +39,67 @@ function statusLabelPt(s: ServiceRecordStatus): string {
   }
 }
 
+type LastRow = Pick<
+  ServiceRecord,
+  | "motorcycle_id"
+  | "opened_at"
+  | "closed_at"
+  | "service_date"
+  | "status"
+  | "title"
+  | "odometer_km"
+  | "next_service_due_date"
+  | "next_service_due_km"
+>;
+
 export default async function GaragemPage() {
   const supabase = await createClient();
-  const { data: motas, error } = await supabase
-    .from("motorcycles")
-    .select("*")
-    .order("updated_at", { ascending: false });
+
+  // Frota, última manutenção (por mota), e agendamentos em aberto/confirmados
+  // em paralelo. RLS limita os agendamentos aos do próprio utilizador.
+  const [{ data: motas, error }, { data: latestRows }, { data: agendamentosRows }] =
+    await Promise.all([
+      supabase.from("motorcycles").select("*").order("updated_at", { ascending: false }),
+      supabase.rpc("latest_maintenance_per_motorcycle"),
+      supabase
+        .from("appointment_requests")
+        .select("*")
+        .in("status", ["pending", "confirmed"])
+        .order("confirmed_start", { ascending: true, nullsFirst: false })
+        .order("preferred_start", { ascending: true, nullsFirst: false })
+        .order("created_at", { ascending: true }),
+    ]);
+
+  const agendamentos = (agendamentosRows ?? []) as AppointmentRequest[];
+  const pendingAppointments = agendamentos.filter((a) => a.status === "pending");
+  const confirmedAppointments = agendamentos.filter((a) => a.status === "confirmed");
 
   const list = (motas ?? []) as Motorcycle[];
-  const ids = list.map((m) => m.id);
 
-  type LastRow = Pick<
-    ServiceRecord,
-    | "motorcycle_id"
-    | "opened_at"
-    | "closed_at"
-    | "service_date"
-    | "status"
-    | "title"
-    | "odometer_km"
-    | "next_service_due_date"
-    | "next_service_due_km"
-  >;
-
-  let latestByMoto = new Map<string, LastRow>();
-  if (ids.length > 0) {
-    const { data: recRows } = await supabase
-      .from("service_records")
-      .select(
-        "motorcycle_id, opened_at, closed_at, service_date, status, title, odometer_km, next_service_due_date, next_service_due_km",
-      )
-      .in("motorcycle_id", ids)
-      .eq("record_kind", "maintenance")
-      .order("opened_at", { ascending: false })
-      .limit(200);
-
-    for (const r of (recRows ?? []) as LastRow[]) {
-      if (!latestByMoto.has(r.motorcycle_id)) {
-        latestByMoto.set(r.motorcycle_id, r);
-      }
-    }
+  const latestByMoto = new Map<string, LastRow>();
+  for (const row of (latestRows ?? []) as Array<{
+    motorcycle_id: string;
+    service_record_id: string;
+    opened_at: string;
+    closed_at: string | null;
+    service_date: string | null;
+    status: ServiceRecord["status"];
+    title: string | null;
+    odometer_km: number | null;
+    next_service_due_date: string | null;
+    next_service_due_km: number | null;
+  }>) {
+    latestByMoto.set(row.motorcycle_id, {
+      motorcycle_id: row.motorcycle_id,
+      opened_at: row.opened_at,
+      closed_at: row.closed_at,
+      service_date: row.service_date,
+      status: row.status,
+      title: row.title,
+      odometer_km: row.odometer_km,
+      next_service_due_date: row.next_service_due_date,
+      next_service_due_km: row.next_service_due_km,
+    });
   }
 
   return (
@@ -118,6 +145,11 @@ export default async function GaragemPage() {
           migração SQL.
         </p>
       ) : null}
+
+      <AppointmentsBanner
+        pending={pendingAppointments}
+        confirmed={confirmedAppointments}
+      />
 
       {list.length === 0 ? (
         <Card className="border-border bg-muted">

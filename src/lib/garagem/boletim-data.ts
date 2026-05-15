@@ -71,14 +71,19 @@ export async function loadBoletimDataForMotorcycle(
     attachmentsByRecord.set(a.service_record_id, list);
   }
 
+  // Gera todos os signed URLs em paralelo — antes era serial e dominava o TTFB
+  // de boletins com 5+ anexos (1 RTT por anexo).
   const signedByAttachmentId = new Map<string, string>();
-  for (const a of attachments) {
-    const { data: signedData, error } = await supabase.storage
-      .from(a.storage_bucket)
-      .createSignedUrl(a.storage_path, 3600);
-    if (!error && signedData?.signedUrl) {
-      signedByAttachmentId.set(a.id, signedData.signedUrl);
-    }
+  const signedResults = await Promise.all(
+    attachments.map(async (a) => {
+      const { data, error } = await supabase.storage
+        .from(a.storage_bucket)
+        .createSignedUrl(a.storage_path, 3600);
+      return { id: a.id, url: error ? null : data?.signedUrl ?? null };
+    }),
+  );
+  for (const r of signedResults) {
+    if (r.url) signedByAttachmentId.set(r.id, r.url);
   }
 
   const historyRows: BoletimHistoryRow[] = recs.map((rec) => {

@@ -10,9 +10,12 @@ type Props = { params: Promise<{ motorcycleId: string }> };
 export default async function MotorcycleDetailPage({ params }: Props) {
   const { motorcycleId } = await params;
   const supabase = await createClient();
-  const profile = await getProfile();
 
-  const ctx = await loadBoletimDataForMotorcycle(supabase, motorcycleId);
+  // Perfil e dados do boletim em paralelo — antes corriam em série.
+  const [profile, ctx] = await Promise.all([
+    getProfile(),
+    loadBoletimDataForMotorcycle(supabase, motorcycleId),
+  ]);
   if (!ctx) notFound();
 
   const m = ctx.motorcycle;

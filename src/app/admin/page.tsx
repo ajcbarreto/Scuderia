@@ -10,7 +10,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { adminGlassPanel, adminSurfaceLow } from "@/components/admin/admin-styles";
+import { adminSurfaceLow } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
 
 function startEndUtcDay() {
@@ -50,7 +50,7 @@ export default async function AdminDashboardPage() {
     { count: faturas },
     { count: agendamentosHoje },
     { data: recentRows },
-    { data: timelineMotos },
+    { data: recentMotos },
   ] = await Promise.all([
     supabase.from("motorcycles").select("*", { count: "exact", head: true }),
     supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "client"),
@@ -76,20 +76,19 @@ export default async function AdminDashboardPage() {
       .limit(6),
     supabase
       .from("motorcycles")
-      .select("id, brand, model")
+      .select("id, brand, model, plate, updated_at")
       .order("updated_at", { ascending: false })
-      .limit(5),
+      .limit(6),
   ]);
 
   const recent = (recentRows ?? []) as unknown as RecentRow[];
-  const fleetBars = (timelineMotos ?? []) as { id: string; brand: string; model: string }[];
-
-  const barHeights = fleetBars.map((_, i) => 40 + ((i * 17) % 36));
-
-  const utilization =
-    typeof motas === "number" && motas > 0 && typeof abertos === "number"
-      ? Math.min(100, Math.round((abertos / Math.max(motas, 1)) * 35 + 42))
-      : 42;
+  const fleetRecent = (recentMotos ?? []) as Array<{
+    id: string;
+    brand: string;
+    model: string;
+    plate: string | null;
+    updated_at: string;
+  }>;
 
   const quick = [
     {
@@ -131,6 +130,7 @@ export default async function AdminDashboardPage() {
       icon: Bike,
       tag: "Oficina",
       tagClass: "text-primary",
+      href: "/admin/motas",
     },
     {
       label: "Intervenções abertas",
@@ -139,6 +139,7 @@ export default async function AdminDashboardPage() {
       icon: Construction,
       tag: "Operação",
       tagClass: "text-emerald-800 dark:text-emerald-300",
+      href: "/admin/boletins?status=open",
     },
     {
       label: "Anexos tipo fatura",
@@ -147,6 +148,7 @@ export default async function AdminDashboardPage() {
       icon: CreditCard,
       tag: "Ledger",
       tagClass: "text-destructive",
+      href: "/admin/documentos",
     },
     {
       label: "Agendamentos hoje",
@@ -155,6 +157,7 @@ export default async function AdminDashboardPage() {
       icon: CalendarDays,
       tag: "Agenda",
       tagClass: "text-primary",
+      href: "/admin/agendamentos",
     },
   ] as const;
 
@@ -209,12 +212,13 @@ export default async function AdminDashboardPage() {
       </section>
 
       <section className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4">
-        {stats.map(({ label, value, hint, icon: Icon, tag, tagClass }) => (
-          <div
+        {stats.map(({ label, value, hint, icon: Icon, tag, tagClass, href }) => (
+          <Link
             key={label}
+            href={href}
             className={cn(
               adminSurfaceLow,
-              "p-6 transition-colors hover:border-border",
+              "block p-6 transition-colors hover:border-primary/40 hover:bg-card",
             )}
           >
             <div className="mb-4 flex items-start justify-between gap-3">
@@ -228,73 +232,68 @@ export default async function AdminDashboardPage() {
               {label}
             </p>
             <p className="mt-2 text-xs text-muted-foreground/80">{hint}</p>
-          </div>
+          </Link>
         ))}
       </section>
 
       <section className="grid gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 rounded-lg bg-card p-6 sm:p-8">
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="font-heading text-sm font-bold uppercase tracking-widest text-foreground">
-                Timeline de manutenção
+                Frota recente
               </h2>
               <p className="mt-1 font-heading text-[10px] uppercase tracking-widest text-muted-foreground">
-                Marcos por modelo (ilustrativo)
+                Últimas motas actualizadas
               </p>
             </div>
-            <div className="flex flex-wrap gap-4 font-heading text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <span className="size-2 rounded-full bg-primary" />
-                Desmo / crítico
-              </span>
-              <span className="inline-flex items-center gap-2">
-                <span className="size-2 rounded-full bg-emerald-500" />
-                Óleo / anual
-              </span>
-            </div>
+            <Link
+              href="/admin/motas"
+              className="font-heading text-[10px] font-bold uppercase tracking-widest text-primary hover:underline"
+            >
+              Ver frota
+            </Link>
           </div>
-          <div className="relative min-h-[280px]">
-            <div className="absolute inset-0 flex flex-col justify-between py-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-px w-full bg-muted-foreground/15" />
-              ))}
-            </div>
-            <div className="relative flex h-[260px] items-end justify-between gap-2 px-2 sm:px-4">
-              {fleetBars.length === 0 ? (
-                <p className="w-full pb-8 text-center text-sm text-muted-foreground">
-                  Ainda sem motas na frota para visualizar barras.
-                </p>
-              ) : (
-                fleetBars.map((m, i) => {
-                  const h = barHeights[i % barHeights.length] ?? 40;
-                  const fill =
-                    i % 2 === 0
-                      ? "bg-primary/45 border-t border-primary"
-                      : "bg-emerald-500/40 border-t border-emerald-600";
-                  return (
-                    <div key={m.id} className="flex w-12 flex-col items-center sm:w-16">
-                      <div
-                        className="relative w-8 rounded-t bg-muted sm:w-10"
-                        style={{ height: `${h + 40}px` }}
-                      >
-                        <div
-                          className={cn(
-                            "absolute bottom-0 w-full rounded-t transition-all group-hover:opacity-100",
-                            fill,
-                          )}
-                          style={{ height: `${Math.max(24, h * 0.55)}px` }}
-                        />
-                      </div>
-                      <span className="mt-3 text-center font-heading text-[10px] uppercase leading-tight text-muted-foreground">
-                        {(m.model ?? m.brand).slice(0, 14)}
+          {fleetRecent.length === 0 ? (
+            <p className="py-12 text-center text-sm text-muted-foreground">
+              Ainda sem motas na frota. Regista a primeira em{" "}
+              <Link href="/admin/clientes" className="text-primary hover:underline">
+                Clientes & frota
+              </Link>
+              .
+            </p>
+          ) : (
+            <ul className="divide-y divide-border/60">
+              {fleetRecent.map((m) => (
+                <li key={m.id}>
+                  <Link
+                    href={`/admin/motas/${m.id}`}
+                    className="flex items-center justify-between gap-3 py-3 transition-colors hover:bg-muted/40"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex size-9 items-center justify-center rounded-md bg-muted text-primary">
+                        <Bike className="size-4" aria-hidden />
                       </span>
+                      <div>
+                        <p className="font-heading text-sm font-bold uppercase tracking-tight text-foreground">
+                          {m.brand} {m.model}
+                        </p>
+                        <p className="font-mono text-[10px] uppercase text-muted-foreground">
+                          {m.plate ?? "sem matrícula"}
+                        </p>
+                      </div>
                     </div>
-                  );
-                })
-              )}
-            </div>
-          </div>
+                    <span className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      {new Date(m.updated_at).toLocaleDateString("pt-PT", {
+                        day: "2-digit",
+                        month: "short",
+                      })}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="rounded-lg bg-card p-6 sm:p-8">
@@ -373,64 +372,40 @@ export default async function AdminDashboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-4">
-        <div className={cn(adminGlassPanel, "p-6 lg:col-span-1")}>
+      <section className={cn(adminSurfaceLow, "p-6 sm:p-8")}>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
           <h3 className="font-heading text-xs font-bold uppercase tracking-widest text-foreground">
-            Carga da oficina
+            Resumo operacional
           </h3>
-          <div className="relative mt-4 pt-1">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="inline-block rounded-full bg-primary/15 px-2 py-1 font-heading text-[9px] font-semibold uppercase tracking-widest text-primary">
-                Utilização estimada
-              </span>
-              <span className="font-heading text-[10px] font-semibold text-foreground">{utilization}%</span>
-            </div>
-            <div className="mb-4 flex h-1.5 overflow-hidden rounded-full bg-muted text-xs">
-              <div
-                className="bg-primary shadow-none transition-all"
-                style={{ width: `${utilization}%` }}
-              />
-            </div>
-            <p className="text-[9px] font-medium uppercase leading-relaxed text-muted-foreground">
-              Baseado em motas na frota vs. intervenções abertas. Ajusta processos reais na oficina.
+          <p className="font-heading text-[9px] uppercase tracking-widest text-muted-foreground">
+            Dados em tempo real
+          </p>
+        </div>
+        <div className="mt-6 grid gap-6 text-center sm:grid-cols-3">
+          <div>
+            <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Clientes ativos
+            </p>
+            <p className="mt-1 font-heading text-2xl font-bold tabular-nums text-foreground">
+              {clientes ?? 0}
             </p>
           </div>
-        </div>
-
-        <div className="rounded-lg bg-card p-6 lg:col-span-3 lg:flex lg:flex-col lg:justify-center">
-          <div className="grid gap-6 text-center sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Clientes ativos
-              </p>
-              <p className="mt-1 font-heading text-xl font-bold text-foreground">{clientes ?? 0}</p>
-            </div>
-            <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Taxa de progresso média
-              </p>
-              <p className="mt-1 font-heading text-xl font-bold text-foreground">
-                {typeof abertos === "number" && abertos > 0 ? "Em curso" : "—"}
-              </p>
-            </div>
-            <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Peças & stock
-              </p>
-              <p className="mt-1 font-heading text-xl font-bold text-foreground">N/D</p>
-            </div>
-            <div>
-              <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
-                Eficiência registo
-              </p>
-              <p className="mt-1 font-heading text-xl font-bold text-foreground">
-                {typeof motas === "number" && motas > 0 ? `${Math.min(130, 88 + (motas % 15))}%` : "—"}
-              </p>
-            </div>
+          <div>
+            <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Boletins em aberto
+            </p>
+            <p className="mt-1 font-heading text-2xl font-bold tabular-nums text-foreground">
+              {abertos ?? 0}
+            </p>
           </div>
-          <p className="mt-6 text-center text-[11px] text-muted-foreground/80">
-            Indicadores operacionais ilustrativos; liga inventário físico quando existir integração.
-          </p>
+          <div>
+            <p className="font-heading text-[9px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Motas na frota
+            </p>
+            <p className="mt-1 font-heading text-2xl font-bold tabular-nums text-foreground">
+              {motas ?? 0}
+            </p>
+          </div>
         </div>
       </section>
     </div>

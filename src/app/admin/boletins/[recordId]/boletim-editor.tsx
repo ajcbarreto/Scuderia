@@ -2,19 +2,21 @@
 
 import { useActionState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import {
   addServiceTaskFromForm,
-  deleteServiceAttachmentForm,
+  deleteServiceAttachment,
   updateServiceRecord,
   uploadServiceAttachment,
   type ActionState,
 } from "@/app/admin/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/toast";
 import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
 import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask } from "@/types/database";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -55,19 +57,35 @@ export function BoletimEditor({
     FormData
   >(addServiceTaskFromForm, undefined);
 
+  const ERROR_TOAST_MS = 6000;
+
   useEffect(() => {
     if (uploadState?.ok) {
       const el = document.getElementById("upload-form") as HTMLFormElement | null;
       el?.reset();
+      toast.success("Anexo carregado.");
+    } else if (uploadState?.error) {
+      toast.error(uploadState.error, ERROR_TOAST_MS);
     }
-  }, [uploadState?.ok]);
+  }, [uploadState]);
 
   useEffect(() => {
     if (taskState?.ok) {
       const el = document.getElementById("add-task-form") as HTMLFormElement | null;
       el?.reset();
+      toast.success("Tarefa adicionada.");
+    } else if (taskState?.error) {
+      toast.error(taskState.error, ERROR_TOAST_MS);
     }
-  }, [taskState?.ok]);
+  }, [taskState]);
+
+  useEffect(() => {
+    if (metaState?.ok) {
+      toast.success("Boletim guardado.");
+    } else if (metaState?.error) {
+      toast.error(metaState.error, ERROR_TOAST_MS);
+    }
+  }, [metaState]);
 
   const completedTaskCount = tasks.filter((t) => t.completed).length;
   const metaFormId = "boletim-meta-form";
@@ -93,16 +111,29 @@ export function BoletimEditor({
             : "Checklist e próxima revisão à esquerda; dados e anexos à direita."
         }
         actions={
-          <Link
-            href="/admin/boletins"
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "gap-1.5 border-border",
-            )}
-          >
-            <ArrowLeft className="size-4" aria-hidden />
-            Lista de boletins
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href={`/api/boletim/${recordId}/pdf`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "gap-1.5 border-border",
+              )}
+              download
+            >
+              <Download className="size-4" aria-hidden />
+              PDF
+            </a>
+            <Link
+              href="/admin/boletins"
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "gap-1.5 border-border",
+              )}
+            >
+              <ArrowLeft className="size-4" aria-hidden />
+              Lista de boletins
+            </Link>
+          </div>
         }
       />
 
@@ -175,9 +206,6 @@ export function BoletimEditor({
                   {taskPending ? "…" : "Adicionar"}
                 </Button>
               </form>
-              {taskState?.error ? (
-                <p className="mt-2 text-sm text-destructive">{taskState.error}</p>
-              ) : null}
             </div>
           </section>
 
@@ -330,12 +358,6 @@ export function BoletimEditor({
               </div>
             </section>
 
-            {metaState?.error ? (
-              <p className="text-sm text-destructive">{metaState.error}</p>
-            ) : null}
-            {metaState?.ok ? (
-              <p className="text-sm text-primary">Alterações guardadas.</p>
-            ) : null}
             <Button type="submit" disabled={metaPending} className="font-heading w-full sm:w-auto">
               {metaPending ? "A guardar…" : "Guardar boletim"}
             </Button>
@@ -361,19 +383,34 @@ export function BoletimEditor({
                 <span className="font-mono text-xs text-muted-foreground">
                   {a.kind} · {a.storage_path.slice(-48)}
                 </span>
-                <form action={deleteServiceAttachmentForm}>
-                  <input type="hidden" name="attachment_id" value={a.id} />
-                  <input type="hidden" name="record_id" value={recordId} />
-                  <input type="hidden" name="storage_path" value={a.storage_path} />
-                  <Button
-                    type="submit"
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                  >
-                    Apagar
-                  </Button>
-                </form>
+                <ConfirmDialog
+                  title="Apagar anexo?"
+                  description="O ficheiro é removido do armazenamento e deixa de aparecer no boletim. Esta acção não pode ser anulada."
+                  confirmLabel="Apagar"
+                  tone="destructive"
+                  onConfirm={async () => {
+                    const res = await deleteServiceAttachment(
+                      a.id,
+                      recordId,
+                      a.storage_path,
+                    );
+                    if (res?.error) {
+                      toast.error(res.error, 6000);
+                    } else {
+                      toast.success("Anexo apagado.");
+                    }
+                  }}
+                  trigger={
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                    >
+                      Apagar
+                    </Button>
+                  }
+                />
               </li>
             ))
           )}

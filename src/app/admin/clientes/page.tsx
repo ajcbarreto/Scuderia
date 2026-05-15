@@ -21,10 +21,11 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { Motorcycle, Profile } from "@/types/database";
+import { AdminSearch } from "@/components/admin/admin-search";
 import { NovoClienteForm } from "./novo-cliente-form";
 
 type PageProps = {
-  searchParams: Promise<{ cliente?: string }>;
+  searchParams: Promise<{ cliente?: string; q?: string }>;
 };
 
 function initials(name: string | null) {
@@ -35,15 +36,25 @@ function initials(name: string | null) {
 }
 
 export default async function AdminClientesPage({ searchParams }: PageProps) {
-  const { cliente: clienteParam } = await searchParams;
+  const { cliente: clienteParam, q } = await searchParams;
   const supabase = await createClient();
 
-  const { data: clientProfiles } = await supabase
+  // Pesquisa server-side em `full_name` ou `phone`. `ilike` é case-insensitive
+  // sem accent-fold (suficiente para PT-PT na prática), e `%term%` busca
+  // qualquer substring.
+  let profilesQuery = supabase
     .from("profiles")
     .select("id, full_name, phone")
     .eq("role", "client")
     .order("full_name", { ascending: true });
 
+  const term = q?.trim();
+  if (term) {
+    const safe = term.replace(/[%_]/g, "\\$&");
+    profilesQuery = profilesQuery.or(`full_name.ilike.%${safe}%,phone.ilike.%${safe}%`);
+  }
+
+  const { data: clientProfiles } = await profilesQuery;
   const clients = (clientProfiles ?? []) as Pick<Profile, "id" | "full_name" | "phone">[];
 
   const { data: motas } = await supabase
@@ -120,7 +131,8 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
         <CardHeader>
           <CardTitle className="font-heading text-lg text-foreground">Novo cliente</CardTitle>
           <CardDescription className="text-muted-foreground">
-            Cria a conta e entrega credenciais para a pessoa aceder à garagem digital.
+            Envia um convite por email. O cliente define a própria palavra-passe e entra na
+            garagem digital pelo link recebido.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -128,7 +140,7 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
         </CardContent>
       </Card>
 
-      {clients.length === 0 ? (
+      {clients.length === 0 && !term ? (
         <p className="text-sm text-muted-foreground">Ainda não há clientes registados.</p>
       ) : (
         <div className="mx-auto grid max-w-[1400px] grid-cols-1 gap-8 lg:grid-cols-12">
@@ -138,9 +150,15 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                 Diretório
               </h2>
               <span className="rounded bg-card px-2 py-0.5 font-heading text-[10px] uppercase tracking-widest text-muted-foreground">
-                {clients.length} ativos
+                {clients.length} {term ? "encontrados" : "ativos"}
               </span>
             </div>
+            <AdminSearch placeholder="Pesquisar por nome ou telefone…" />
+            {clients.length === 0 && term ? (
+              <p className="rounded-lg border border-dashed border-border bg-muted/40 px-4 py-6 text-center text-sm text-muted-foreground">
+                Nenhum cliente coincide com &quot;{term}&quot;.
+              </p>
+            ) : null}
             <div className="flex flex-col gap-3">
               {clients.map((c) => {
                 const active = c.id === selectedId;
