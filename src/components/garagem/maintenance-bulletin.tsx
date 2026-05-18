@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   ArrowRight,
   Bike,
+  Calendar,
   CheckCircle2,
   CircleDot,
   Download,
@@ -170,6 +171,15 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
     ? formatNextServiceSummary(lastService)
     : null;
 
+  const _today = new Date();
+  _today.setHours(0, 0, 0, 0);
+  const _nextServiceDate = lastService?.next_service_due_date
+    ? new Date(`${lastService.next_service_due_date}T12:00:00`)
+    : null;
+  const daysUntilService = _nextServiceDate
+    ? Math.ceil((_nextServiceDate.getTime() - _today.getTime()) / 86_400_000)
+    : null;
+
   const fleetStatus = aggregateFleetStatus(historyRows);
   const detailStatus = r ? statusLabel(r.status) : fleetStatus;
   const estado = isDetail ? detailStatus : fleetStatus;
@@ -324,9 +334,16 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                       </p>
                     </div>
                   </div>
-                  <div className="rounded-lg border border-border bg-muted/40 px-4 py-4 sm:px-5">
+                  <div
+                    className={cn(
+                      "rounded-lg border px-4 py-4 sm:px-5 transition-colors",
+                      nextRevisionPlanned
+                        ? "border-primary/30 bg-primary/10"
+                        : "border-border bg-muted/40",
+                    )}
+                  >
                     <p className="text-xs font-bold uppercase tracking-tighter text-muted-foreground">
-                      Próxima revisão planead
+                      Próxima revisão planeada
                     </p>
                     {nextRevisionPlanned ? (
                       <p className="mt-2 text-lg font-bold text-primary sm:text-xl">
@@ -344,26 +361,93 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
               </div>
             </div>
 
-            <div className="flex flex-col justify-between gap-5 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8 lg:min-h-[280px]">
-              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                <span className="h-px w-6 shrink-0 bg-border" aria-hidden />
+            <div className="relative flex flex-col gap-5 overflow-hidden rounded-xl border-2 border-primary/25 bg-card p-6 shadow-lg sm:p-8 lg:min-h-[280px]">
+              {/* Red accent bar */}
+              <div className="absolute inset-x-0 top-0 h-1 rounded-t-xl bg-primary" aria-hidden />
+
+              <p className="flex items-center gap-2 pt-1 text-xs font-semibold uppercase tracking-widest text-primary">
+                <Calendar className="size-3.5 shrink-0" aria-hidden />
                 Próxima revisão
               </p>
-              <div>
-                <p className="font-heading text-2xl font-bold leading-snug tracking-tight text-foreground sm:text-3xl">
-                  Agendar com a oficina
-                </p>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  Planeie a manutenção preventiva e o desempenho contínuo da sua
-                  unidade. A equipa Scuderia itTECH acompanha cada detalhe.
-                </p>
+
+              <div className="flex-1">
                 {nextRevisionPlanned ? (
-                  <p className="mt-3 rounded-md border border-border bg-muted/60 px-3 py-2 text-xs leading-snug text-foreground">
-                    <span className="font-semibold">Sugestão no último serviço:</span>{" "}
-                    <span className="text-primary">{nextRevisionPlanned}</span>
-                  </p>
-                ) : null}
+                  <div className="space-y-4">
+                    {lastService?.next_service_due_date ? (
+                      <div>
+                        <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                          Data prevista
+                        </p>
+                        <p
+                          className={cn(
+                            "font-heading text-2xl font-bold sm:text-3xl",
+                            daysUntilService !== null && daysUntilService < 7
+                              ? "text-red-600 dark:text-red-400"
+                              : daysUntilService !== null && daysUntilService < 30
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-primary",
+                          )}
+                        >
+                          {new Intl.DateTimeFormat("pt-PT", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }).format(
+                            new Date(`${lastService.next_service_due_date}T12:00:00`),
+                          )}
+                        </p>
+                        {daysUntilService !== null && (
+                          <p
+                            className={cn(
+                              "mt-1 text-sm font-semibold",
+                              daysUntilService < 0
+                                ? "text-red-600 dark:text-red-400"
+                                : daysUntilService < 7
+                                  ? "text-red-600 dark:text-red-400"
+                                  : daysUntilService < 30
+                                    ? "text-amber-600 dark:text-amber-400"
+                                    : "text-muted-foreground",
+                            )}
+                          >
+                            {daysUntilService < 0
+                              ? `Há ${Math.abs(daysUntilService)} dias`
+                              : daysUntilService === 0
+                                ? "Hoje"
+                                : daysUntilService === 1
+                                  ? "Amanhã"
+                                  : `Daqui a ${daysUntilService} dias`}
+                          </p>
+                        )}
+                      </div>
+                    ) : null}
+
+                    {lastService?.next_service_due_km != null ? (
+                      <div>
+                        <p className="mb-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                          Quilometragem alvo
+                        </p>
+                        <p className="font-heading text-xl font-bold text-foreground">
+                          {new Intl.NumberFormat("pt-PT").format(
+                            lastService.next_service_due_km,
+                          )}{" "}
+                          km
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-heading text-2xl font-bold leading-snug tracking-tight text-foreground sm:text-3xl">
+                      Agendar com a oficina
+                    </p>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                      Planeie a manutenção preventiva e o desempenho contínuo da
+                      sua unidade. A equipa Scuderia itTECH acompanha cada detalhe.
+                    </p>
+                  </div>
+                )}
               </div>
+
               <div className="flex items-start gap-2 rounded-lg border border-amber-200/80 bg-amber-50 px-3 py-2 dark:border-amber-900/50 dark:bg-amber-950/30">
                 <AlertTriangle
                   className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-400"
@@ -374,6 +458,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
                   equipa.
                 </span>
               </div>
+
               <Link
                 href="/agendamento"
                 className="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
