@@ -27,8 +27,44 @@ import { BoletimPassportPrint } from "@/components/garagem/boletim-passport-prin
 import { BoletimServiceHistoryTable } from "@/components/garagem/boletim-service-history-table";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { parseShopNotes, type NoteColor } from "@/lib/garagem/shop-notes";
 
 export type { BoletimHistoryRow as HistoryRow } from "@/types/boletim";
+
+const NOTE_COLOR_CONFIG: Record<
+  NoteColor,
+  { iconBg: string; textColor: string; Icon: typeof CheckCircle2 }
+> = {
+  green: {
+    iconBg:
+      "rounded-md bg-emerald-100 p-1.5 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400",
+    textColor: "text-emerald-900 dark:text-emerald-300",
+    Icon: CheckCircle2,
+  },
+  red: {
+    iconBg:
+      "rounded-md bg-red-100 p-1.5 text-red-700 dark:bg-red-950/50 dark:text-red-400",
+    textColor: "text-red-900 dark:text-red-300",
+    Icon: AlertTriangle,
+  },
+  orange: {
+    iconBg:
+      "rounded-md bg-orange-100 p-1.5 text-orange-700 dark:bg-orange-950/50 dark:text-orange-400",
+    textColor: "text-orange-900 dark:text-orange-300",
+    Icon: AlertTriangle,
+  },
+  blue: {
+    iconBg:
+      "rounded-md bg-blue-100 p-1.5 text-blue-700 dark:bg-blue-950/50 dark:text-blue-400",
+    textColor: "text-blue-900 dark:text-blue-300",
+    Icon: Info,
+  },
+  default: {
+    iconBg: "rounded-md bg-muted p-1.5 text-muted-foreground",
+    textColor: "text-muted-foreground",
+    Icon: CircleDot,
+  },
+};
 
 const ENGINE_IMAGE =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuCSDKQVpb9MjJndC53F3QIcjh1SJKCZ03HKBbbTpRgtMVCeuzV6v4mzwlVOQx85KKQ7j4LjXiNjzCYjr4gxjrXo9M0wpRdkT-JUjBA5UgDkvwne0_DbygXUoygfalM0mS1VOI8SPmUK_pPJ0XZdRu7IN32nXYw5pIWnnn7Jv7Mu0wgQeM5ROEmjRdRfjMLpycugWo1y9pcUPTTFJ4QhHvofPs5oeNpq2_JJA89QIalBClcH86vxImSN7feTLeHSQmcKQvBCInqVRa4";
@@ -188,11 +224,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
     ? formatBulletinId(r.id, r.opened_at)
     : formatMotoRefId(m.id, m.updated_at);
 
-  const lastRevisionNotesBlocks =
-    lastService?.shop_notes
-      ?.split(/\n\s*\n/)
-      .map((b) => b.trim())
-      .filter(Boolean) ?? [];
+  const lastRevisionNotes = parseShopNotes(lastService?.shop_notes);
 
   const passportRows = mapHistoryToPassportRows(historyRows);
   const { antesSrc, depoisSrc } = pickAntesDepoisPhotos(
@@ -203,9 +235,9 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
   );
 
   const passportNotes =
-    lastRevisionNotesBlocks.length > 0
-      ? lastRevisionNotesBlocks.flatMap((block) =>
-          block
+    lastRevisionNotes.length > 0
+      ? lastRevisionNotes.flatMap((note) =>
+          note.text
             .split("\n")
             .map((l) => l.trim())
             .filter(Boolean),
@@ -227,13 +259,7 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
       ? historyRows.find((h) => h.record.id === r.id)
       : undefined;
   const servicePhotoHrefs = currentHistoryRow?.photoHrefs ?? [];
-  const serviceNotesBlocks =
-    isDetail && r
-      ? (r.shop_notes
-          ?.split(/\n\s*\n/)
-          .map((b) => b.trim())
-          .filter(Boolean) ?? [])
-      : [];
+  const serviceNotes = isDetail && r ? parseShopNotes(r.shop_notes) : [];
 
   return (
     <>
@@ -581,21 +607,32 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             </p>
           </div>
 
-          {serviceNotesBlocks.length > 0 ? (
+          {serviceNotes.length > 0 ? (
             <div className="mt-8">
               <p className="mb-3 text-xs font-bold uppercase tracking-wide text-muted-foreground">
                 Notas deste serviço
               </p>
-              <div className="space-y-2">
-                {serviceNotesBlocks.map((block, idx) => (
-                  <p
-                    key={idx}
-                    className="whitespace-pre-wrap rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground"
-                  >
-                    {block}
-                  </p>
-                ))}
-              </div>
+              <ul className="space-y-2">
+                {serviceNotes.map((note, idx) => {
+                  const cfg = NOTE_COLOR_CONFIG[note.color];
+                  const Icon = cfg.Icon;
+                  return (
+                    <li key={idx} className="flex gap-3">
+                      <span className={cn("mt-0.5 shrink-0", cfg.iconBg)}>
+                        <Icon className="size-4" aria-hidden />
+                      </span>
+                      <p
+                        className={cn(
+                          "whitespace-pre-wrap text-sm leading-relaxed",
+                          cfg.textColor,
+                        )}
+                      >
+                        {note.text}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           ) : null}
 
@@ -732,35 +769,34 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
             Informação prioritária que a oficina destaca sobre a intervenção mais
             recente. O detalhe de cada serviço no histórico abre num ecrã próprio.
           </p>
-          {lastRevisionNotesBlocks.length > 0 ? (
+          {lastRevisionNotes.length > 0 ? (
             <ul className="space-y-4">
-              {lastRevisionNotesBlocks.map((block, idx) => (
-                <li
-                  key={idx}
-                  className={
-                    idx < lastRevisionNotesBlocks.length - 1
-                      ? "flex gap-4 border-b border-border pb-4"
-                      : "flex gap-4"
-                  }
-                >
-                  <span
-                    className={
-                      idx === 0
-                        ? "rounded-md bg-red-100 p-1.5 text-red-700 dark:bg-red-950/50 dark:text-red-400"
-                        : "rounded-md bg-emerald-100 p-1.5 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400"
-                    }
-                  >
-                    {idx === 0 ? (
-                      <AlertTriangle className="size-4" aria-hidden />
-                    ) : (
-                      <CheckCircle2 className="size-4" aria-hidden />
+              {lastRevisionNotes.map((note, idx) => {
+                const cfg = NOTE_COLOR_CONFIG[note.color];
+                const Icon = cfg.Icon;
+                return (
+                  <li
+                    key={idx}
+                    className={cn(
+                      "flex gap-4",
+                      idx < lastRevisionNotes.length - 1 &&
+                        "border-b border-border pb-4",
                     )}
-                  </span>
-                  <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                    {block}
-                  </p>
-                </li>
-              ))}
+                  >
+                    <span className={cn("mt-0.5 shrink-0", cfg.iconBg)}>
+                      <Icon className="size-4" aria-hidden />
+                    </span>
+                    <p
+                      className={cn(
+                        "whitespace-pre-wrap text-sm leading-relaxed",
+                        cfg.textColor,
+                      )}
+                    >
+                      {note.text}
+                    </p>
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-sm text-muted-foreground">

@@ -8,6 +8,7 @@ import {
   formatRepairOrderRef,
   formatRevisionAndTitle,
 } from "@/lib/garagem/service-record-display";
+import { parseShopNotes, type NoteColor } from "@/lib/garagem/shop-notes";
 import type { Motorcycle, ServiceRecord, ServiceTask } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,14 @@ const DUCATI_RED = rgb(0.77, 0.07, 0.19);
 const INK = rgb(0.1, 0.1, 0.11);
 const MUTED = rgb(0.42, 0.42, 0.45);
 const HAIRLINE = rgb(0.85, 0.85, 0.87);
+
+const NOTE_COLOR_RGB: Record<NoteColor, ReturnType<typeof rgb>> = {
+  green:   rgb(0.05, 0.49, 0.31),
+  red:     rgb(0.77, 0.07, 0.19),
+  orange:  rgb(0.8,  0.38, 0.0),
+  blue:    rgb(0.1,  0.35, 0.75),
+  default: rgb(0.25, 0.25, 0.27),
+};
 
 /** WinAnsi (fontes standard pdf-lib) não cobre alguns chars; normaliza-os. */
 function ascii(text: string): string {
@@ -230,33 +239,43 @@ export async function GET(
   }
   y -= 10;
 
-  // Notas da oficina
-  const notes = record.shop_notes?.trim();
-  if (notes) {
+  // Notas da oficina (com suporte a cores)
+  const shopNotes = parseShopNotes(record.shop_notes);
+  if (shopNotes.length > 0) {
     ensureSpace(60);
     hr();
     y -= 24;
     text("NOTAS DA OFICINA", { size: 8, font: helvBold, color: DUCATI_RED });
     y -= 18;
-    // Quebra de linhas simples por largura.
-    const maxWidth = width - margin * 2;
-    for (const rawLine of notes.split("\n")) {
-      const words = ascii(rawLine).split(/\s+/);
-      let line = "";
-      for (const word of words) {
-        const test = line ? `${line} ${word}` : word;
-        if (helv.widthOfTextAtSize(test, 10) > maxWidth && line) {
+    const maxWidth = width - margin * 2 - 16; // 16 = margem do bullet colorido
+    for (const note of shopNotes) {
+      const noteColor = NOTE_COLOR_RGB[note.color];
+      // Bullet colorido
+      ensureSpace(20);
+      page.drawCircle({ x: margin + 4, y: y + 3, size: 4, color: noteColor });
+      // Quebra de linhas por largura, com indentação após o bullet
+      const textX = margin + 14;
+      for (const rawLine of note.text.split("\n")) {
+        const words = ascii(rawLine).split(/\s+/).filter(Boolean);
+        let line = "";
+        for (const word of words) {
+          const test = line ? `${line} ${word}` : word;
+          if (helv.widthOfTextAtSize(test, 10) > maxWidth && line) {
+            ensureSpace(16);
+            text(line, { size: 10, color: noteColor, x: textX });
+            y -= 15;
+            line = word;
+          } else {
+            line = test;
+          }
+        }
+        if (line) {
           ensureSpace(16);
-          text(line, { size: 10, color: rgb(0.25, 0.25, 0.27) });
+          text(line, { size: 10, color: noteColor, x: textX });
           y -= 15;
-          line = word;
-        } else {
-          line = test;
         }
       }
-      ensureSpace(16);
-      text(line, { size: 10, color: rgb(0.25, 0.25, 0.27) });
-      y -= 15;
+      y -= 4; // espaço entre notas
     }
   }
 

@@ -15,8 +15,9 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toast";
+import { ShopNotesEditor } from "@/components/admin/shop-notes-editor";
+import { parseShopNotes } from "@/lib/garagem/shop-notes";
 import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
 import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask } from "@/types/database";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -346,13 +347,13 @@ export function BoletimEditor({
                   </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="shop_notes">Notas da oficina</Label>
-                  <Textarea
-                    id="shop_notes"
+                  <Label>Notas da oficina</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Cada nota pode ter uma cor diferente. Aparece no boletim da garagem do cliente.
+                  </p>
+                  <ShopNotesEditor
                     name="shop_notes"
-                    rows={6}
-                    defaultValue={record.shop_notes ?? ""}
-                    className="border-input bg-background text-foreground"
+                    defaultNotes={parseShopNotes(record.shop_notes)}
                   />
                 </div>
               </div>
