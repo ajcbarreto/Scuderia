@@ -34,7 +34,7 @@ export function ClosedDatesPanel({ closedDates }: Props) {
   useEffect(() => {
     if (state?.ok) {
       formRef.current?.reset();
-      toast.success("Data adicionada.");
+      toast.success(state.info ?? "Data adicionada.");
     } else if (state?.error) {
       toast.error(state.error, 6000);
     }
@@ -45,10 +45,10 @@ export function ClosedDatesPanel({ closedDates }: Props) {
       <form
         ref={formRef}
         action={formAction}
-        className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_1.5fr_auto] sm:items-end"
       >
-        <div className="space-y-2 sm:w-44">
-          <Label htmlFor="closed_date">Data</Label>
+        <div className="space-y-2">
+          <Label htmlFor="closed_date">Data inicial</Label>
           <Input
             id="closed_date"
             name="closed_date"
@@ -57,7 +57,16 @@ export function ClosedDatesPanel({ closedDates }: Props) {
             className="border-input bg-background text-foreground"
           />
         </div>
-        <div className="min-w-0 flex-1 space-y-2">
+        <div className="space-y-2">
+          <Label htmlFor="end_date">Data final (opcional)</Label>
+          <Input
+            id="end_date"
+            name="end_date"
+            type="date"
+            className="border-input bg-background text-foreground"
+          />
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="note">Motivo (opcional)</Label>
           <Input
             id="note"
@@ -76,6 +85,10 @@ export function ClosedDatesPanel({ closedDates }: Props) {
           {pending ? "…" : "Adicionar"}
         </Button>
       </form>
+      <p className="-mt-3 text-xs text-muted-foreground">
+        Para um único dia, deixa a data final vazia. Para um intervalo (ex.: férias),
+        preenche ambas — todas as datas do intervalo ficam fechadas.
+      </p>
 
       <div className="rounded-lg border border-border/70 bg-muted/20">
         {closedDates.length === 0 ? (
