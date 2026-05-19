@@ -125,3 +125,21 @@ export async function removeClosedDate(id: string): Promise<ActionState> {
   revalidatePath("/agendamento");
   return { ok: true };
 }
+
+/** Remove várias datas fechadas de uma só vez (ex.: remover um grupo/intervalo). */
+export async function removeClosedDates(ids: string[]): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+  const validIds = ids.filter((id) => typeof id === "string" && id.length > 0);
+  if (validIds.length === 0) {
+    return { error: "Nenhuma data selecionada." };
+  }
+  const { error } = await supabase
+    .from("workshop_closed_dates")
+    .delete()
+    .in("id", validIds);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/oficina");
+  revalidatePath("/agendamento");
+  return { ok: true };
+}

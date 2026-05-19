@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
-import { CalendarX, Trash2 } from "lucide-react";
-import { addClosedDate, removeClosedDate } from "./actions";
+import { useActionState, useEffect, useMemo, useRef } from "react";
+import { CalendarX, X } from "lucide-react";
+import { addClosedDate, removeClosedDates } from "./actions";
 import type { ActionState } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -10,18 +10,81 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/toast";
 
+type ClosedDate = { id: string; date: string; note: string | null };
+
 type Props = {
-  closedDates: { id: string; date: string; note: string | null }[];
+  closedDates: ClosedDate[];
 };
 
-function formatDateLabel(iso: string): string {
-  const d = new Date(`${iso}T12:00:00`);
-  return new Intl.DateTimeFormat("pt-PT", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(d);
+type ClosedGroup = {
+  ids: string[];
+  startDate: string;
+  endDate: string;
+  note: string | null;
+};
+
+/** Junta datas consecutivas com o mesmo motivo num único grupo. */
+function groupConsecutive(dates: ClosedDate[]): ClosedGroup[] {
+  if (dates.length === 0) return [];
+  const sorted = [...dates].sort((a, b) => a.date.localeCompare(b.date));
+  const groups: ClosedGroup[] = [];
+  let current: ClosedGroup | null = null;
+
+  for (const row of sorted) {
+    const note = row.note?.trim() || null;
+    const isConsecutive =
+      current !== null &&
+      current.note === note &&
+      isNextDay(current.endDate, row.date);
+
+    if (current && isConsecutive) {
+      current.ids.push(row.id);
+      current.endDate = row.date;
+    } else {
+      current = { ids: [row.id], startDate: row.date, endDate: row.date, note };
+      groups.push(current);
+    }
+  }
+
+  return groups;
+}
+
+function isNextDay(a: string, b: string): boolean {
+  const da = new Date(`${a}T12:00:00`);
+  const db = new Date(`${b}T12:00:00`);
+  da.setDate(da.getDate() + 1);
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+}
+
+const monthFmt = new Intl.DateTimeFormat("pt-PT", {
+  day: "numeric",
+  month: "short",
+});
+const fullFmt = new Intl.DateTimeFormat("pt-PT", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+});
+
+function formatGroupLabel(g: ClosedGroup): string {
+  const start = new Date(`${g.startDate}T12:00:00`);
+  const end = new Date(`${g.endDate}T12:00:00`);
+  if (g.startDate === g.endDate) {
+    return fullFmt.format(start);
+  }
+  const sameYear = start.getFullYear() === end.getFullYear();
+  const sameMonth = sameYear && start.getMonth() === end.getMonth();
+  if (sameMonth) {
+    return `${start.getDate()} – ${fullFmt.format(end)}`;
+  }
+  if (sameYear) {
+    return `${monthFmt.format(start)} – ${fullFmt.format(end)}`;
+  }
+  return `${fullFmt.format(start)} – ${fullFmt.format(end)}`;
 }
 
 export function ClosedDatesPanel({ closedDates }: Props) {
@@ -39,6 +102,8 @@ export function ClosedDatesPanel({ closedDates }: Props) {
       toast.error(state.error, 6000);
     }
   }, [state]);
+
+  const groups = useMemo(() => groupConsecutive(closedDates), [closedDates]);
 
   return (
     <div className="mt-4 space-y-6">
@@ -90,54 +155,76 @@ export function ClosedDatesPanel({ closedDates }: Props) {
         preenche ambas — todas as datas do intervalo ficam fechadas.
       </p>
 
-      <div className="rounded-lg border border-border/70 bg-muted/20">
-        {closedDates.length === 0 ? (
-          <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-            Sem datas fechadas. Adiciona acima feriados ou férias.
-          </p>
-        ) : (
-          <ul className="divide-y divide-border/70">
-            {closedDates.map((d) => (
+      {groups.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
+          Sem datas fechadas. Adiciona acima feriados ou férias.
+        </p>
+      ) : (
+        <ul className="flex flex-wrap gap-2">
+          {groups.map((g) => {
+            const label = formatGroupLabel(g);
+            const dayCount = g.ids.length;
+            const isRange = dayCount > 1;
+            return (
               <li
-                key={d.id}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                key={g.ids[0]}
+                className="flex items-center gap-2 rounded-full border border-destructive/25 bg-destructive/5 py-1 pl-3 pr-1 text-sm"
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <CalendarX className="size-4 shrink-0 text-destructive" aria-hidden />
-                  <div className="min-w-0">
-                    <p className="font-medium">{formatDateLabel(d.date)}</p>
-                    {d.note ? (
-                      <p className="truncate text-xs text-muted-foreground">{d.note}</p>
-                    ) : null}
-                  </div>
-                </div>
+                <CalendarX
+                  className="size-3.5 shrink-0 text-destructive"
+                  aria-hidden
+                />
+                <span className="font-medium text-foreground">{label}</span>
+                {g.note ? (
+                  <span className="max-w-[180px] truncate text-muted-foreground">
+                    · {g.note}
+                  </span>
+                ) : null}
+                {isRange ? (
+                  <span className="text-xs text-muted-foreground">
+                    ({dayCount} dias)
+                  </span>
+                ) : null}
                 <ConfirmDialog
-                  title="Remover esta data?"
-                  description={`${formatDateLabel(d.date)} volta a ficar disponível para agendamentos.`}
+                  title={
+                    isRange
+                      ? `Remover ${dayCount} datas?`
+                      : "Remover esta data?"
+                  }
+                  description={
+                    isRange
+                      ? `${label} (${dayCount} dias) volta a ficar disponível para agendamentos.`
+                      : `${label} volta a ficar disponível para agendamentos.`
+                  }
                   confirmLabel="Remover"
                   tone="destructive"
                   onConfirm={async () => {
-                    const res = await removeClosedDate(d.id);
+                    const res = await removeClosedDates(g.ids);
                     if (res?.error) toast.error(res.error, 6000);
-                    else toast.success("Data removida.");
+                    else
+                      toast.success(
+                        isRange
+                          ? `${dayCount} datas removidas.`
+                          : "Data removida.",
+                      );
                   }}
                   trigger={
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
-                      aria-label="Remover data"
+                      className="ml-1 h-6 w-6 shrink-0 rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
+                      aria-label={isRange ? "Remover intervalo" : "Remover data"}
                     >
-                      <Trash2 className="size-4" />
+                      <X className="size-3.5" />
                     </Button>
                   }
                 />
               </li>
-            ))}
-          </ul>
-        )}
-      </div>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
