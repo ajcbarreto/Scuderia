@@ -2,7 +2,7 @@
 
 import type { KeyboardEvent, MouseEvent } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronRight, FileText } from "lucide-react";
+import { ChevronRight, Download, FileText } from "lucide-react";
 import type { BoletimHistoryRow } from "@/types/boletim";
 import type { ServiceRecord } from "@/types/database";
 import {
@@ -87,6 +87,7 @@ export function BoletimServiceHistoryTable({
               Oficina
             </th>
             <th className="px-3 py-3 text-right sm:px-4">Fatura</th>
+            <th className="px-3 py-3 text-right sm:px-4">PDF</th>
           </tr>
         </thead>
         <tbody>
@@ -191,6 +192,17 @@ export function BoletimServiceHistoryTable({
                   ) : (
                     <span className="text-muted-foreground/50">—</span>
                   )}
+                </td>
+                <td className="px-3 py-5 text-right sm:px-4 sm:py-4" onClick={stop}>
+                  <a
+                    href={`/api/boletim/${row.id}/pdf`}
+                    download
+                    className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-primary sm:min-h-0 sm:min-w-0 sm:p-2"
+                    title="Descarregar boletim em PDF"
+                    onClick={stop}
+                  >
+                    <Download className="size-5" aria-hidden />
+                  </a>
                 </td>
               </tr>
             );
