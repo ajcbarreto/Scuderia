@@ -29,6 +29,77 @@ function daysBetween(from: Date, to: Date): number {
   return Math.floor(ms / 86_400_000);
 }
 
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function urgencyColor(days: number): string {
+  if (days <= 7) return "#c41230"; // vermelho (Ducati)
+  if (days <= 14) return "#d97706"; // âmbar
+  return "#475569"; // neutro
+}
+
+function reminderHtml(opts: {
+  ownerName: string | null;
+  vehicle: string;
+  daysBefore: number;
+  dueDate: string;
+  agendamentoUrl: string;
+}): string {
+  const greeting = opts.ownerName
+    ? `Olá <strong>${escapeHtml(opts.ownerName)}</strong>,`
+    : "Olá,";
+  const color = urgencyColor(opts.daysBefore);
+  const vehicle = escapeHtml(opts.vehicle);
+  const dueDate = escapeHtml(opts.dueDate);
+
+  return `<!DOCTYPE html>
+<html lang="pt"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1c;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f5f5f7;padding:40px 16px;">
+  <tr><td align="center">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.05);max-width:560px;width:100%;">
+      <tr><td style="height:6px;background:#c41230;line-height:6px;font-size:0;">&nbsp;</td></tr>
+      <tr><td style="padding:36px 40px 0 40px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#c41230;text-transform:uppercase;">Scuderia itTECH</div>
+        <h1 style="margin:14px 0 0 0;font-size:24px;font-weight:700;line-height:1.25;color:#1a1a1c;">Próxima revisão a aproximar-se</h1>
+      </td></tr>
+      <tr><td style="padding:20px 40px 8px 40px;font-size:15px;line-height:1.65;color:#3f3f46;">
+        <p style="margin:0 0 14px 0;">${greeting}</p>
+        <p style="margin:0 0 18px 0;">A revisão da tua <strong>${vehicle}</strong> está prevista para:</p>
+      </td></tr>
+      <tr><td style="padding:0 40px;">
+        <div style="border:2px solid ${color};background:${color}0d;border-radius:10px;padding:18px 20px;">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#71717a;text-transform:uppercase;margin-bottom:6px;">Data prevista</div>
+          <div style="font-size:22px;font-weight:700;color:${color};line-height:1.2;">${dueDate}</div>
+          <div style="margin-top:6px;font-size:13px;font-weight:600;color:${color};">Daqui a cerca de ${opts.daysBefore} dia${opts.daysBefore === 1 ? "" : "s"}</div>
+        </div>
+      </td></tr>
+      <tr><td style="padding:24px 40px 8px 40px;font-size:15px;line-height:1.65;color:#3f3f46;">
+        <p style="margin:0 0 24px 0;">Agenda já a tua marcação na garagem digital — escolhe a tua data preferida e a equipa confirma por contacto.</p>
+      </td></tr>
+      <tr><td align="center" style="padding:0 40px 32px 40px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td style="background:#c41230;border-radius:8px;">
+          <a href="${opts.agendamentoUrl}" style="display:inline-block;padding:14px 36px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.4px;">Pedir agendamento</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:18px 40px 28px 40px;font-size:12px;line-height:1.5;color:#a1a1aa;text-align:center;border-top:1px solid #e4e4e7;">
+        <p style="margin:0;">Recebes este email porque há uma revisão registada para a tua mota.</p>
+      </td></tr>
+    </table>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="560" style="max-width:560px;width:100%;">
+      <tr><td align="center" style="padding:16px 0;font-size:11px;letter-spacing:2px;color:#a1a1aa;text-transform:uppercase;">© Scuderia itTECH · Engineering precision</td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
+}
+
 async function sendReminderEmail(opts: {
   to: string;
   ownerName: string | null;
@@ -47,6 +118,11 @@ async function sendReminderEmail(opts: {
   }
 
   const greeting = opts.ownerName ? ` ${opts.ownerName}` : "";
+  const siteUrl =
+    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
+  const agendamentoUrl = `${siteUrl}/agendamento`;
+
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -56,7 +132,7 @@ async function sendReminderEmail(opts: {
     body: JSON.stringify({
       from,
       to: [opts.to],
-      subject: `Scuderia itTech — revisão da ${opts.vehicle} a aproximar-se`,
+      subject: `Scuderia itTECH — revisão da ${opts.vehicle} em ${opts.daysBefore} dia${opts.daysBefore === 1 ? "" : "s"}`,
       text: [
         `Olá${greeting},`,
         "",
@@ -64,10 +140,17 @@ async function sendReminderEmail(opts: {
         `(daqui a cerca de ${opts.daysBefore} dias).`,
         "",
         "Agenda já a tua marcação na garagem digital:",
-        `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/agendamento`,
+        agendamentoUrl,
         "",
-        "Scuderia itTech",
+        "Scuderia itTECH",
       ].join("\n"),
+      html: reminderHtml({
+        ownerName: opts.ownerName,
+        vehicle: opts.vehicle,
+        daysBefore: opts.daysBefore,
+        dueDate: opts.dueDate,
+        agendamentoUrl,
+      }),
     }),
   });
   return r.ok;
