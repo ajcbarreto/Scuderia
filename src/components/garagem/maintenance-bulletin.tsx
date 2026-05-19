@@ -26,6 +26,7 @@ import { BoletimFooterActions } from "@/components/garagem/boletim-footer-action
 import { BoletimPassportPrint } from "@/components/garagem/boletim-passport-print";
 import { BoletimServiceHistoryTable } from "@/components/garagem/boletim-service-history-table";
 import { Progress } from "@/components/ui/progress";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { parseShopNotes, type NoteColor } from "@/lib/garagem/shop-notes";
 
@@ -489,27 +490,40 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
         </>
       ) : isDetail && r ? (
         <header className="mb-8 space-y-4 border-b border-border pb-6 print:hidden">
-          <nav
-            className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-muted-foreground"
-            aria-label="Navegação"
-          >
-            <Link href="/garagem" className="transition-colors hover:text-foreground">
-              Garagem
-            </Link>
-            <span aria-hidden className="text-border">
-              /
-            </span>
-            <Link
-              href={`/garagem/motas/${motorcycleId}`}
-              className="max-w-[200px] truncate transition-colors hover:text-foreground sm:max-w-none"
+          <div className="flex items-start justify-between gap-4">
+            <nav
+              className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs text-muted-foreground"
+              aria-label="Navegação"
             >
-              {vehicleTitle}
+              <Link href="/garagem" className="transition-colors hover:text-foreground">
+                Garagem
+              </Link>
+              <span aria-hidden className="text-border">
+                /
+              </span>
+              <Link
+                href={`/garagem/motas/${motorcycleId}`}
+                className="max-w-[200px] truncate transition-colors hover:text-foreground sm:max-w-none"
+              >
+                {vehicleTitle}
+              </Link>
+              <span aria-hidden className="text-border">
+                /
+              </span>
+              <span className="font-medium text-foreground">Serviço</span>
+            </nav>
+            <Link
+              href={`/api/boletim/${r.id}/pdf`}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "shrink-0 gap-1.5 border-border text-xs",
+              )}
+              download
+            >
+              <Download className="size-4" aria-hidden />
+              PDF
             </Link>
-            <span aria-hidden className="text-border">
-              /
-            </span>
-            <span className="font-medium text-foreground">Serviço</span>
-          </nav>
+          </div>
           <div>
             <h1
               id="intervencao-heading"
