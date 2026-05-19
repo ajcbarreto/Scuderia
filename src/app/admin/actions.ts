@@ -542,6 +542,25 @@ export async function deleteServiceTask(taskId: string, recordId: string) {
   return { ok: true };
 }
 
+/** Remove várias tarefas de uma só vez (modo de seleção do checklist). */
+export async function deleteServiceTasks(taskIds: string[], recordId: string) {
+  const { supabase } = await requireAdmin();
+  const ids = taskIds.filter((id) => typeof id === "string" && id.length > 0);
+  if (ids.length === 0) {
+    return { error: "Nenhuma tarefa selecionada." };
+  }
+  const { error } = await supabase.from("service_tasks").delete().in("id", ids);
+  if (error) {
+    return { error: error.message };
+  }
+  revalidatePath(`/admin/boletins/${recordId}`);
+  revalidatePath("/admin/boletins");
+  revalidatePath("/admin/servico");
+  await revalidateMotaForServiceRecord(supabase, recordId);
+  revalidatePath("/garagem");
+  return { ok: true };
+}
+
 export async function uploadServiceAttachment(
   recordId: string,
   _prev: ActionState | undefined,

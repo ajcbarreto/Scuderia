@@ -23,7 +23,7 @@ import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { adminSurface } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
-import { TaskRow } from "./task-row";
+import { TaskChecklist } from "./task-checklist";
 
 type Props = {
   record: ServiceRecord;
@@ -171,18 +171,7 @@ export function BoletimEditor({
             </p>
 
             <div className="mt-6 border-t border-border/80 pt-6">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Checklist
-              </h3>
-              <ul className="mt-3 max-h-[min(65vh,560px)] space-y-2 overflow-y-auto overscroll-contain rounded-lg border border-border/70 bg-muted/20 p-2 pr-1 [scrollbar-gutter:stable] sm:p-3">
-                {tasks.length === 0 ? (
-                  <li className="px-2 py-6 text-center text-sm text-muted-foreground">
-                    Sem tarefas.
-                  </li>
-                ) : (
-                  tasks.map((t) => <TaskRow key={t.id} recordId={recordId} task={t} />)
-                )}
-              </ul>
+              <TaskChecklist recordId={recordId} tasks={tasks} />
               <form
                 id="add-task-form"
                 action={taskAction}

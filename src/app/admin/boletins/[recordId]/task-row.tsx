@@ -1,5 +1,6 @@
 "use client";
 
+import type { KeyboardEvent } from "react";
 import { useOptimistic, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { setServiceTaskCompleted, deleteServiceTask } from "@/app/admin/actions";
@@ -13,9 +14,19 @@ import { cn } from "@/lib/utils";
 type Props = {
   recordId: string;
   task: ServiceTask;
+  /** Quando ativo, a linha torna-se selecionável (remoção em massa). */
+  selectMode?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
 };
 
-export function TaskRow({ recordId, task }: Props) {
+export function TaskRow({
+  recordId,
+  task,
+  selectMode = false,
+  selected = false,
+  onToggleSelect,
+}: Props) {
   const [pending, startTransition] = useTransition();
 
   // Optimistic UI: o checkbox flipa logo, o servidor confirma depois e
@@ -25,6 +36,42 @@ export function TaskRow({ recordId, task }: Props) {
     task.completed,
     (_state, next: boolean) => next,
   );
+
+  // Modo de seleção: linha clicável, sem toggle de conclusão nem botão
+  // individual de remover — a remoção é feita em massa pela barra de ação.
+  if (selectMode) {
+    const handle = () => onToggleSelect?.();
+    return (
+      <li
+        role="button"
+        tabIndex={0}
+        aria-pressed={selected}
+        onClick={handle}
+        onKeyDown={(e: KeyboardEvent<HTMLLIElement>) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handle();
+          }
+        }}
+        className={cn(
+          "flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-colors focus-visible:outline focus-visible:ring-2 focus-visible:ring-primary/60",
+          selected
+            ? "border-destructive/40 bg-destructive/5"
+            : "border-border/80 bg-card hover:bg-muted/50",
+        )}
+      >
+        <Checkbox checked={selected} className="pointer-events-none" />
+        <span
+          className={cn(
+            "flex-1 text-sm",
+            task.completed && "text-muted-foreground line-through",
+          )}
+        >
+          {task.label}
+        </span>
+      </li>
+    );
+  }
 
   return (
     <li
