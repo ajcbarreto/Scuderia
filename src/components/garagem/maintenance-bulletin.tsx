@@ -270,15 +270,30 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
     >
       {!standalone ? (
         <>
-          <div className="mb-8 border-b border-border pb-6 print:mb-6">
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Boletim de manutenção
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {vehicleTitle}
-              {m.plate && <> · {m.plate}</>}
-              {m.year && <> · {m.year}</>}
-            </p>
+          <div className="mb-8 flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-center sm:justify-between print:mb-6">
+            <div className="min-w-0">
+              <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Boletim de manutenção
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {vehicleTitle}
+                {m.plate && <> · {m.plate}</>}
+                {m.year && <> · {m.year}</>}
+              </p>
+            </div>
+            {lastService ? (
+              <Link
+                href={`/api/boletim/${lastService.id}/pdf`}
+                download
+                className={cn(
+                  buttonVariants({ variant: "outline", size: "sm" }),
+                  "shrink-0 gap-1.5 border-border print:hidden",
+                )}
+              >
+                <Download className="size-4" aria-hidden />
+                Descarregar PDF
+              </Link>
+            ) : null}
           </div>
 
           <div className="mb-10 grid grid-cols-1 gap-8 lg:grid-cols-3 print:mb-6">
