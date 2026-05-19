@@ -269,23 +269,15 @@ export function MaintenanceBulletin(props: MaintenanceBulletinProps) {
     >
       {!standalone ? (
         <>
-          <div className="mb-8 flex flex-col gap-4 border-b border-border pb-8 md:mb-10 md:flex-row md:items-end md:justify-between print:mb-6">
-            <div className="min-w-0">
-              <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                Boletim de manutenção
-              </h1>
-              <p className="mt-2 text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                {isDetail
-                  ? "Detalhe da intervenção"
-                  : "Relatório de controlo e manutenção"}
-              </p>
-            </div>
-            <div className="shrink-0 text-left md:text-right">
-              <p className="font-heading text-base font-bold text-primary sm:text-lg">
-                {headerRef}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">Gerado em: {generatedLabel}</p>
-            </div>
+          <div className="mb-8 border-b border-border pb-6 print:mb-6">
+            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              Boletim de manutenção
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {vehicleTitle}
+              {m.plate && <> · {m.plate}</>}
+              {m.year && <> · {m.year}</>}
+            </p>
           </div>
 
           <div className="mb-10 grid grid-cols-1 gap-8 lg:grid-cols-3 print:mb-6">
