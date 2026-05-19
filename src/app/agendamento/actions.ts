@@ -5,6 +5,10 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
+import {
+  getClosedReason,
+  loadWorkshopSchedule,
+} from "@/lib/garagem/workshop-schedule";
 
 export type AppointmentState = {
   error?: string;
@@ -57,9 +61,20 @@ export async function submitAppointmentRequest(
   }
 
   const { preferred, message } = parsed.data;
+  const supabase = await createClient();
+
+  // Validação contra os dias fechados da oficina (também aplicada no cliente,
+  // mas reforçada aqui para evitar contornar via DevTools / API directa).
+  if (preferred) {
+    const schedule = await loadWorkshopSchedule(supabase);
+    const reason = getClosedReason(preferred, schedule);
+    if (reason) {
+      return { error: `${reason} Escolhe outra data.` };
+    }
+  }
+
   const preferredStart = preferred ? new Date(preferred).toISOString() : null;
 
-  const supabase = await createClient();
   const { error } = await supabase.from("appointment_requests").insert({
     client_id: user.id,
     preferred_start: preferredStart,

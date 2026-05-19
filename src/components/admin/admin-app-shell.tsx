@@ -7,6 +7,7 @@ import {
   Bike,
   CalendarRange,
   ClipboardList,
+  Clock,
   FolderOpen,
   HelpCircle,
   LayoutDashboard,
@@ -37,6 +38,7 @@ import {
 const NAV = [
   { href: "/admin", label: "Painel", icon: LayoutDashboard, exact: true },
   { href: "/admin/agendamentos", label: "Agendamentos", icon: CalendarRange, exact: false },
+  { href: "/admin/oficina", label: "Horários", icon: Clock, exact: false },
   { href: "/admin/clientes", label: "Clientes", icon: Users, exact: false },
   { href: "/admin/motas", label: "Frota", icon: Bike, exact: false },
   { href: "/admin/catalogo-motos", label: "Catálogo motas", icon: Library, exact: false },
@@ -54,6 +56,8 @@ function headerCopy(pathname: string): { title: string; badge?: string } {
   if (pathname === "/admin") return { title: "Painel operativo", badge: "Telemetria ao vivo" };
   if (pathname.startsWith("/admin/agendamentos"))
     return { title: "Agendamentos", badge: "Pedidos de marcação" };
+  if (pathname.startsWith("/admin/oficina"))
+    return { title: "Horários da oficina", badge: "Dias fechados" };
   if (pathname.startsWith("/admin/clientes"))
     return { title: "Scuderia itTECH", badge: "Clientes & frota" };
   if (pathname.startsWith("/admin/motas")) return { title: "Frota", badge: "Motas & transferências" };

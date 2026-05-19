@@ -135,3 +135,19 @@ export type AppointmentRequest = {
   confirmed_at: string | null;
   admin_note: string | null;
 };
+
+/** Configuração singleton dos dias semanais em que a oficina está fechada. */
+export type WorkshopSettings = {
+  id: boolean;
+  /** 0 = domingo, 1 = segunda, … 6 = sábado. */
+  closed_weekdays: number[];
+  updated_at: string;
+};
+
+/** Data específica fechada (feriado, férias da oficina, etc.). */
+export type WorkshopClosedDate = {
+  id: string;
+  closed_date: string; // YYYY-MM-DD
+  note: string | null;
+  created_at: string;
+};
