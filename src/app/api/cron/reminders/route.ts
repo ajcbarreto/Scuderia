@@ -44,6 +44,14 @@ function urgencyColor(days: number): string {
   return "#475569"; // neutro
 }
 
+function urgencyLabel(days: number): string {
+  if (days <= 0) return "Hoje";
+  if (days === 1) return "Amanhã";
+  if (days <= 7) return "Urgente";
+  if (days <= 14) return "A aproximar-se";
+  return "Próxima revisão";
+}
+
 function reminderHtml(opts: {
   ownerName: string | null;
   vehicle: string;
@@ -57,44 +65,97 @@ function reminderHtml(opts: {
   const color = urgencyColor(opts.daysBefore);
   const vehicle = escapeHtml(opts.vehicle);
   const dueDate = escapeHtml(opts.dueDate);
+  const badge = urgencyLabel(opts.daysBefore);
+  const dayText =
+    opts.daysBefore <= 0
+      ? "Hoje"
+      : opts.daysBefore === 1
+        ? "Amanhã"
+        : `Daqui a ${opts.daysBefore} dias`;
 
   return `<!DOCTYPE html>
-<html lang="pt"><head><meta charset="UTF-8"></head>
-<body style="margin:0;padding:0;background:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1c;">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#f5f5f7;padding:40px 16px;">
+<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0c0c0d;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#1a1a1c;-webkit-font-smoothing:antialiased;">
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background:#0c0c0d;padding:48px 16px;">
   <tr><td align="center">
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="560" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.05);max-width:560px;width:100%;">
-      <tr><td style="height:6px;background:#c41230;line-height:6px;font-size:0;">&nbsp;</td></tr>
-      <tr><td style="padding:36px 40px 0 40px;">
-        <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#c41230;text-transform:uppercase;">Scuderia itTECH</div>
-        <h1 style="margin:14px 0 0 0;font-size:24px;font-weight:700;line-height:1.25;color:#1a1a1c;">Próxima revisão a aproximar-se</h1>
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;width:100%;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,0.45);">
+
+      <!-- HERO DARK BAND -->
+      <tr><td style="background:#0c0c0d;padding:32px 40px 28px 40px;border-bottom:3px solid #c41230;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+          <tr>
+            <td style="font-size:11px;font-weight:800;letter-spacing:3.5px;color:#ffffff;text-transform:uppercase;">
+              <span style="color:#c41230;">▎</span> Scuderia itTECH
+            </td>
+            <td align="right" style="font-size:10px;font-weight:700;letter-spacing:2px;color:#9ca3af;text-transform:uppercase;">
+              Engineering Precision
+            </td>
+          </tr>
+        </table>
+        <h1 style="margin:24px 0 0 0;font-size:30px;font-weight:800;line-height:1.15;color:#ffffff;letter-spacing:-0.5px;">
+          ${badge}
+        </h1>
+        <p style="margin:6px 0 0 0;font-size:13px;color:#9ca3af;letter-spacing:0.3px;">
+          Boletim de manutenção · ${vehicle}
+        </p>
       </td></tr>
-      <tr><td style="padding:20px 40px 8px 40px;font-size:15px;line-height:1.65;color:#3f3f46;">
+
+      <!-- BODY -->
+      <tr><td style="padding:32px 40px 8px 40px;font-size:15px;line-height:1.65;color:#3f3f46;">
         <p style="margin:0 0 14px 0;">${greeting}</p>
-        <p style="margin:0 0 18px 0;">A revisão da tua <strong>${vehicle}</strong> está prevista para:</p>
+        <p style="margin:0 0 24px 0;">A próxima revisão da tua <strong style="color:#1a1a1c;">${vehicle}</strong> está agendada.</p>
       </td></tr>
-      <tr><td style="padding:0 40px;">
-        <div style="border:2px solid ${color};background:${color}0d;border-radius:10px;padding:18px 20px;">
-          <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#71717a;text-transform:uppercase;margin-bottom:6px;">Data prevista</div>
-          <div style="font-size:22px;font-weight:700;color:${color};line-height:1.2;">${dueDate}</div>
-          <div style="margin-top:6px;font-size:13px;font-weight:600;color:${color};">Daqui a cerca de ${opts.daysBefore} dia${opts.daysBefore === 1 ? "" : "s"}</div>
-        </div>
+
+      <!-- HIGHLIGHTED DATE CARD -->
+      <tr><td style="padding:0 40px 8px 40px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="border:1px solid ${color}; border-left:4px solid ${color}; background:${color}0a; border-radius:8px;">
+          <tr><td style="padding:18px 22px;">
+            <div style="font-size:10px;font-weight:800;letter-spacing:2px;color:#71717a;text-transform:uppercase;margin-bottom:8px;">
+              Data prevista
+            </div>
+            <div style="font-size:24px;font-weight:800;color:${color};line-height:1.15;letter-spacing:-0.3px;">${dueDate}</div>
+            <div style="margin-top:8px;font-size:13px;font-weight:600;color:${color};">${dayText}</div>
+          </td></tr>
+        </table>
       </td></tr>
+
+      <!-- COPY -->
       <tr><td style="padding:24px 40px 8px 40px;font-size:15px;line-height:1.65;color:#3f3f46;">
-        <p style="margin:0 0 24px 0;">Agenda já a tua marcação na garagem digital — escolhe a tua data preferida e a equipa confirma por contacto.</p>
+        <p style="margin:0 0 24px 0;">Reserva a tua marcação na garagem digital — escolhe a janela preferida e a equipa Scuderia itTECH confirma o slot por contacto.</p>
       </td></tr>
+
+      <!-- CTA -->
       <tr><td align="center" style="padding:0 40px 32px 40px;">
-        <table role="presentation" cellspacing="0" cellpadding="0" border="0"><tr><td style="background:#c41230;border-radius:8px;">
-          <a href="${opts.agendamentoUrl}" style="display:inline-block;padding:14px 36px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.4px;">Pedir agendamento</a>
-        </td></tr></table>
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+          <tr><td style="background:#c41230;border-radius:8px;box-shadow:0 4px 14px rgba(196,18,48,0.35);">
+            <a href="${opts.agendamentoUrl}" style="display:inline-block;padding:15px 40px;font-size:14px;font-weight:800;color:#ffffff;text-decoration:none;letter-spacing:1.2px;text-transform:uppercase;">
+              Pedir agendamento →
+            </a>
+          </td></tr>
+        </table>
       </td></tr>
-      <tr><td style="padding:18px 40px 28px 40px;font-size:12px;line-height:1.5;color:#a1a1aa;text-align:center;border-top:1px solid #e4e4e7;">
-        <p style="margin:0;">Recebes este email porque há uma revisão registada para a tua mota.</p>
+
+      <!-- DIVIDER + INFO -->
+      <tr><td style="padding:0 40px 24px 40px;">
+        <div style="border-top:1px solid #e4e4e7;margin-bottom:18px;"></div>
+        <p style="margin:0;font-size:12px;line-height:1.6;color:#71717a;text-align:center;">
+          Recebes este email porque há uma revisão registada para a tua mota na Scuderia itTECH.
+          Podes ver o histórico completo a qualquer momento na tua garagem digital.
+        </p>
+      </td></tr>
+
+    </table>
+
+    <!-- BRAND FOOTER -->
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;width:100%;">
+      <tr><td align="center" style="padding:20px 0 4px 0;font-size:10px;letter-spacing:3px;color:#52525b;text-transform:uppercase;">
+        © Scuderia itTECH
+      </td></tr>
+      <tr><td align="center" style="font-size:10px;letter-spacing:1.5px;color:#3f3f46;text-transform:uppercase;">
+        Engineering Precision
       </td></tr>
     </table>
-    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="560" style="max-width:560px;width:100%;">
-      <tr><td align="center" style="padding:16px 0;font-size:11px;letter-spacing:2px;color:#a1a1aa;text-transform:uppercase;">© Scuderia itTECH · Engineering precision</td></tr>
-    </table>
+
   </td></tr>
 </table>
 </body></html>`;
