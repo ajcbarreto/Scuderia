@@ -186,23 +186,23 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
               ))}
             </select>
           </div>
-          <div className="min-w-[min(100%,260px)] space-y-2">
-            <label
-              htmlFor="new_record_kind"
-              className="text-sm font-medium leading-none text-foreground"
-            >
-              Tipo
-            </label>
-            <select
-              id="new_record_kind"
-              name="record_kind"
-              defaultValue="maintenance"
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              <option value="maintenance">Manutenção (garagem)</option>
-              <option value="shop_service">Serviço (só oficina)</option>
-            </select>
-          </div>
+          <label
+            htmlFor="new_record_kind_shop"
+            className="flex min-w-[min(100%,260px)] items-start gap-3 self-end rounded-lg border border-border/80 bg-muted/30 p-3 text-sm text-foreground"
+          >
+            <input
+              id="new_record_kind_shop"
+              name="record_kind_shop"
+              type="checkbox"
+              className="mt-0.5 size-4 shrink-0 rounded border-input accent-primary"
+            />
+            <span className="leading-tight">
+              <span className="font-medium">Não mostrar ao próximo dono</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Serviço só visível à oficina.
+              </span>
+            </span>
+          </label>
           <Button type="submit" className="h-10 shrink-0 font-heading sm:min-w-[12rem]">
             Abrir intervenção
           </Button>

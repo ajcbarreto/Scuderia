@@ -5,13 +5,6 @@ import { adminSurfaceLow } from "@/components/admin/admin-styles";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
@@ -22,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { Motorcycle, Profile } from "@/types/database";
 import { AdminSearch } from "@/components/admin/admin-search";
+import { CollapsibleAddSection } from "@/components/admin/collapsible-add-section";
 import { NovoClienteForm } from "./novo-cliente-form";
 
 type PageProps = {
@@ -127,18 +121,15 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
         </div>
       </header>
 
-      <Card id="novo-cliente" className="border-border/80 bg-card shadow-none ring-0">
-        <CardHeader>
-          <CardTitle className="font-heading text-lg text-foreground">Novo cliente</CardTitle>
-          <CardDescription className="text-muted-foreground">
-            Envia um convite por email. O cliente define a própria palavra-passe e entra na
-            garagem digital pelo link recebido.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div id="novo-cliente">
+        <CollapsibleAddSection
+          triggerLabel="Adicionar cliente"
+          openTitle="Novo cliente"
+          openDescription="Envia um convite por email. O cliente define a própria palavra-passe e entra na garagem digital pelo link recebido."
+        >
           <NovoClienteForm />
-        </CardContent>
-      </Card>
+        </CollapsibleAddSection>
+      </div>
 
       {clients.length === 0 && !term ? (
         <p className="text-sm text-muted-foreground">Ainda não há clientes registados.</p>

@@ -1,14 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-import { adminCardClass, adminTableWrap } from "@/components/admin/admin-styles";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { adminTableWrap } from "@/components/admin/admin-styles";
 import {
   Table,
   TableBody,
@@ -23,6 +16,7 @@ import { cn } from "@/lib/utils";
 import type { Motorcycle, Profile } from "@/types/database";
 import { loadMotorcycleCatalogEntries } from "@/lib/motorcycle-catalog";
 import { AdminSearch } from "@/components/admin/admin-search";
+import { CollapsibleAddSection } from "@/components/admin/collapsible-add-section";
 import { NovaMotaForm } from "../clientes/nova-mota-form";
 import { TransferenciaForm } from "../clientes/transferencia-form";
 
@@ -106,44 +100,38 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className={cn(adminCardClass)}>
-          <CardHeader>
-            <CardTitle className="font-heading">Nova mota</CardTitle>
-            <CardDescription>
-              Escolhe uma variante do catálogo (marca, modelo, ano) ou preenche à mão. Primeiro período
-              de posse para o cliente escolhido.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <NovaMotaForm
-              clients={clients}
-              defaultOwnerId={preselectClienteId ?? undefined}
-              catalogEntries={catalogEntries}
-            />
-          </CardContent>
-        </Card>
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <CollapsibleAddSection
+          triggerLabel="Nova mota"
+          openTitle="Nova mota"
+          openDescription="Escolhe uma variante do catálogo (marca, modelo, ano) ou preenche à mão. Primeiro período de posse para o cliente escolhido."
+          defaultOpen={Boolean(preselectClienteId)}
+          className="w-full"
+        >
+          <NovaMotaForm
+            clients={clients}
+            defaultOwnerId={preselectClienteId ?? undefined}
+            catalogEntries={catalogEntries}
+          />
+        </CollapsibleAddSection>
 
-        <Card className={cn(adminCardClass)}>
-          <CardHeader>
-            <CardTitle className="font-heading">Transferência</CardTitle>
-            <CardDescription>
-              Encerra o período atual e regista o novo dono.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <TransferenciaForm
-              motas={list.map((m) => ({
-                id: m.id,
-                brand: m.brand,
-                model: m.model,
-                plate: m.plate,
-                current_owner_id: m.current_owner_id,
-              }))}
-              clients={clients}
-            />
-          </CardContent>
-        </Card>
+        <CollapsibleAddSection
+          triggerLabel="Transferência"
+          openTitle="Transferência"
+          openDescription="Encerra o período atual e regista o novo dono."
+          className="w-full"
+        >
+          <TransferenciaForm
+            motas={list.map((m) => ({
+              id: m.id,
+              brand: m.brand,
+              model: m.model,
+              plate: m.plate,
+              current_owner_id: m.current_owner_id,
+            }))}
+            clients={clients}
+          />
+        </CollapsibleAddSection>
       </div>
 
       <section className="space-y-3">

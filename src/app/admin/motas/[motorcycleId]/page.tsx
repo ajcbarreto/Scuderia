@@ -21,6 +21,7 @@ import type {
   ServiceRecordKind,
   ServiceRecordStatus,
 } from "@/types/database";
+import { MotaIdentificationCard } from "./mota-identification-card";
 
 type Props = { params: Promise<{ motorcycleId: string }> };
 
@@ -124,37 +125,7 @@ export default async function AdminMotaDetailPage({ params }: Props) {
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <Card className={cn(adminSurface, "border-0 lg:col-span-2")}>
-          <CardHeader>
-            <CardTitle className="font-heading text-base">Identificação</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3 text-sm sm:grid-cols-2">
-            <div>
-              <p className="text-muted-foreground">Marca / modelo</p>
-              <p className="font-medium">
-                {m.brand} {m.model}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Matrícula</p>
-              <p className="font-medium">{m.plate ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Ano</p>
-              <p className="font-medium">{m.year ?? "—"}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Quadro (VIN)</p>
-              <p className="font-mono text-xs font-medium">{m.vin ?? "—"}</p>
-            </div>
-            {m.notes ? (
-              <div className="sm:col-span-2">
-                <p className="text-muted-foreground">Notas internas</p>
-                <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{m.notes}</p>
-              </div>
-            ) : null}
-          </CardContent>
-        </Card>
+        <MotaIdentificationCard mota={m} />
 
         <Card className={cn(adminSurface, "border-0")}>
           <CardHeader>

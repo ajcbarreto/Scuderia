@@ -21,7 +21,7 @@ export function CatalogAddForm() {
   }, [state?.ok]);
 
   return (
-    <form id="catalog-add-form" action={action} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <form id="catalog-add-form" action={action} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
       <div className="space-y-2">
         <Label htmlFor="cat-brand">Marca</Label>
         <Input
@@ -43,15 +43,29 @@ export function CatalogAddForm() {
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="cat-year">Ano</Label>
+        <Label htmlFor="cat-year-start">Ano início</Label>
         <Input
-          id="cat-year"
-          name="year"
+          id="cat-year-start"
+          name="year_start"
           type="number"
           required
           min={1900}
           max={2100}
-          placeholder="2022"
+          placeholder="2015"
+          className="h-9 border-input bg-background text-foreground shadow-xs tabular-nums placeholder:text-muted-foreground"
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="cat-year-end">
+          Ano fim <span className="text-xs text-muted-foreground">(opcional)</span>
+        </Label>
+        <Input
+          id="cat-year-end"
+          name="year_end"
+          type="number"
+          min={1900}
+          max={2100}
+          placeholder="2018"
           className="h-9 border-input bg-background text-foreground shadow-xs tabular-nums placeholder:text-muted-foreground"
         />
       </div>
@@ -64,7 +78,7 @@ export function CatalogAddForm() {
           className="h-9 border-input bg-background text-foreground shadow-xs placeholder:text-muted-foreground"
         />
       </div>
-      <div className="flex flex-col justify-end sm:col-span-2 lg:col-span-4">
+      <div className="flex flex-col justify-end sm:col-span-2 lg:col-span-5">
         {state?.error ? (
           <p className="mb-2 text-sm text-destructive">{state.error}</p>
         ) : null}

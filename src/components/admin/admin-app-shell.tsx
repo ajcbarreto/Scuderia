@@ -214,7 +214,7 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                       Scuderia BackOffice
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="flex flex-col gap-6 p-4">
+                  <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-4">
                     <NavLinks pathname={pathname} onNavigate={() => setMobileOpen(false)} />
                     <Link
                       href="/admin/servico"

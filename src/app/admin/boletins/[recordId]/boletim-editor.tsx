@@ -1,8 +1,18 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Download } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  CircleDot,
+  Download,
+  EyeOff,
+  Info,
+  Pencil,
+  X,
+} from "lucide-react";
 import {
   addServiceTaskFromForm,
   deleteServiceAttachment,
@@ -11,13 +21,14 @@ import {
   type ActionState,
 } from "@/app/admin/actions";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/components/ui/toast";
 import { ShopNotesEditor } from "@/components/admin/shop-notes-editor";
-import { parseShopNotes } from "@/lib/garagem/shop-notes";
+import { parseShopNotes, type NoteColor } from "@/lib/garagem/shop-notes";
 import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
 import type { Motorcycle, Profile, ServiceAttachment, ServiceRecord, ServiceTask } from "@/types/database";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -32,6 +43,64 @@ type Props = {
   attachments: ServiceAttachment[];
   clients: Pick<Profile, "id" | "full_name" | "phone">[];
 };
+
+const STATUS_LABEL: Record<ServiceRecord["status"], string> = {
+  draft: "Rascunho",
+  in_progress: "Em curso",
+  completed: "Concluído",
+  cancelled: "Cancelado",
+};
+
+const NOTE_VIEW: Record<NoteColor, { wrap: string; icon: typeof CheckCircle2 }> = {
+  green: {
+    wrap: "border-emerald-300 bg-emerald-50/50 text-emerald-900 dark:border-emerald-800/60 dark:bg-emerald-950/30 dark:text-emerald-200",
+    icon: CheckCircle2,
+  },
+  red: {
+    wrap: "border-red-300 bg-red-50/50 text-red-900 dark:border-red-800/60 dark:bg-red-950/30 dark:text-red-200",
+    icon: AlertTriangle,
+  },
+  orange: {
+    wrap: "border-orange-300 bg-orange-50/50 text-orange-900 dark:border-orange-800/60 dark:bg-orange-950/30 dark:text-orange-200",
+    icon: AlertTriangle,
+  },
+  blue: {
+    wrap: "border-blue-300 bg-blue-50/50 text-blue-900 dark:border-blue-800/60 dark:bg-blue-950/30 dark:text-blue-200",
+    icon: Info,
+  },
+  default: {
+    wrap: "border-border bg-muted/40 text-foreground",
+    icon: CircleDot,
+  },
+};
+
+function formatPtDate(iso: string | null) {
+  if (!iso) return "—";
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  if (!m) return iso;
+  const d = new Date(`${m[1]}-${m[2]}-${m[3]}T00:00:00`);
+  return new Intl.DateTimeFormat("pt-PT", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(d);
+}
+
+function formatKm(n: number | null) {
+  if (n == null) return "—";
+  return `${n.toLocaleString("pt-PT")} km`;
+}
+
+function ReadField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="font-heading text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium text-foreground">{children}</p>
+    </div>
+  );
+}
 
 export function BoletimEditor({
   record,
@@ -80,9 +149,12 @@ export function BoletimEditor({
     }
   }, [taskState]);
 
+  const [editing, setEditing] = useState(false);
+
   useEffect(() => {
     if (metaState?.ok) {
       toast.success("Boletim guardado.");
+      setEditing(false);
     } else if (metaState?.error) {
       toast.error(metaState.error, ERROR_TOAST_MS);
     }
@@ -90,6 +162,7 @@ export function BoletimEditor({
 
   const completedTaskCount = tasks.filter((t) => t.completed).length;
   const metaFormId = "boletim-meta-form";
+  const shopNotes = parseShopNotes(record.shop_notes);
 
   return (
     <div className="space-y-10">
@@ -202,155 +275,248 @@ export function BoletimEditor({
           <section className={cn(adminSurface, "p-6 sm:p-8")}>
             <h2 className="font-heading text-lg font-semibold">Próxima revisão (cliente)</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Opcional. Aparece no boletim na garagem. Os campos abaixo fazem parte do mesmo
-              guardar que «Dados do boletim» — usa o botão à direita.
+              Opcional. Aparece no boletim na garagem. Os campos fazem parte do mesmo
+              guardar que «Dados do boletim».
             </p>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="next_service_due_date">Data alvo</Label>
-                <Input
-                  id="next_service_due_date"
-                  form={metaFormId}
-                  name="next_service_due_date"
-                  type="date"
-                  defaultValue={record.next_service_due_date ?? ""}
-                  className="border-input bg-background text-foreground"
-                />
+            {editing ? (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="next_service_due_date">Data alvo</Label>
+                  <Input
+                    id="next_service_due_date"
+                    form={metaFormId}
+                    name="next_service_due_date"
+                    type="date"
+                    defaultValue={record.next_service_due_date ?? ""}
+                    className="border-input bg-background text-foreground"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="next_service_due_km">Quilometragem alvo (km)</Label>
+                  <Input
+                    id="next_service_due_km"
+                    form={metaFormId}
+                    name="next_service_due_km"
+                    type="number"
+                    min={0}
+                    step={1}
+                    placeholder="Ex.: 18 000"
+                    defaultValue={record.next_service_due_km ?? ""}
+                    className="border-input bg-background text-foreground"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="next_service_due_km">Quilometragem alvo (km)</Label>
-                <Input
-                  id="next_service_due_km"
-                  form={metaFormId}
-                  name="next_service_due_km"
-                  type="number"
-                  min={0}
-                  step={1}
-                  placeholder="Ex.: 18 000"
-                  defaultValue={record.next_service_due_km ?? ""}
-                  className="border-input bg-background text-foreground"
-                />
+            ) : (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <ReadField label="Data alvo">{formatPtDate(record.next_service_due_date)}</ReadField>
+                <ReadField label="Quilometragem alvo">{formatKm(record.next_service_due_km)}</ReadField>
               </div>
-            </div>
+            )}
           </section>
         </div>
 
         <div className="flex flex-col gap-10 xl:sticky xl:top-6 xl:col-span-5 xl:self-start">
           <form id={metaFormId} action={metaAction} className="flex flex-col gap-6">
             <section className={cn(adminSurface, "p-6 sm:p-8")}>
-              <h2 className="font-heading text-lg font-semibold">Dados do boletim</h2>
-              <div className="mt-4 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Título</Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    defaultValue={record.title ?? ""}
-                    className="border-input bg-background text-foreground"
-                  />
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="font-heading text-lg font-semibold">Dados do boletim</h2>
+                {editing ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditing(false)}
+                  >
+                    <X className="size-4" aria-hidden />
+                    Cancelar
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-border"
+                    onClick={() => setEditing(true)}
+                  >
+                    <Pencil className="size-4" aria-hidden />
+                    Editar
+                  </Button>
+                )}
+              </div>
+              {editing ? (
+                <div className="mt-4 space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="service_date">Data do serviço</Label>
+                    <Label htmlFor="title">Título</Label>
                     <Input
-                      id="service_date"
-                      name="service_date"
-                      type="date"
-                      defaultValue={record.service_date ?? ""}
+                      id="title"
+                      name="title"
+                      defaultValue={record.title ?? ""}
                       className="border-input bg-background text-foreground"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="repair_order_ref">N.º ordem de reparação</Label>
-                    <Input
-                      id="repair_order_ref"
-                      name="repair_order_ref"
-                      placeholder="Ex.: OR-2026-0042"
-                      defaultValue={record.repair_order_ref ?? ""}
-                      className="border-input bg-background text-foreground"
-                    />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="service_date">Data do serviço</Label>
+                      <Input
+                        id="service_date"
+                        name="service_date"
+                        type="date"
+                        defaultValue={record.service_date ?? ""}
+                        className="border-input bg-background text-foreground"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="repair_order_ref">N.º ordem de reparação</Label>
+                      <Input
+                        id="repair_order_ref"
+                        name="repair_order_ref"
+                        placeholder="Ex.: OR-2026-0042"
+                        defaultValue={record.repair_order_ref ?? ""}
+                        className="border-input bg-background text-foreground"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="odometer_km">Quilometragem (km)</Label>
+                      <Input
+                        id="odometer_km"
+                        name="odometer_km"
+                        type="number"
+                        min={0}
+                        step={1}
+                        placeholder="Ex.: 12450"
+                        defaultValue={record.odometer_km ?? ""}
+                        className="border-input bg-background text-foreground"
+                      />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label htmlFor="revision_type">Tipo de revisão</Label>
+                      <select
+                        id="revision_type"
+                        name="revision_type"
+                        defaultValue={record.revision_type ?? ""}
+                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                      >
+                        <option value="">— Não indicado —</option>
+                        {SERVICE_REVISION_TYPES.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="odometer_km">Quilometragem (km)</Label>
-                    <Input
-                      id="odometer_km"
-                      name="odometer_km"
-                      type="number"
-                      min={0}
-                      step={1}
-                      placeholder="Ex.: 12450"
-                      defaultValue={record.odometer_km ?? ""}
-                      className="border-input bg-background text-foreground"
-                    />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="revision_type">Tipo de revisão</Label>
+                    <Label htmlFor="status">Estado</Label>
                     <select
-                      id="revision_type"
-                      name="revision_type"
-                      defaultValue={record.revision_type ?? ""}
+                      id="status"
+                      name="status"
+                      defaultValue={record.status}
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
                     >
-                      <option value="">— Não indicado —</option>
-                      {SERVICE_REVISION_TYPES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
+                      <option value="draft">Rascunho</option>
+                      <option value="in_progress">Em curso</option>
+                      <option value="completed">Concluído</option>
+                      <option value="cancelled">Cancelado</option>
                     </select>
                   </div>
+                  <div className="space-y-2 rounded-lg border border-border/80 bg-muted/30 p-4">
+                    <label
+                      htmlFor="record_kind_shop"
+                      className="flex items-start gap-3 text-sm font-medium text-foreground"
+                    >
+                      <Checkbox
+                        id="record_kind_shop"
+                        name="record_kind_shop"
+                        defaultChecked={record.record_kind === "shop_service"}
+                        className="mt-0.5"
+                      />
+                      <span>Não mostrar ao próximo dono</span>
+                    </label>
+                    <p className="pl-7 text-xs text-muted-foreground">
+                      Marca quando este serviço é só da oficina ou do proprietário anterior — não
+                      aparece na garagem do cliente atual nem após transferência.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Notas da oficina</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Cada nota pode ter uma cor diferente. Aparece no boletim da garagem do cliente.
+                    </p>
+                    <ShopNotesEditor name="shop_notes" defaultNotes={shopNotes} />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Estado</Label>
-                  <select
-                    id="status"
-                    name="status"
-                    defaultValue={record.status}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  >
-                    <option value="draft">Rascunho</option>
-                    <option value="in_progress">Em curso</option>
-                    <option value="completed">Concluído</option>
-                    <option value="cancelled">Cancelado</option>
-                  </select>
+              ) : (
+                <div className="mt-4 space-y-5">
+                  <ReadField label="Título">{record.title ?? "—"}</ReadField>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <ReadField label="Data do serviço">{formatPtDate(record.service_date)}</ReadField>
+                    <ReadField label="N.º ordem de reparação">
+                      {record.repair_order_ref ?? "—"}
+                    </ReadField>
+                    <ReadField label="Quilometragem">{formatKm(record.odometer_km)}</ReadField>
+                    <ReadField label="Tipo de revisão">
+                      {record.revision_type ?? "—"}
+                    </ReadField>
+                  </div>
+                  <ReadField label="Estado">{STATUS_LABEL[record.status]}</ReadField>
+                  <div className="flex items-start gap-3 rounded-lg border border-border/80 bg-muted/30 p-4 text-sm">
+                    {record.record_kind === "shop_service" ? (
+                      <>
+                        <EyeOff className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                        <span className="text-foreground">
+                          <span className="font-medium">Oculto ao cliente.</span> Este serviço não
+                          aparece na garagem do dono atual nem após transferência.
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2
+                          className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+                          aria-hidden
+                        />
+                        <span className="text-foreground">
+                          <span className="font-medium">Visível ao dono atual.</span> Aparece no
+                          histórico de manutenção da mota.
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-heading text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      Notas da oficina
+                    </p>
+                    {shopNotes.length === 0 ? (
+                      <p className="mt-1 text-sm text-muted-foreground">Sem notas.</p>
+                    ) : (
+                      <ul className="mt-2 space-y-2">
+                        {shopNotes.map((n, idx) => {
+                          const view = NOTE_VIEW[n.color];
+                          const Icon = view.icon;
+                          return (
+                            <li
+                              key={idx}
+                              className={cn(
+                                "flex items-start gap-2 rounded-md border px-3 py-2 text-sm",
+                                view.wrap,
+                              )}
+                            >
+                              <Icon className="mt-0.5 size-4 shrink-0" aria-hidden />
+                              <p className="whitespace-pre-wrap leading-relaxed">{n.text}</p>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="record_kind">Manutenção ou serviço</Label>
-                  <select
-                    id="record_kind"
-                    name="record_kind"
-                    defaultValue={record.record_kind}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  >
-                    <option value="maintenance">
-                      Manutenção — aparece na garagem do dono atual (histórico da mota)
-                    </option>
-                    <option value="shop_service">
-                      Serviço (só oficina) — não aparece ao cliente; útil para trabalho interno ou do
-                      proprietário anterior
-                    </option>
-                  </select>
-                  <p className="text-xs text-muted-foreground">
-                    Após transferência de propriedade, o novo dono continua a ver apenas os boletins
-                    marcados como manutenção.
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label>Notas da oficina</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Cada nota pode ter uma cor diferente. Aparece no boletim da garagem do cliente.
-                  </p>
-                  <ShopNotesEditor
-                    name="shop_notes"
-                    defaultNotes={parseShopNotes(record.shop_notes)}
-                  />
-                </div>
-              </div>
+              )}
             </section>
 
-            <Button type="submit" disabled={metaPending} className="font-heading w-full sm:w-auto">
-              {metaPending ? "A guardar…" : "Guardar boletim"}
-            </Button>
+            {editing ? (
+              <Button type="submit" disabled={metaPending} className="font-heading w-full sm:w-auto">
+                {metaPending ? "A guardar…" : "Guardar boletim"}
+              </Button>
+            ) : null}
           </form>
 
           <section className={cn(adminSurface, "p-6 sm:p-8")}>

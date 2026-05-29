@@ -16,12 +16,12 @@ export function GaragemChrome({ children }: { children: React.ReactNode }) {
       className="min-h-screen bg-background text-foreground"
       data-garagem-shell
     >
-      <header className="print:hidden fixed top-0 z-40 flex h-20 w-full items-center justify-between border-b border-border bg-card/95 px-6 shadow-sm backdrop-blur-md">
-        <Link href="/garagem" className="font-heading text-2xl font-bold tracking-tight">
+      <header className="print:hidden fixed top-0 z-40 flex h-20 w-full items-center justify-between border-b border-border bg-card/95 px-4 shadow-sm backdrop-blur-md sm:px-6">
+        <Link href="/garagem" className="font-heading text-xl font-bold tracking-tight sm:text-2xl">
           <span className="text-primary">Scuderia</span>{" "}
           <span className="text-foreground">itTECH</span>
         </Link>
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           <Link
             href="/garagem/perfil"
             aria-current={onProfile ? "page" : undefined}

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 import type { MotorcycleCatalogEntry } from "@/types/database";
+import { formatCatalogYearRange } from "@/lib/motorcycle-catalog";
 import { CatalogEntryDeleteButton } from "@/app/admin/catalogo-motos/catalog-entry-delete-button";
 import { CatalogAddForm } from "@/app/admin/catalogo-motos/catalog-add-form";
 
@@ -23,7 +24,7 @@ export default async function AdminCatalogoMotosPage() {
     .select("*")
     .order("brand", { ascending: true })
     .order("model", { ascending: true })
-    .order("year", { ascending: true });
+    .order("year_start", { ascending: true });
 
   const rows = (data ?? []) as MotorcycleCatalogEntry[];
 
@@ -73,7 +74,7 @@ export default async function AdminCatalogoMotosPage() {
             <TableRow className="border-border/80 hover:bg-transparent">
               <TableHead>Marca</TableHead>
               <TableHead>Modelo</TableHead>
-              <TableHead className="tabular-nums">Ano</TableHead>
+              <TableHead className="tabular-nums">Anos</TableHead>
               <TableHead>Notas</TableHead>
               <TableHead className="w-[100px] text-right">Ações</TableHead>
             </TableRow>
@@ -90,7 +91,9 @@ export default async function AdminCatalogoMotosPage() {
                 <TableRow key={r.id} className="border-border/60">
                   <TableCell className="font-medium">{r.brand}</TableCell>
                   <TableCell>{r.model}</TableCell>
-                  <TableCell className="tabular-nums text-muted-foreground">{r.year}</TableCell>
+                  <TableCell className="tabular-nums text-muted-foreground">
+                    {formatCatalogYearRange(r)}
+                  </TableCell>
                   <TableCell className="max-w-[240px] truncate text-sm text-muted-foreground">
                     {r.notes ?? "—"}
                   </TableCell>

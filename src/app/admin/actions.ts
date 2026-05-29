@@ -68,12 +68,25 @@ async function revalidateMotaForServiceRecord(
   }
 }
 
-function resolveSiteUrl(): string {
-  return (
-    process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
-    "http://localhost:3000"
-  );
+function resolveSiteUrl(): { url: string; fellBack: boolean } {
+  const stripTrailingSlash = (s: string) => s.replace(/\/+$/, "");
+
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return { url: stripTrailingSlash(explicit), fellBack: false };
+
+  // `VERCEL_PROJECT_PRODUCTION_URL` é o alias estável de produção (ex.: scuderia-one.vercel.app).
+  // `VERCEL_URL` é o hostname único do deployment (ex.: scuderia-one-<hash>.vercel.app) e
+  // não costuma estar na allowlist do Supabase, por isso é fallback de último recurso.
+  const prodAlias = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (prodAlias) return { url: `https://${stripTrailingSlash(prodAlias)}`, fellBack: false };
+
+  if (process.env.VERCEL_URL) {
+    return {
+      url: `https://${stripTrailingSlash(process.env.VERCEL_URL)}`,
+      fellBack: false,
+    };
+  }
+  return { url: "http://localhost:3000", fellBack: true };
 }
 
 /**
@@ -112,7 +125,14 @@ export async function createClientUser(
     return { error: msg };
   }
 
-  const redirectTo = `${resolveSiteUrl()}/auth/callback?next=${encodeURIComponent(
+  const { url: siteUrl, fellBack } = resolveSiteUrl();
+  if (fellBack && process.env.NODE_ENV === "production") {
+    return {
+      error:
+        "Define NEXT_PUBLIC_SITE_URL no ambiente (URL público da app). Sem ele, o link do email não consegue voltar a este site.",
+    };
+  }
+  const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(
     "/onboarding/set-password",
   )}`;
 
@@ -184,7 +204,7 @@ export async function createMotorcycle(
   if (catalogEntryId) {
     const { data: entry, error: catErr } = await supabase
       .from("motorcycle_catalog_entries")
-      .select("id, brand, model, year")
+      .select("id, brand, model, year_start, year_end")
       .eq("id", catalogEntryId)
       .maybeSingle();
     if (catErr || !entry) {
@@ -192,7 +212,20 @@ export async function createMotorcycle(
     }
     brand = String(entry.brand).trim();
     model = String(entry.model).trim();
-    year = entry.year as number;
+    const ys = entry.year_start as number;
+    const ye = (entry.year_end as number | null) ?? ys;
+    if (ye === ys) {
+      // Modelo com ano único — usa esse mesmo ano.
+      year = ys;
+    } else {
+      // Modelo com intervalo — o admin tem de indicar o ano específico desta mota.
+      if (year === null) {
+        return { error: `Indica o ano da mota (entre ${ys} e ${ye}).` };
+      }
+      if (year < ys || year > ye) {
+        return { error: `O ano da mota tem de estar entre ${ys} e ${ye}.` };
+      }
+    }
   }
 
   if (!brand || !model) {
@@ -239,6 +272,68 @@ export async function createMotorcycle(
   revalidatePath("/admin/motas");
   revalidatePath("/admin/checklists");
   revalidatePath(`/admin/motas/${mota.id}`);
+  return { ok: true };
+}
+
+export async function updateMotorcycle(
+  motorcycleId: string,
+  _prev: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const brand = String(formData.get("brand") ?? "").trim();
+  const model = String(formData.get("model") ?? "").trim();
+  const plate = String(formData.get("plate") ?? "").trim() || null;
+  const vin = String(formData.get("vin") ?? "").trim() || null;
+  const notes = String(formData.get("notes") ?? "").trim() || null;
+
+  const yearRaw = String(formData.get("year") ?? "").trim();
+  const year: number | null =
+    yearRaw === "" ? null : Number.parseInt(yearRaw, 10);
+
+  if (!brand || !model) {
+    return { error: "Marca e modelo são obrigatórios." };
+  }
+  if (year !== null && (Number.isNaN(year) || year < 1900 || year > 2100)) {
+    return { error: "Ano inválido." };
+  }
+
+  const { error } = await supabase
+    .from("motorcycles")
+    .update({ brand, model, year, plate, vin, notes })
+    .eq("id", motorcycleId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/motas");
+  revalidatePath(`/admin/motas/${motorcycleId}`);
+  revalidatePath("/admin/clientes");
+  revalidatePath("/garagem");
+  return { ok: true };
+}
+
+export async function deleteMotorcycle(motorcycleId: string): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  if (!motorcycleId) {
+    return { error: "Mota inválida." };
+  }
+
+  // Service records, tasks, attachments e ownership periods são removidos por
+  // cascade (ver migrations 20260421120000_initial.sql).
+  const { error } = await supabase.from("motorcycles").delete().eq("id", motorcycleId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/motas");
+  revalidatePath("/admin/clientes");
+  revalidatePath("/admin");
+  revalidatePath("/garagem");
   return { ok: true };
 }
 
@@ -311,9 +406,8 @@ export async function createServiceRecordFromMotaForm(formData: FormData) {
     .limit(1)
     .maybeSingle();
 
-  const recordKindRaw = String(formData.get("record_kind") ?? "").trim();
-  const record_kind =
-    recordKindRaw === "shop_service" ? "shop_service" : "maintenance";
+  // Checkbox "Não mostrar ao próximo dono" no formulário: marcado → shop_service.
+  const record_kind = formData.has("record_kind_shop") ? "shop_service" : "maintenance";
 
   const { data: rec, error } = await supabase
     .from("service_records")
@@ -368,9 +462,8 @@ export async function updateServiceRecord(
   const title = String(formData.get("title") ?? "").trim() || null;
   const status = String(formData.get("status") ?? "").trim();
   const shopNotes = String(formData.get("shop_notes") ?? "").trim() || null;
-  const recordKindRaw = String(formData.get("record_kind") ?? "").trim();
-  const record_kind =
-    recordKindRaw === "shop_service" ? "shop_service" : "maintenance";
+  // Checkbox "Não mostrar ao próximo dono": presente → shop_service, ausente → maintenance.
+  const record_kind = formData.has("record_kind_shop") ? "shop_service" : "maintenance";
 
   const serviceDateRaw = String(formData.get("service_date") ?? "").trim();
   const service_date =

@@ -9,12 +9,15 @@ export type Profile = {
   updated_at: string;
 };
 
-/** Variante normalizada (marca + modelo + ano) para catálogo e seleção em formulários. */
+/** Variante normalizada (marca + modelo + intervalo de anos) para catálogo e seleção em formulários. */
 export type MotorcycleCatalogEntry = {
   id: string;
   brand: string;
   model: string;
-  year: number;
+  /** Primeiro ano do modelo (inclusive). */
+  year_start: number;
+  /** Último ano do modelo (inclusive). NULL = ainda em produção ou ano único. */
+  year_end: number | null;
   notes: string | null;
   created_at: string;
   updated_at: string;

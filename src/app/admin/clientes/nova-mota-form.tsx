@@ -46,11 +46,21 @@ export function NovaMotaForm({ clients, defaultOwnerId, catalogEntries }: Props)
     if (e) {
       setBrand(e.brand);
       setModel(e.model);
-      setYear(String(e.year));
+      // Se o catálogo só tem 1 ano, pré-preenche; com intervalo, deixa o admin escolher o ano da mota.
+      if (e.year_end == null || e.year_end === e.year_start) {
+        setYear(String(e.year_start));
+      } else {
+        setYear("");
+      }
     }
   }
 
+  const selectedCatalog = catalogEntries.find((x) => x.id === catalogId);
   const fromCatalog = Boolean(catalogId);
+  const catalogHasRange =
+    selectedCatalog != null &&
+    selectedCatalog.year_end != null &&
+    selectedCatalog.year_end !== selectedCatalog.year_start;
 
   return (
     <form id="nova-mota-form" action={action} className="space-y-4">
@@ -129,14 +139,24 @@ export function NovaMotaForm({ clients, defaultOwnerId, catalogEntries }: Props)
             id="year"
             name="year"
             type="number"
-            min={1900}
-            max={2100}
+            min={selectedCatalog?.year_start ?? 1900}
+            max={selectedCatalog?.year_end ?? 2100}
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            readOnly={fromCatalog}
-            placeholder="ex. 2022"
+            readOnly={fromCatalog && !catalogHasRange}
+            placeholder={
+              catalogHasRange && selectedCatalog
+                ? `entre ${selectedCatalog.year_start} e ${selectedCatalog.year_end}`
+                : "ex. 2022"
+            }
             className="border-input bg-background read-only:opacity-80"
           />
+          {catalogHasRange && selectedCatalog ? (
+            <p className="text-xs text-muted-foreground">
+              Modelo produzido entre {selectedCatalog.year_start} e {selectedCatalog.year_end}.
+              Indica o ano da mota deste cliente.
+            </p>
+          ) : null}
         </div>
         <div className="space-y-2">
           <Label htmlFor="owner_id">Cliente (dono)</Label>
