@@ -272,7 +272,13 @@ export function BoletimEditor({
             </div>
           </section>
 
-          <section className={cn(adminSurface, "p-6 sm:p-8")}>
+          <section
+            className={cn(
+              "rounded-xl border-2 p-6 shadow-sm sm:p-8",
+              "border-primary/35 bg-primary/[0.06]",
+              "dark:border-primary/40 dark:bg-primary/[0.08]",
+            )}
+          >
             <h2 className="font-heading text-lg font-semibold">Próxima revisão (cliente)</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Opcional. Aparece no boletim na garagem. Os campos fazem parte do mesmo
@@ -288,7 +294,7 @@ export function BoletimEditor({
                     name="next_service_due_date"
                     type="date"
                     defaultValue={record.next_service_due_date ?? ""}
-                    className="border-input bg-background text-foreground"
+                    className="border-2 border-primary/40 bg-background text-foreground focus-visible:border-primary"
                   />
                 </div>
                 <div className="space-y-2">
@@ -300,10 +306,22 @@ export function BoletimEditor({
                     type="number"
                     min={0}
                     step={1}
-                    placeholder="Ex.: 18 000"
+                    placeholder={
+                      record.odometer_km != null
+                        ? `Atual: ${record.odometer_km.toLocaleString("pt-PT")}`
+                        : "Ex.: 18 000"
+                    }
                     defaultValue={record.next_service_due_km ?? ""}
-                    className="border-input bg-background text-foreground"
+                    className="border-2 border-primary/40 bg-background text-foreground focus-visible:border-primary"
                   />
+                  {record.odometer_km != null ? (
+                    <p className="text-xs text-muted-foreground">
+                      Quilometragem actual no boletim:{" "}
+                      <span className="font-mono text-foreground">
+                        {record.odometer_km.toLocaleString("pt-PT")} km
+                      </span>
+                    </p>
+                  ) : null}
                 </div>
               </div>
             ) : (

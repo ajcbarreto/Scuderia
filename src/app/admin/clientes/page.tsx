@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import type { Motorcycle, Profile } from "@/types/database";
 import { AdminSearch } from "@/components/admin/admin-search";
 import { CollapsibleAddSection } from "@/components/admin/collapsible-add-section";
+import { ClienteActionsMenu } from "./cliente-actions-menu";
 import { NovoClienteForm } from "./novo-cliente-form";
 
 type PageProps = {
@@ -230,15 +231,21 @@ export default async function AdminClientesPage({ searchParams }: PageProps) {
                           </p>
                         </div>
                       </div>
-                      <Link
-                        href={`/admin/motas?cliente=${selected.id}`}
-                        className={cn(
-                          buttonVariants({ variant: "outline", size: "sm" }),
-                          "border-border font-heading text-[10px] font-bold uppercase tracking-widest hover:border-primary hover:text-primary",
-                        )}
-                      >
-                        Adicionar mota
-                      </Link>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Link
+                          href={`/admin/motas?cliente=${selected.id}`}
+                          className={cn(
+                            buttonVariants({ variant: "outline", size: "sm" }),
+                            "border-border font-heading text-[10px] font-bold uppercase tracking-widest hover:border-primary hover:text-primary",
+                          )}
+                        >
+                          Adicionar mota
+                        </Link>
+                        <ClienteActionsMenu
+                          client={selected}
+                          motaCount={owned.length}
+                        />
+                      </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-3">
                       {[

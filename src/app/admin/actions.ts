@@ -275,6 +275,80 @@ export async function createMotorcycle(
   return { ok: true };
 }
 
+export async function updateClientProfile(
+  userId: string,
+  _prev: ActionState | undefined,
+  formData: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim() || null;
+
+  if (!fullName) {
+    return { error: "O nome é obrigatório." };
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: fullName, phone })
+    .eq("id", userId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/admin/clientes");
+  revalidatePath("/admin");
+  revalidatePath("/admin/motas");
+  return { ok: true };
+}
+
+export async function deleteClientProfile(userId: string): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  if (!userId) {
+    return { error: "Cliente inválido." };
+  }
+
+  // Bloquear se ainda houver motas como dono atual — força a transferência primeiro
+  // para preservar histórico (motorcycles.current_owner_id é NOT NULL sem cascade).
+  const { count: motaCount, error: motaErr } = await supabase
+    .from("motorcycles")
+    .select("id", { count: "exact", head: true })
+    .eq("current_owner_id", userId);
+
+  if (motaErr) {
+    return { error: motaErr.message };
+  }
+  if ((motaCount ?? 0) > 0) {
+    return {
+      error: `Cliente ainda tem ${motaCount} mota(s) como dono atual. Transfere a propriedade antes de apagar.`,
+    };
+  }
+
+  let admin;
+  try {
+    admin = createServiceRoleClient();
+  } catch (e) {
+    const msg =
+      e instanceof Error
+        ? e.message
+        : "Define SUPABASE_SERVICE_ROLE_KEY no servidor (Supabase → Settings → API).";
+    return { error: msg };
+  }
+
+  // Remover auth user — o trigger/CASCADE apaga o profile correspondente.
+  const { error: delErr } = await admin.auth.admin.deleteUser(userId);
+  if (delErr) {
+    return { error: delErr.message };
+  }
+
+  revalidatePath("/admin/clientes");
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
 export async function updateMotorcycle(
   motorcycleId: string,
   _prev: ActionState | undefined,

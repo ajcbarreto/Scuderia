@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRecordFromMotaForm } from "@/app/admin/actions";
+import { MotaSearchCombobox } from "./mota-search-combobox";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { adminSurface, adminTableWrap } from "@/components/admin/admin-styles";
 import { cn } from "@/lib/utils";
@@ -170,21 +171,12 @@ export default async function AdminBoletinsPage({ searchParams }: PageProps) {
             >
               Mota
             </label>
-            <select
-              id="servico_motorcycle_id"
-              name="motorcycle_id"
+            <MotaSearchCombobox
+              motas={motaList}
+              defaultId={preselectMotaId ?? null}
+              inputId="servico_motorcycle_id"
               required
-              defaultValue={preselectMotaId ?? ""}
-              className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground shadow-xs outline-none transition-colors focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-            >
-              <option value="">— Escolher mota —</option>
-              {motaList.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.brand} {m.model}
-                  {m.plate ? ` · ${m.plate}` : ""}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <label
             htmlFor="new_record_kind_shop"
