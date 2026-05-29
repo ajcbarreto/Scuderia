@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Bike, CheckCircle2 } from "lucide-react";
+import { Bike, CheckCircle2, Truck } from "lucide-react";
 import { ContactForm } from "@/components/marketing/contact-form";
 const EMPRESA_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBxhk8r0nqC7ZpGdhrDvI1h2VMR61BUDVgs87GrRp3wAeLzf2j7QX-YCaVL9kmWGi4oNkDhc14VeOVU-4hoquuafeaQvsdq-49Ncqf9wT7zSI8jIHKNdYtzmPp1LPsutMF1BYC4TOXonEJ5NQcEmRFD2tJLryMDqDeudk1nrz2NsOoa9jnCUbIa-XMAIjhFJWuLxBM_ctKzKG7xenDomGA3Jg_QHBtIuSnAVCYZg650AITpMlZ6sKsy0_INXgR9X0C5d9jWw_rpYUE";
@@ -131,7 +131,7 @@ export default function HomePage() {
               total confiança.
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             <div
               id="inventory"
               className="flex flex-col justify-center border-t border-l border-border/50 bg-card p-8 md:p-10"
@@ -154,6 +154,28 @@ export default function HomePage() {
                 </p>
               </div>
               <Bike
+                className="size-14 shrink-0 text-muted-foreground/35"
+                strokeWidth={1}
+              />
+            </div>
+            <div
+              id="pickup-delivery"
+              className="flex items-center justify-between border-t border-border/50 bg-card p-8 md:col-span-2 md:p-10 lg:col-span-1"
+            >
+              <div>
+                <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1">
+                  <span className="font-heading text-[10px] font-semibold tracking-widest text-primary uppercase">
+                    Comodidade
+                  </span>
+                </div>
+                <h3 className="mb-2 font-heading text-2xl font-semibold text-foreground md:text-3xl">
+                  Pickup &amp; Delivery
+                </h3>
+                <p className="text-muted-foreground">
+                  Fazemos a recolha e a entrega da sua mota.
+                </p>
+              </div>
+              <Truck
                 className="size-14 shrink-0 text-muted-foreground/35"
                 strokeWidth={1}
               />
