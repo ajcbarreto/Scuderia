@@ -1,0 +1,26 @@
+<!--
+  Colar em Supabase → Authentication → Email Templates → Invite user.
+  Substitui o link directo {{ .ConfirmationURL }} para evitar que filtros
+  de spam consumam o convite antes do cliente clicar.
+
+  Site URL no Supabase deve ser https://scuderiaittech.pt (ou www, mas só um).
+-->
+
+<h2>Área de Cliente Scuderia itTECH</h2>
+
+<p>Foste convidado a criar a tua conta na garagem digital.</p>
+
+<p>
+  <a href="{{ .SiteURL }}/auth/invite?token_hash={{ .TokenHash }}&type=invite">
+    Activar a minha conta
+  </a>
+</p>
+
+<p style="color:#666;font-size:14px;">
+  Se o botão não funcionar, copia este endereço para o browser:<br />
+  {{ .SiteURL }}/auth/invite?token_hash={{ .TokenHash }}&type=invite
+</p>
+
+<p style="color:#666;font-size:14px;">
+  Scuderia itTECH — oficina de motos
+</p>

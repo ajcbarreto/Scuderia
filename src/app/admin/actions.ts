@@ -147,7 +147,7 @@ export async function createClientUser(
   return {
     ok: true,
     createdEmail: email,
-    info: "Convite enviado. Se o link no email só mostrar scuderiaittech.pt (sem /auth/callback), adiciona https://scuderiaittech.pt/** em Supabase → Authentication → Redirect URLs e reenvia o convite.",
+    info: "Convite enviado. Confirma que o template «Invite user» no Supabase usa /auth/invite (ver supabase/templates/invite-email.html). Redirect URLs: https://scuderiaittech.pt/** e https://www.scuderiaittech.pt/**",
   };
 }
 
