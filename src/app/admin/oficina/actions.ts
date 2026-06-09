@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireAdmin, type ActionState } from "@/app/admin/actions";
+import { fetchGuimaraesHolidaysForYears } from "@/lib/garagem/guimaraes-holidays";
 
 export async function updateClosedWeekdays(
   _prev: ActionState | undefined,
@@ -127,6 +128,63 @@ export async function removeClosedDate(id: string): Promise<ActionState> {
 }
 
 /** Remove várias datas fechadas de uma só vez (ex.: remover um grupo/intervalo). */
+/** Importa feriados nacionais + municipal de Guimarães para o ano atual e o seguinte. */
+export async function importGuimaraesHolidays(): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  const currentYear = new Date().getFullYear();
+  let holidays;
+  try {
+    holidays = await fetchGuimaraesHolidaysForYears([
+      currentYear,
+      currentYear + 1,
+    ]);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Erro ao obter feriados.";
+    return { error: msg };
+  }
+
+  if (holidays.length === 0) {
+    return { error: "Nenhum feriado encontrado." };
+  }
+
+  const dates = holidays.map((h) => h.date);
+  const { data: existing } = await supabase
+    .from("workshop_closed_dates")
+    .select("closed_date")
+    .in("closed_date", dates);
+
+  const existingSet = new Set(
+    (existing ?? []).map((r) => r.closed_date as string),
+  );
+  const toInsert = holidays
+    .filter((h) => !existingSet.has(h.date))
+    .map((h) => ({ closed_date: h.date, note: h.note }));
+
+  if (toInsert.length === 0) {
+    return {
+      ok: true,
+      info: `Todos os feriados de ${currentYear} e ${currentYear + 1} já estão registados.`,
+    };
+  }
+
+  const { error } = await supabase
+    .from("workshop_closed_dates")
+    .insert(toInsert);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/oficina");
+  revalidatePath("/agendamento");
+
+  const skipped = holidays.length - toInsert.length;
+  const info =
+    skipped > 0
+      ? `${toInsert.length} feriados adicionados (${skipped} já existiam).`
+      : `${toInsert.length} feriados adicionados.`;
+  return { ok: true, info };
+}
+
 export async function removeClosedDates(ids: string[]): Promise<ActionState> {
   const { supabase } = await requireAdmin();
   const validIds = ids.filter((id) => typeof id === "string" && id.length > 0);

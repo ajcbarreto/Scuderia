@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef } from "react";
-import { CalendarX, X } from "lucide-react";
-import { addClosedDate, removeClosedDates } from "./actions";
+import { useActionState, useEffect, useMemo, useRef, useTransition } from "react";
+import { CalendarDays, CalendarX, X } from "lucide-react";
+import { addClosedDate, importGuimaraesHolidays, removeClosedDates } from "./actions";
 import type { ActionState } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -92,7 +92,9 @@ export function ClosedDatesPanel({ closedDates }: Props) {
     ActionState | undefined,
     FormData
   >(addClosedDate, undefined);
+  const [importing, startImport] = useTransition();
   const formRef = useRef<HTMLFormElement | null>(null);
+  const currentYear = new Date().getFullYear();
 
   useEffect(() => {
     if (state?.ok) {
@@ -154,6 +156,34 @@ export function ClosedDatesPanel({ closedDates }: Props) {
         Para um único dia, deixa a data final vazia. Para um intervalo (ex.: férias),
         preenche ambas — todas as datas do intervalo ficam fechadas.
       </p>
+
+      <div className="flex flex-col gap-2 rounded-lg border border-border bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">
+            Feriados de Guimarães
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Carrega automaticamente os feriados nacionais e o feriado municipal
+            (24 de junho) para {currentYear} e {currentYear + 1}.
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending || importing}
+          className="shrink-0 border-border"
+          onClick={() => {
+            startImport(async () => {
+              const res = await importGuimaraesHolidays();
+              if (res?.error) toast.error(res.error, 6000);
+              else toast.success(res?.info ?? "Feriados carregados.");
+            });
+          }}
+        >
+          <CalendarDays className="size-4" aria-hidden />
+          {importing ? "A carregar…" : "Carregar feriados"}
+        </Button>
+      </div>
 
       {groups.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
