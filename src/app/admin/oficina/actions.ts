@@ -114,6 +114,60 @@ export async function addClosedDate(
   return { ok: true, info };
 }
 
+/** Marca um único dia como fechado (ex.: a partir do calendário). */
+export async function addSingleClosedDate(
+  closedDate: string,
+  note: string | null,
+): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(closedDate)) {
+    return { error: "Data inválida." };
+  }
+
+  const { data: existing } = await supabase
+    .from("workshop_closed_dates")
+    .select("id")
+    .eq("closed_date", closedDate)
+    .maybeSingle();
+
+  if (existing) {
+    return { error: "Esta data já está fechada." };
+  }
+
+  const { error } = await supabase.from("workshop_closed_dates").insert({
+    closed_date: closedDate,
+    note: note?.trim() || null,
+  });
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/oficina");
+  revalidatePath("/agendamento");
+  return { ok: true, info: "Data adicionada." };
+}
+
+/** Atualiza o motivo de um dia fechado existente. */
+export async function updateClosedDate(
+  id: string,
+  note: string | null,
+): Promise<ActionState> {
+  const { supabase } = await requireAdmin();
+
+  if (!id) return { error: "Data inválida." };
+
+  const { error } = await supabase
+    .from("workshop_closed_dates")
+    .update({ note: note?.trim() || null })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/oficina");
+  revalidatePath("/agendamento");
+  return { ok: true, info: "Data atualizada." };
+}
+
 export async function removeClosedDate(id: string): Promise<ActionState> {
   const { supabase } = await requireAdmin();
   const { error } = await supabase
