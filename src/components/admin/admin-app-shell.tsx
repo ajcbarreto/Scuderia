@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   Library,
   ListChecks,
-  LogOut,
   Menu,
   Users,
   Wrench,
@@ -28,7 +27,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { signOut } from "@/app/garagem/actions";
+import { SignOutForm } from "@/components/auth/sign-out-form";
 import {
   adminNavLinkActive,
   adminNavLinkBase,
@@ -172,17 +171,14 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
               <HelpCircle className="size-4" />
               Site público
             </Link>
-            <form action={signOut}>
-              <Button
-                type="submit"
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 px-2 font-heading text-[10px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground"
-              >
-                <LogOut className="size-4" />
-                Terminar sessão
-              </Button>
-            </form>
+            <SignOutForm
+              label="Terminar sessão"
+              pendingLabel="A sair…"
+              showIcon
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 px-2 font-heading text-[10px] font-medium uppercase tracking-widest text-muted-foreground hover:text-foreground"
+            />
           </div>
         </div>
       </aside>
@@ -238,16 +234,13 @@ export function AdminAppShell({ children, userLabel }: AdminAppShellProps) {
                     >
                       Site público
                     </Link>
-                    <form action={signOut}>
-                      <Button
-                        type="submit"
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-border"
-                      >
-                        Terminar sessão
-                      </Button>
-                    </form>
+                    <SignOutForm
+                      label="Terminar sessão"
+                      pendingLabel="A sair…"
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-border"
+                    />
                   </div>
                 </SheetContent>
               </Sheet>

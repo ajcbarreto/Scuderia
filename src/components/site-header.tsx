@@ -13,6 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { BrandLogo } from "@/components/brand-logo";
+import { PendingLink } from "@/components/ui/pending-link";
 import { SITE_NAV } from "@/lib/site-nav";
 import { cn } from "@/lib/utils";
 
@@ -132,13 +133,14 @@ export function SiteHeader() {
           >
             MARCAR SERVIÇO
           </Link>
-          <Link
+          <PendingLink
             href="/login"
+            pendingText=""
             className="text-foreground transition-colors hover:text-accent-warm"
             aria-label="Conta — entrar"
           >
             <CircleUserRound className="size-7" strokeWidth={1.5} />
-          </Link>
+          </PendingLink>
         </div>
       </div>
     </nav>

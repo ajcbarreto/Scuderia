@@ -34,6 +34,7 @@ export function LoginForm() {
       if (signError) {
         setError(signError.message);
         setPassword("");
+        setLoading(false);
         return;
       }
       const {
@@ -42,6 +43,7 @@ export function LoginForm() {
       if (!user) {
         setError("Sessão inválida após o login.");
         setPassword("");
+        setLoading(false);
         return;
       }
       const { data: profile } = await supabase
@@ -52,12 +54,12 @@ export function LoginForm() {
       const dest = resolvePostLoginPath(profile?.role as UserRole | undefined, next);
       router.push(dest);
       router.refresh();
+      return;
     } catch {
       setError("Não foi possível iniciar sessão.");
       setPassword("");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   const fieldClass =

@@ -28,6 +28,7 @@ export function LandingLoginForm() {
       });
       if (err) {
         setError(err.message);
+        setLoading(false);
         return;
       }
       const {
@@ -35,6 +36,7 @@ export function LandingLoginForm() {
       } = await supabase.auth.getUser();
       if (!user) {
         setError("Sessão inválida após o login.");
+        setLoading(false);
         return;
       }
       const { data: profile } = await supabase
@@ -45,11 +47,11 @@ export function LandingLoginForm() {
       const dest = resolvePostLoginPath(profile?.role as UserRole | undefined, null);
       router.push(dest);
       router.refresh();
+      return;
     } catch {
       setError("Não foi possível iniciar sessão.");
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   return (

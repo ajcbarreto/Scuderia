@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Bike, CheckCircle2, Truck } from "lucide-react";
 import { ContactForm } from "@/components/marketing/contact-form";
+import { AreaClienteLoginLink } from "@/components/marketing/area-cliente-login-link";
 const EMPRESA_IMG =
   "https://lh3.googleusercontent.com/aida-public/AB6AXuBxhk8r0nqC7ZpGdhrDvI1h2VMR61BUDVgs87GrRp3wAeLzf2j7QX-YCaVL9kmWGi4oNkDhc14VeOVU-4hoquuafeaQvsdq-49Ncqf9wT7zSI8jIHKNdYtzmPp1LPsutMF1BYC4TOXonEJ5NQcEmRFD2tJLryMDqDeudk1nrz2NsOoa9jnCUbIa-XMAIjhFJWuLxBM_ctKzKG7xenDomGA3Jg_QHBtIuSnAVCYZg650AITpMlZ6sKsy0_INXgR9X0C5d9jWw_rpYUE";
 
@@ -226,12 +227,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <Link
-                href="/login"
-                className="mt-12 inline-block rounded-md bg-primary px-10 py-4 font-heading font-semibold tracking-wide text-primary-foreground shadow-[0_12px_36px_color-mix(in_oklch,var(--primary)_30%,transparent)] transition-all hover:bg-primary/92"
-              >
-                ENTRAR NA ÁREA CLIENTE
-              </Link>
+              <AreaClienteLoginLink />
             </div>
             <div className="w-full flex-1">
               <div className="scale-105 rotate-3 rounded-xl border border-border bg-muted/80 p-6 shadow-lg">

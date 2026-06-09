@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { UserCircle2 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { signOut } from "@/app/garagem/actions";
+import { SignOutForm } from "@/components/auth/sign-out-form";
 
 export function GaragemChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() ?? "";
@@ -44,16 +44,13 @@ export function GaragemChrome({ children }: { children: React.ReactNode }) {
           >
             Agendar
           </Link>
-          <form action={signOut}>
-            <Button
-              type="submit"
-              variant="outline"
-              size="sm"
-              className="border-border font-heading text-xs uppercase tracking-wide"
-            >
-              Sair
-            </Button>
-          </form>
+          <SignOutForm
+            label="Sair"
+            pendingLabel="A sair…"
+            variant="outline"
+            size="sm"
+            className="border-border font-heading text-xs uppercase tracking-wide"
+          />
         </div>
       </header>
 
