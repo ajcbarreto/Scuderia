@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { resolvePostLoginPath } from "@/lib/post-login-redirect";
@@ -20,6 +20,19 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const err = searchParams.get("error");
+    if (err === "expired") {
+      setError(
+        "Este link expirou ou já foi utilizado. Contacta a oficina para receberes um novo convite.",
+      );
+    } else if (err === "auth") {
+      setError(
+        "Não foi possível concluir o acesso. Tenta entrar com email e palavra-passe ou pede um novo convite.",
+      );
+    }
+  }, [searchParams]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

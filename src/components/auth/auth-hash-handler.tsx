@@ -15,9 +15,26 @@ export function AuthHashHandler() {
 
   useEffect(() => {
     const hash = window.location.hash;
-    if (!hash.includes("access_token=") || handling.current) return;
+    if (!hash || hash.length <= 1 || handling.current) return;
 
     const params = new URLSearchParams(hash.replace(/^#/, ""));
+
+    const hashError = params.get("error");
+    if (hashError) {
+      handling.current = true;
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search,
+      );
+      const code = params.get("error_code");
+      router.replace(
+        code === "otp_expired" ? "/login?error=expired" : "/login?error=auth",
+      );
+      return;
+    }
+
+    if (!hash.includes("access_token=")) return;
     const accessToken = params.get("access_token");
     const refreshToken = params.get("refresh_token");
     if (!accessToken || !refreshToken) return;
