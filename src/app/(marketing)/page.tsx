@@ -235,22 +235,22 @@ export default function HomePage() {
                   <span className="font-heading text-sm font-bold tracking-widest opacity-50 uppercase">
                     Diagnóstico ativo
                   </span>
-                  <span className="size-3 animate-pulse rounded-full bg-[#9df898]" />
+                  <span className="size-3 animate-pulse rounded-full bg-[#1f7a43]" />
                 </div>
                 <div className="space-y-6">
                   <div className="flex h-12 items-center rounded border-l-4 border-primary bg-muted px-4">
                     <span className="mr-4 font-heading text-xs opacity-50">
                       VIN:
                     </span>
-                    <span className="font-heading font-bold">ZD12…9901</span>
+                    <span className="font-heading font-bold">ZDM19…2026</span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="h-24 rounded bg-muted p-4">
                       <span className="font-heading text-[10px] tracking-widest opacity-50 uppercase">
-                        Estado do motor
+                        Estado geral
                       </span>
-                      <div className="mt-1 text-xl font-bold text-[#9df898]">
-                        OTIMIZADO
+                      <div className="mt-1 text-xl font-bold text-[#1f7a43]">
+                        IRREPREENSÍVEL
                       </div>
                     </div>
                     <div className="h-24 rounded bg-muted p-4">
