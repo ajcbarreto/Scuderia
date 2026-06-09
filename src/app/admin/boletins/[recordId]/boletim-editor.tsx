@@ -91,6 +91,24 @@ function formatKm(n: number | null) {
   return `${n.toLocaleString("pt-PT")} km`;
 }
 
+function addOneYear(isoDate: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate);
+  if (!m) return "";
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  d.setFullYear(d.getFullYear() + 1);
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
+function defaultNextServiceDate(record: ServiceRecord): string {
+  if (record.next_service_due_date) return record.next_service_due_date;
+  if (!record.service_date) return "";
+  return addOneYear(record.service_date);
+}
+
 function ReadField({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
@@ -293,7 +311,7 @@ export function BoletimEditor({
                     form={metaFormId}
                     name="next_service_due_date"
                     type="date"
-                    defaultValue={record.next_service_due_date ?? ""}
+                    defaultValue={defaultNextServiceDate(record)}
                     className="border-2 border-primary/40 bg-background text-foreground focus-visible:border-primary"
                   />
                 </div>
@@ -308,20 +326,12 @@ export function BoletimEditor({
                     step={1}
                     placeholder={
                       record.odometer_km != null
-                        ? `Atual: ${record.odometer_km.toLocaleString("pt-PT")}`
-                        : "Ex.: 18 000"
+                        ? record.odometer_km.toLocaleString("pt-PT")
+                        : undefined
                     }
                     defaultValue={record.next_service_due_km ?? ""}
                     className="border-2 border-primary/40 bg-background text-foreground focus-visible:border-primary"
                   />
-                  {record.odometer_km != null ? (
-                    <p className="text-xs text-muted-foreground">
-                      Quilometragem actual no boletim:{" "}
-                      <span className="font-mono text-foreground">
-                        {record.odometer_km.toLocaleString("pt-PT")} km
-                      </span>
-                    </p>
-                  ) : null}
                 </div>
               </div>
             ) : (
