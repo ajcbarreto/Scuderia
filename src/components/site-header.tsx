@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleUserRound, Menu } from "lucide-react";
+import { CircleUserRound, LayoutDashboard, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -33,7 +33,15 @@ function isNavActive(
   return currentHash === itemHref.slice(1);
 }
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  accountHref?: string;
+  accountLabel?: string;
+};
+
+export function SiteHeader({
+  accountHref = "/login",
+  accountLabel = "Entrar",
+}: SiteHeaderProps) {
   const pathname = usePathname();
   const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -92,6 +100,15 @@ export function SiteHeader() {
                       {item.label}
                     </Link>
                   ))}
+                  {accountHref !== "/login" ? (
+                    <Link
+                      href={accountHref}
+                      onClick={() => setMobileOpen(false)}
+                      className="font-heading mt-2 rounded-md border border-border px-3 py-2.5 text-sm font-bold tracking-tight uppercase text-foreground transition-colors hover:bg-muted"
+                    >
+                      {accountLabel}
+                    </Link>
+                  ) : null}
                 </div>
               </SheetContent>
             </Sheet>
@@ -133,13 +150,25 @@ export function SiteHeader() {
           >
             MARCAR SERVIÇO
           </Link>
+          {accountHref === "/admin" ? (
+            <Link
+              href="/admin"
+              className="hidden rounded-md border border-border px-4 py-2 font-heading text-xs font-bold tracking-widest text-foreground transition-colors hover:bg-muted sm:inline-flex"
+            >
+              BACKOFFICE
+            </Link>
+          ) : null}
           <PendingLink
-            href="/login"
+            href={accountHref}
             pendingText=""
             className="text-foreground transition-colors hover:text-accent-warm"
-            aria-label="Conta — entrar"
+            aria-label={accountLabel}
           >
-            <CircleUserRound className="size-7" strokeWidth={1.5} />
+            {accountHref === "/admin" ? (
+              <LayoutDashboard className="size-7" strokeWidth={1.5} />
+            ) : (
+              <CircleUserRound className="size-7" strokeWidth={1.5} />
+            )}
           </PendingLink>
         </div>
       </div>

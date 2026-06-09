@@ -21,3 +21,16 @@ export function resolvePostLoginPath(
   if (role === "admin") return "/admin";
   return safeNext ?? "/garagem";
 }
+
+/** Destino do ícone «conta» no site público consoante a sessão. */
+export function accountAreaHref(role: UserRole | null | undefined): string {
+  if (role === "admin") return "/admin";
+  if (role === "client") return "/garagem";
+  return "/login";
+}
+
+export function accountAreaLabel(role: UserRole | null | undefined): string {
+  if (role === "admin") return "Backoffice";
+  if (role === "client") return "Garagem";
+  return "Entrar";
+}

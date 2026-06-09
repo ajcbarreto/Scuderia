@@ -1,10 +1,18 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { ArrowLeft } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
 import { LoginForm } from "@/components/auth/login-form";
+import { getProfile } from "@/lib/auth";
+import { resolvePostLoginPath } from "@/lib/post-login-redirect";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const profile = await getProfile();
+  if (profile) {
+    redirect(resolvePostLoginPath(profile.role, null));
+  }
+
   return (
     <div className="relative min-h-dvh overflow-hidden bg-background">
       <div
