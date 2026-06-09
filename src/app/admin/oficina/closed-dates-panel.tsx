@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useRef, useTransition } from "react";
 import { CalendarDays, CalendarX, X } from "lucide-react";
 import { addClosedDate, importGuimaraesHolidays, removeClosedDates } from "./actions";
+import { ClosedDatesYearCalendar } from "./closed-dates-year-calendar";
 import type { ActionState } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -14,6 +15,7 @@ type ClosedDate = { id: string; date: string; note: string | null };
 
 type Props = {
   closedDates: ClosedDate[];
+  closedWeekdays: number[];
 };
 
 type ClosedGroup = {
@@ -87,7 +89,7 @@ function formatGroupLabel(g: ClosedGroup): string {
   return `${fullFmt.format(start)} – ${fullFmt.format(end)}`;
 }
 
-export function ClosedDatesPanel({ closedDates }: Props) {
+export function ClosedDatesPanel({ closedDates, closedWeekdays }: Props) {
   const [state, formAction, pending] = useActionState<
     ActionState | undefined,
     FormData
@@ -185,12 +187,19 @@ export function ClosedDatesPanel({ closedDates }: Props) {
         </Button>
       </div>
 
+      <ClosedDatesYearCalendar
+        closedDates={closedDates}
+        closedWeekdays={closedWeekdays}
+      />
+
       {groups.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
           Sem datas fechadas. Adiciona acima feriados ou férias.
         </p>
       ) : (
-        <ul className="flex flex-wrap gap-2">
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold text-foreground">Lista de datas</h3>
+          <ul className="flex flex-wrap gap-2">
           {groups.map((g) => {
             const label = formatGroupLabel(g);
             const dayCount = g.ids.length;
@@ -253,7 +262,8 @@ export function ClosedDatesPanel({ closedDates }: Props) {
               </li>
             );
           })}
-        </ul>
+          </ul>
+        </div>
       )}
     </div>
   );

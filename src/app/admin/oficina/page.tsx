@@ -30,7 +30,10 @@ export default async function AdminOficinaPage() {
         <p className="mt-1 text-sm text-muted-foreground">
           Adiciona datas específicas em que a oficina está fechada (ex.: feriados, férias).
         </p>
-        <ClosedDatesPanel closedDates={schedule.closedDates} />
+        <ClosedDatesPanel
+          closedDates={schedule.closedDates}
+          closedWeekdays={schedule.closedWeekdays}
+        />
       </section>
     </div>
   );
