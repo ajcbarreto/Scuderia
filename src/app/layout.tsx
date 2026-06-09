@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope, Oswald } from "next/font/google";
 import { Toaster } from "@/components/ui/toast";
+import { AuthHashHandler } from "@/components/auth/auth-hash-handler";
 import "./globals.css";
 
 const oswald = Oswald({
@@ -67,6 +68,7 @@ export default function RootLayout({
       className={`${oswald.variable} ${manrope.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-background font-sans text-foreground">
+        <AuthHashHandler />
         {children}
         <Toaster />
       </body>

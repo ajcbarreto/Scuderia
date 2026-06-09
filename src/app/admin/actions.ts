@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
-import { inviteRedirectUrl, resolveSiteUrl } from "@/lib/site-url";
+import { formatInviteError, inviteRedirectUrl, resolveSiteUrl } from "@/lib/site-url";
 import type { AttachmentKind, ServiceRevisionType } from "@/types/database";
 
 export type ActionState = {
@@ -121,9 +121,8 @@ export async function createClientUser(
     });
 
   if (inviteError || !invited.user) {
-    // Supabase devolve 422 com "User already registered" se já existir.
-    const msg = inviteError?.message ?? "Não foi possível enviar o convite.";
-    return { error: msg };
+    const raw = inviteError?.message ?? "Não foi possível enviar o convite.";
+    return { error: formatInviteError(raw) };
   }
 
   const userId = invited.user.id;

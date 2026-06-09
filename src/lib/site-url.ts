@@ -21,3 +21,26 @@ export function resolveSiteUrl(): { url: string; fellBack: boolean } {
 export function inviteRedirectUrl(siteUrl: string): string {
   return `${siteUrl}/auth/callback?next=${encodeURIComponent("/onboarding/set-password")}`;
 }
+
+/** Mensagens acionáveis para erros comuns do convite Supabase Auth. */
+export function formatInviteError(message: string): string {
+  const lower = message.toLowerCase();
+  if (
+    lower.includes("already registered") ||
+    lower.includes("already been registered")
+  ) {
+    return "Este email já tem conta. No Supabase → Authentication → Users, reenvia o convite ou apaga o utilizador e tenta outra vez.";
+  }
+  if (
+    lower.includes("error sending invite email") ||
+    lower.includes("error sending confirmation email")
+  ) {
+    return (
+      "Falha ao enviar o email (SMTP). No Supabase → Authentication → SMTP confirma: " +
+      "host mail.scuderiaittech.pt (ou sv05.corporatemail.pt), port 465 (ou 587), username = email completo " +
+      "(ex.: oficina@scuderiaittech.pt), sender igual ao username, password correcta. " +
+      "Erro técnico em Logs → Auth."
+    );
+  }
+  return message;
+}
