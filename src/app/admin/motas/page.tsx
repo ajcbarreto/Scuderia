@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { adminTableWrap } from "@/components/admin/admin-styles";
@@ -188,11 +189,13 @@ export default async function AdminMotasPage({ searchParams }: PageProps) {
                             href={`/admin/motas/${row.id}`}
                             className={buttonVariants({
                               variant: "default",
-                              size: "sm",
+                              size: "icon-sm",
                               className: "font-heading",
                             })}
+                            aria-label="Ver ficha da mota"
+                            title="Ver ficha"
                           >
-                            Ficha
+                            <Eye className="size-4" aria-hidden />
                           </Link>
                           <Link
                             href={`/admin/servico?mota=${row.id}`}

@@ -188,7 +188,7 @@ export function NovaMotaForm({ clients, defaultOwnerId, catalogEntries }: Props)
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="vin">Quadro (VIN)</Label>
+          <Label htmlFor="vin">Nº Quadro (VIN)</Label>
           <Input
             id="vin"
             name="vin"
