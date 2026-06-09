@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
+import { inviteRedirectUrl, resolveSiteUrl } from "@/lib/site-url";
 import type { AttachmentKind, ServiceRevisionType } from "@/types/database";
 
 export type ActionState = {
@@ -68,27 +69,6 @@ async function revalidateMotaForServiceRecord(
   }
 }
 
-function resolveSiteUrl(): { url: string; fellBack: boolean } {
-  const stripTrailingSlash = (s: string) => s.replace(/\/+$/, "");
-
-  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (explicit) return { url: stripTrailingSlash(explicit), fellBack: false };
-
-  // `VERCEL_PROJECT_PRODUCTION_URL` é o alias estável de produção (ex.: scuderia-one.vercel.app).
-  // `VERCEL_URL` é o hostname único do deployment (ex.: scuderia-one-<hash>.vercel.app) e
-  // não costuma estar na allowlist do Supabase, por isso é fallback de último recurso.
-  const prodAlias = process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (prodAlias) return { url: `https://${stripTrailingSlash(prodAlias)}`, fellBack: false };
-
-  if (process.env.VERCEL_URL) {
-    return {
-      url: `https://${stripTrailingSlash(process.env.VERCEL_URL)}`,
-      fellBack: false,
-    };
-  }
-  return { url: "http://localhost:3000", fellBack: true };
-}
-
 /**
  * Cria a conta do cliente e envia convite por email — o cliente define a
  * própria palavra-passe via `/onboarding/set-password`. O admin nunca toca
@@ -132,9 +112,7 @@ export async function createClientUser(
         "Define NEXT_PUBLIC_SITE_URL no ambiente (URL público da app). Sem ele, o link do email não consegue voltar a este site.",
     };
   }
-  const redirectTo = `${siteUrl}/auth/callback?next=${encodeURIComponent(
-    "/onboarding/set-password",
-  )}`;
+  const redirectTo = inviteRedirectUrl(siteUrl);
 
   const { data: invited, error: inviteError } =
     await admin.auth.admin.inviteUserByEmail(email, {
@@ -170,7 +148,7 @@ export async function createClientUser(
   return {
     ok: true,
     createdEmail: email,
-    info: "Convite enviado por email. O cliente define a palavra-passe ao aceder.",
+    info: "Convite enviado. Se o link no email só mostrar scuderiaittech.pt (sem /auth/callback), adiciona https://scuderiaittech.pt/** em Supabase → Authentication → Redirect URLs e reenvia o convite.",
   };
 }
 
