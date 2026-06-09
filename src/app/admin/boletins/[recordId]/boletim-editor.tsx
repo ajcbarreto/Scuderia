@@ -168,6 +168,39 @@ export function BoletimEditor({
   }, [taskState]);
 
   const [editing, setEditing] = useState(false);
+  const [serviceDate, setServiceDate] = useState(record.service_date ?? "");
+  const [odometerKm, setOdometerKm] = useState(
+    record.odometer_km != null ? String(record.odometer_km) : "",
+  );
+  const [nextDueDate, setNextDueDate] = useState(defaultNextServiceDate(record));
+  const [nextDueManual, setNextDueManual] = useState(false);
+
+  useEffect(() => {
+    if (!editing) return;
+    setServiceDate(record.service_date ?? "");
+    setOdometerKm(record.odometer_km != null ? String(record.odometer_km) : "");
+    setNextDueDate(defaultNextServiceDate(record));
+    setNextDueManual(false);
+  }, [
+    editing,
+    record.id,
+    record.service_date,
+    record.odometer_km,
+    record.next_service_due_date,
+  ]);
+
+  function onServiceDateChange(value: string) {
+    setServiceDate(value);
+    if (!nextDueManual) {
+      setNextDueDate(value ? addOneYear(value) : "");
+    }
+  }
+
+  const odometerKmNumber = Number.parseInt(odometerKm, 10);
+  const nextDueKmPlaceholder =
+    odometerKm.trim() !== "" && !Number.isNaN(odometerKmNumber)
+      ? odometerKmNumber.toLocaleString("pt-PT")
+      : undefined;
 
   useEffect(() => {
     if (metaState?.ok) {
@@ -311,7 +344,11 @@ export function BoletimEditor({
                     form={metaFormId}
                     name="next_service_due_date"
                     type="date"
-                    defaultValue={defaultNextServiceDate(record)}
+                    value={nextDueDate}
+                    onChange={(e) => {
+                      setNextDueDate(e.target.value);
+                      setNextDueManual(true);
+                    }}
                     className="border-2 border-primary/40 bg-background text-foreground focus-visible:border-primary"
                   />
                 </div>
@@ -324,11 +361,7 @@ export function BoletimEditor({
                     type="number"
                     min={0}
                     step={1}
-                    placeholder={
-                      record.odometer_km != null
-                        ? record.odometer_km.toLocaleString("pt-PT")
-                        : undefined
-                    }
+                    placeholder={nextDueKmPlaceholder}
                     defaultValue={record.next_service_due_km ?? ""}
                     className="border-2 border-primary/40 bg-background text-foreground focus-visible:border-primary"
                   />
@@ -389,7 +422,8 @@ export function BoletimEditor({
                         id="service_date"
                         name="service_date"
                         type="date"
-                        defaultValue={record.service_date ?? ""}
+                        value={serviceDate}
+                        onChange={(e) => onServiceDateChange(e.target.value)}
                         className="border-input bg-background text-foreground"
                       />
                     </div>
@@ -412,7 +446,8 @@ export function BoletimEditor({
                         min={0}
                         step={1}
                         placeholder="Ex.: 12450"
-                        defaultValue={record.odometer_km ?? ""}
+                        value={odometerKm}
+                        onChange={(e) => setOdometerKm(e.target.value)}
                         className="border-input bg-background text-foreground"
                       />
                     </div>
