@@ -141,7 +141,7 @@ export default function HomePage() {
                 Venda & Aconselhamento
               </h3>
               <p className="mb-6 text-muted-foreground">
-                Encontramos a moto perfeita para o teu perfil de condução.
+                Encontramos a moto perfeita para o seu perfil de condução.
               </p>
               <div className="h-1 w-12 bg-primary" />
             </div>
@@ -230,7 +230,7 @@ export default function HomePage() {
               <AreaClienteLoginLink />
             </div>
             <div className="w-full flex-1">
-              <div className="scale-105 rotate-3 rounded-xl border border-border bg-muted/80 p-6 shadow-lg">
+              <div className="rounded-xl border border-border bg-muted/80 p-6 shadow-lg md:scale-105 md:rotate-3">
                 <div className="mb-8 flex items-center justify-between">
                   <span className="font-heading text-sm font-bold tracking-widest opacity-50 uppercase">
                     Diagnóstico ativo
@@ -245,19 +245,21 @@ export default function HomePage() {
                     <span className="font-heading font-bold">ZDM19…2026</span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="h-24 rounded bg-muted p-4">
+                    <div className="flex min-h-24 flex-col rounded bg-muted p-4">
                       <span className="font-heading text-[10px] tracking-widest opacity-50 uppercase">
                         Estado geral
                       </span>
-                      <div className="mt-1 text-xl font-bold text-[#1f7a43]">
+                      <div className="mt-1 text-base leading-tight font-bold break-words text-[#1f7a43] md:text-lg">
                         IRREPREENSÍVEL
                       </div>
                     </div>
-                    <div className="h-24 rounded bg-muted p-4">
+                    <div className="flex min-h-24 flex-col rounded bg-muted p-4">
                       <span className="font-heading text-[10px] tracking-widest opacity-50 uppercase">
                         Próxima Revisão
                       </span>
-                      <div className="mt-1 text-xl font-bold">12 400 km</div>
+                      <div className="mt-1 text-base leading-tight font-bold break-words md:text-lg">
+                        12&nbsp;400 km
+                      </div>
                     </div>
                   </div>
                   <div className="rounded border border-border/50 p-4">
