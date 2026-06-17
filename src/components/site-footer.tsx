@@ -22,9 +22,12 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="flex flex-wrap justify-center gap-8">
-          <span className="cursor-default font-sans text-xs tracking-widest text-muted-foreground uppercase">
+          <Link
+            href="/privacidade"
+            className="font-sans text-xs tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
+          >
             Privacidade
-          </span>
+          </Link>
           <span className="cursor-default font-sans text-xs tracking-widest text-muted-foreground uppercase">
             Termos de utilização
           </span>
