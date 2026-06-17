@@ -154,3 +154,15 @@ export type WorkshopClosedDate = {
   note: string | null;
   created_at: string;
 };
+
+/** Evento de uso registado para análise de adoção (ver migration activity_events). */
+export type ActivityEvent = {
+  id: number;
+  occurred_at: string;
+  user_id: string | null;
+  role: UserRole | null;
+  event_type: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  metadata: Record<string, unknown>;
+};

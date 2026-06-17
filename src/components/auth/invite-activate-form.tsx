@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { recordAccountActivated } from "@/lib/analytics/actions";
 import { Button } from "@/components/ui/button";
 
 function inviteErrorMessage(message: string): string {
@@ -43,6 +44,7 @@ export function InviteActivateForm() {
         return;
       }
 
+      await recordAccountActivated().catch(() => {});
       router.replace("/onboarding/set-password");
       router.refresh();
     } catch {

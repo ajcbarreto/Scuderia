@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
+import { logEvent } from "@/lib/analytics/log-event";
 import {
   getClosedReason,
   loadWorkshopSchedule,
@@ -75,15 +76,27 @@ export async function submitAppointmentRequest(
 
   const preferredStart = preferred ? new Date(preferred).toISOString() : null;
 
-  const { error } = await supabase.from("appointment_requests").insert({
-    client_id: user.id,
-    preferred_start: preferredStart,
-    message: message || null,
-  });
+  const { data: created, error } = await supabase
+    .from("appointment_requests")
+    .insert({
+      client_id: user.id,
+      preferred_start: preferredStart,
+      message: message || null,
+    })
+    .select("id")
+    .maybeSingle();
 
   if (error) {
     return { error: error.message };
   }
+
+  await logEvent({
+    eventType: "appointment_requested",
+    userId: user.id,
+    role: "client",
+    entityType: "appointment",
+    entityId: created?.id ?? null,
+  });
 
   revalidatePath("/agendamento");
   revalidatePath("/admin");

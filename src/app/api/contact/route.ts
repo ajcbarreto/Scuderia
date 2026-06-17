@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { logEvent } from "@/lib/analytics/log-event";
 
 /** Bots agressivos preenchem submetem em <1.5s; humanos não. */
 const MIN_FILL_MS = 1500;
@@ -49,6 +50,12 @@ export async function POST(request: Request) {
   if (loadedAt && Date.now() - loadedAt < MIN_FILL_MS) {
     return NextResponse.json({ ok: true, delivered: false } as const);
   }
+
+  // Lead de um potencial cliente. Sem PII: só registamos que houve contacto.
+  await logEvent({
+    eventType: "contact_submitted",
+    metadata: { has_phone: Boolean(phone) },
+  });
 
   const resendKey = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_TO_EMAIL;

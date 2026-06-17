@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { logEvent } from "@/lib/analytics/log-event";
 import { SERVICE_REVISION_TYPES } from "@/lib/garagem/service-record-display";
 import { formatInviteError, inviteRedirectUrl, resolveSiteUrl } from "@/lib/site-url";
 import type { AttachmentKind, ServiceRevisionType } from "@/types/database";
@@ -81,7 +82,7 @@ export async function createClientUser(
   _prev: ActionState | undefined,
   formData: FormData,
 ): Promise<ActionState> {
-  await requireAdmin();
+  const { userId: adminId } = await requireAdmin();
 
   const fullName = String(formData.get("full_name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -142,6 +143,14 @@ export async function createClientUser(
     };
   }
 
+  await logEvent({
+    eventType: "client_created",
+    userId: adminId,
+    role: "admin",
+    entityType: "profile",
+    entityId: userId,
+  });
+
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
   return {
@@ -160,7 +169,7 @@ export async function createMotorcycle(
   _prev: ActionState | undefined,
   formData: FormData,
 ): Promise<ActionState> {
-  const { supabase } = await requireAdmin();
+  const { supabase, userId } = await requireAdmin();
 
   const catalogEntryId = String(formData.get("catalog_entry_id") ?? "").trim();
   const ownerId = String(formData.get("owner_id") ?? "").trim();
@@ -243,6 +252,14 @@ export async function createMotorcycle(
   if (pErr) {
     return { error: pErr.message };
   }
+
+  await logEvent({
+    eventType: "motorcycle_created",
+    userId,
+    role: "admin",
+    entityType: "motorcycle",
+    entityId: mota.id,
+  });
 
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
@@ -392,7 +409,7 @@ export async function transferMotorcycle(
   _prev: ActionState | undefined,
   formData: FormData,
 ): Promise<ActionState> {
-  const { supabase } = await requireAdmin();
+  const { supabase, userId } = await requireAdmin();
 
   const motorcycleId = String(formData.get("motorcycle_id") ?? "").trim();
   const newOwnerId = String(formData.get("new_owner_id") ?? "").trim();
@@ -424,6 +441,14 @@ export async function transferMotorcycle(
     return { error: rpcErr.message };
   }
 
+  await logEvent({
+    eventType: "motorcycle_transferred",
+    userId,
+    role: "admin",
+    entityType: "motorcycle",
+    entityId: motorcycleId,
+  });
+
   revalidatePath("/admin/clientes");
   revalidatePath("/admin");
   revalidatePath("/admin/motas");
@@ -433,7 +458,7 @@ export async function transferMotorcycle(
 }
 
 export async function createServiceRecordFromMotaForm(formData: FormData) {
-  const { supabase } = await requireAdmin();
+  const { supabase, userId } = await requireAdmin();
   const motorcycleId = String(formData.get("motorcycle_id") ?? "").trim();
   if (!motorcycleId) {
     redirect("/admin/boletins");
@@ -496,6 +521,15 @@ export async function createServiceRecordFromMotaForm(formData: FormData) {
     }
   }
 
+  await logEvent({
+    eventType: "service_record_opened",
+    userId,
+    role: "admin",
+    entityType: "service_record",
+    entityId: rec.id,
+    metadata: { record_kind },
+  });
+
   revalidatePath("/admin/boletins");
   revalidatePath("/admin/servico");
   revalidatePath("/admin/motas");
@@ -508,7 +542,7 @@ export async function updateServiceRecord(
   _prev: ActionState | undefined,
   formData: FormData,
 ): Promise<ActionState> {
-  const { supabase } = await requireAdmin();
+  const { supabase, userId } = await requireAdmin();
 
   const title = String(formData.get("title") ?? "").trim() || null;
   const status = String(formData.get("status") ?? "").trim();
@@ -593,6 +627,16 @@ export async function updateServiceRecord(
 
   if (error) {
     return { error: error.message };
+  }
+
+  if (status === "completed") {
+    await logEvent({
+      eventType: "service_record_completed",
+      userId,
+      role: "admin",
+      entityType: "service_record",
+      entityId: recordId,
+    });
   }
 
   revalidatePath(`/admin/boletins/${recordId}`);

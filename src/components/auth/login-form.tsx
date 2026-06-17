@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { resolvePostLoginPath } from "@/lib/post-login-redirect";
+import { recordLogin } from "@/lib/analytics/actions";
 import type { UserRole } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ export function LoginForm() {
         .select("role")
         .eq("id", user.id)
         .maybeSingle();
+      await recordLogin().catch(() => {});
       const dest = resolvePostLoginPath(profile?.role as UserRole | undefined, next);
       router.push(dest);
       router.refresh();

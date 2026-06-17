@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { recordPasswordChanged } from "@/lib/analytics/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +41,7 @@ export function PasswordForm() {
         toast.error(error.message, 6000);
         return;
       }
+      await recordPasswordChanged().catch(() => {});
       toast.success("Palavra-passe atualizada.");
       setPassword("");
       setConfirm("");

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/app/admin/actions";
+import { logEvent } from "@/lib/analytics/log-event";
 import type { AppointmentStatus } from "@/types/database";
 
 export type AgendamentoActionState = {
@@ -38,7 +39,7 @@ export async function confirmAppointment(
   _prev: AgendamentoActionState | undefined,
   formData: FormData,
 ): Promise<AgendamentoActionState> {
-  const { supabase } = await requireAdmin();
+  const { supabase, userId } = await requireAdmin();
 
   const parsed = confirmSchema.safeParse({
     id: String(formData.get("id") ?? ""),
@@ -61,6 +62,13 @@ export async function confirmAppointment(
     .eq("id", parsed.data.id);
 
   if (error) return { error: error.message };
+  await logEvent({
+    eventType: "appointment_confirmed",
+    userId,
+    role: "admin",
+    entityType: "appointment",
+    entityId: parsed.data.id,
+  });
   revalidateAll();
   return { ok: true };
 }
@@ -71,7 +79,7 @@ export async function rejectAppointment(
   _prev: AgendamentoActionState | undefined,
   formData: FormData,
 ): Promise<AgendamentoActionState> {
-  const { supabase } = await requireAdmin();
+  const { supabase, userId } = await requireAdmin();
 
   const parsed = rejectSchema.safeParse({
     id: String(formData.get("id") ?? ""),
@@ -90,6 +98,13 @@ export async function rejectAppointment(
     .eq("id", parsed.data.id);
 
   if (error) return { error: error.message };
+  await logEvent({
+    eventType: "appointment_rejected",
+    userId,
+    role: "admin",
+    entityType: "appointment",
+    entityId: parsed.data.id,
+  });
   revalidateAll();
   return { ok: true };
 }

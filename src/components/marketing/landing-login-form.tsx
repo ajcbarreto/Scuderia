@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { resolvePostLoginPath } from "@/lib/post-login-redirect";
+import { recordLogin } from "@/lib/analytics/actions";
 import type { UserRole } from "@/types/database";
 import { Input } from "@/components/ui/input";
 import { Settings } from "lucide-react";
@@ -44,6 +45,7 @@ export function LandingLoginForm() {
         .select("role")
         .eq("id", user.id)
         .maybeSingle();
+      await recordLogin().catch(() => {});
       const dest = resolvePostLoginPath(profile?.role as UserRole | undefined, null);
       router.push(dest);
       router.refresh();

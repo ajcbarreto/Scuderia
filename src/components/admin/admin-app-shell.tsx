@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BarChart3,
   Bike,
   CalendarRange,
   ClipboardList,
@@ -44,6 +45,7 @@ const NAV = [
   { href: "/admin/boletins", label: "Registos", icon: ClipboardList, exact: false },
   { href: "/admin/checklists", label: "Tarefas padrão", icon: ListChecks, exact: true },
   { href: "/admin/documentos", label: "Documentos", icon: FolderOpen, exact: false },
+  { href: "/admin/estatisticas", label: "Estatísticas", icon: BarChart3, exact: true },
 ] as const;
 
 function navActive(pathname: string, href: string, exact: boolean) {
@@ -67,6 +69,8 @@ function headerCopy(pathname: string): { title: string; badge?: string } {
   if (pathname.startsWith("/admin/checklists"))
     return { title: "Lista de tarefas padrão", badge: "Oficina" };
   if (pathname.startsWith("/admin/documentos")) return { title: "Faturas & anexos", badge: "Armazenamento" };
+  if (pathname.startsWith("/admin/estatisticas"))
+    return { title: "Estatísticas", badge: "Uso da plataforma" };
   return { title: "Backoffice", badge: "Admin" };
 }
 

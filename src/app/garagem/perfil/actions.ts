@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth";
+import { logEvent } from "@/lib/analytics/log-event";
 
 export type ProfileActionState = {
   error?: string;
@@ -56,6 +57,12 @@ export async function updateOwnProfile(
   if (error) {
     return { error: error.message };
   }
+
+  await logEvent({
+    eventType: "profile_updated",
+    userId: user.id,
+    role: "client",
+  });
 
   revalidatePath("/garagem/perfil");
   revalidatePath("/garagem", "layout");

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { loadBoletimDataForMotorcycle } from "@/lib/garagem/boletim-data";
 import { MaintenanceBulletin } from "@/components/garagem/maintenance-bulletin";
+import { BoletimViewTracker } from "@/components/garagem/boletim-view-tracker";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export default async function ManutencaoDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <BoletimViewTracker recordId={recordId} />
       <div className="flex justify-end print:hidden">
         <a
           href={`/api/boletim/${recordId}/pdf`}

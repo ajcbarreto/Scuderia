@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from "pdf-lib";
 import { createClient } from "@/lib/supabase/server";
+import { logEvent } from "@/lib/analytics/log-event";
 import {
   formatBoletimDisplayDate,
   formatNextServiceSummary,
@@ -74,6 +75,17 @@ export async function GET(
   const moto = motoData as Motorcycle;
   const tasks = (taskData ?? []) as ServiceTask[];
   const doneTasks = tasks.filter((t) => t.completed);
+
+  const {
+    data: { user: pdfUser },
+  } = await supabase.auth.getUser();
+  await logEvent({
+    eventType: "pdf_downloaded",
+    userId: pdfUser?.id ?? null,
+    entityType: "service_record",
+    entityId: recordId,
+    metadata: { motorcycle_id: record.motorcycle_id },
+  });
 
   // --- Construção do PDF -----------------------------------------------------
   const pdf = await PDFDocument.create();
