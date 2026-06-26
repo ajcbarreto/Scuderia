@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Globe, Share2 } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
+import { ConsentSettingsLink } from "@/components/analytics/consent-settings-link";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -31,6 +32,7 @@ export function SiteFooter() {
           <span className="cursor-default font-sans text-xs tracking-widest text-muted-foreground uppercase">
             Termos de utilização
           </span>
+          <ConsentSettingsLink />
         </div>
         <div className="flex gap-4 text-muted-foreground">
           <Globe

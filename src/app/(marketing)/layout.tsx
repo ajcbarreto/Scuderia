@@ -1,5 +1,5 @@
 import { FloatingWhatsApp } from "@/components/marketing/floating-whatsapp";
-import { PageViewTracker } from "@/components/analytics/page-view-tracker";
+import { AnalyticsConsent } from "@/components/analytics/analytics-consent";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { getProfile } from "@/lib/auth";
@@ -15,7 +15,7 @@ export default async function MarketingLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <PageViewTracker />
+      <AnalyticsConsent />
       <SiteHeader
         accountHref={accountAreaHref(role)}
         accountLabel={accountAreaLabel(role)}

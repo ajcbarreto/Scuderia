@@ -107,8 +107,9 @@ export default function PrivacidadePage() {
         </p>
         <ul className="list-disc space-y-1.5 pl-5">
           <li>
-            <strong>Visitantes do site (sem conta):</strong> registamos visitas
-            de forma agregada — página consultada, data/hora e a origem do
+            <strong>Visitantes do site (sem conta):</strong> apenas com o teu
+            consentimento (dado no banner ao entrar), registamos visitas de
+            forma agregada — página consultada, data/hora e a origem do
             tráfego ao nível do domínio. Para distinguir sessões usamos um
             identificador temporário guardado no teu navegador
             (<em>sessionStorage</em>), que <strong>não é um cookie
@@ -130,7 +131,10 @@ export default function PrivacidadePage() {
         </ul>
         <p>
           Não utilizamos cookies de publicidade nem partilhamos estes dados com
-          redes de rastreio de terceiros.
+          redes de rastreio de terceiros. A recolha de visitas só é ativada se
+          aceitares no banner apresentado ao entrar, e podes mudar ou retirar
+          essa decisão a qualquer momento em <strong>Gerir cookies</strong>, no
+          rodapé.
         </p>
       </Section>
 
